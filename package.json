@@ -1,0 +1,25 @@
+{
+  "name": "lhc-vdm-editor",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-server": "http-server -a 127.0.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CERN/lhc-vdm-editor.git"
+  },
+  "author": "CERN",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CERN/lhc-vdm-editor/issues"
+  },
+  "homepage": "https://github.com/CERN/lhc-vdm-editor#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "http-server": "^0.11.1",
+    "jasmine": "^3.4.0"
+  }
+}
