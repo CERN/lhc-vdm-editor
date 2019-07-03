@@ -3,9 +3,13 @@ import GitLab from "./GitLab.js"
 describe("GitLab", () => {
     /** @type {GitLab} */
     let gitlab;
-    beforeEach(async () => {
+    beforeAll(async () => {
         const token = (await (await fetch("../secrets.json")).json()).token;
-        gitlab = new GitLab(token, "vdm-editor-test");
+        gitlab = new GitLab(
+            token,
+            // NOTE: we need to commit to the test branch so we don't mess up master
+            "vdm-editor-test" 
+        );
     })
 
     it("can get files", async () => {
@@ -22,5 +26,15 @@ describe("GitLab", () => {
             -9,
             "DoesntExist.txt"
         ).catch(() => -1)).toBe(-1)
+    })
+
+    fit("can commit something", async () => {
+        expect(await gitlab.writeFile(
+            "201605_VdM",
+            5,
+            "TestFile.txt",
+            "Test commit",
+            Math.random().toString()
+        )).toBeUndefined()
     })
 })
