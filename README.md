@@ -4,7 +4,7 @@
 
 secrets.json contains a structure of the following structure:
 ```
-TODO
+TODO-
 ```
 
 ## Tests
