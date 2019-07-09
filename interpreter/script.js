@@ -82,13 +82,14 @@ class VdMConstructor {
      */
     _commandlinesToObjects(lineArr) {
         let objArr = [];
+        let i = 0;
         try {
             if (!Array.isArray(lineArr)) {
                 throw '_commandlinesToObjects takes an array! Got "' + typeof lineArr + '" with value: ' + JSON.stringify(lineArr)
             }
-            for (let line of lineArr) {
+            while (i < lineArr.length) {
                 // Deconstruct string into arguments
-                let tmp = line.trim().split(/\s+/);
+                let tmp = lineArr[i].trim().split(/\s+/);
                 if (tmp.length < 2) {
                     throw 'Command line has to include: "int command". Got: ' + tmp
                     // Maybe continue instead?
@@ -100,20 +101,12 @@ class VdMConstructor {
                 obj.command = tmp[1];
                 obj.args = tmp.slice(2);
 
-                // Initialise the simulated parameters to object
-                obj.beamPos = {
-                    'BEAM1': { 'CROSSING': 0.0, 'SEPARATION': 0.0 },
-                    'BEAM2': { 'CROSSING': 0.0, 'SEPARATION': 0.0 }
-                }
-                obj.stepTime = 0.0;
-                obj.realTime = 0.0;
-
-                // Add ovject to array
+                // Add object to array
                 objArr.push(obj);
+                i++;
             }
         } catch (err) {
-            // Do something on error
-            console.log(err)
+            throw 'Error in parsing line ' + i + " containing:\n" + JSON.stringify(lineArr[i]) + '\n' + err
         }
         return objArr
     }
@@ -124,54 +117,63 @@ class VdMConstructor {
      */
     // Maybe 'updateBeamPath' more fitting. Do not know what to put in above
     _simulateBeamPath(objArr) {
-        try {
-            let step = objArr[0];
-            this._commandHandler[step.command].apply(step, step.args);
-            if (objArr.length > 1) {
-                for (let i = 1; i < objArr.length; i++) {
-                    step = objArr[i];
-                    step.beamPos = objArr[i - 1].beamPos;
-                    step.stepTime = objArr[i - 1].stepTime;
-                    step.realTime = objArr[i - 1].realTime;
-                    this._commandHandler[step.command].apply(step, step.args);
+        let beamPos = {
+            'BEAM1': { 'CROSSING': 0.0, 'SEPARATION': 0.0 },
+            'BEAM2': { 'CROSSING': 0.0, 'SEPARATION': 0.0 }
+        }
+        let stepTime = 0.0;
+        let realTime = 0.0;
+
+        let commandHandler = {
+            'INITIALIZE_TRIM': function (ips, beams, planes, units) {
+                
+            },
+            'SECONDS_WAIT': function (arg) {
+                let duration = parseFloat(arg);
+                if (!Number.isFinite(duration)) {
+                    throw 'Wait time has to be finite but got: ' + duration
                 }
+                stepTime += duration;
+                realTime += duration;
+            },
+            'RELATIVE_TRIM': function (...actions) {
+                for (let i = 0; i < actions.length; i += 5) {
+
+                }
+            },
+            'ABSOLUTE_TRIM': function (...actions) {
+
+            },
+            'START_FIT': function (plane, type) {
+
+            },
+            'END_FIT': function (plane) {
+
+            },
+            'END_SEQUENCE': function (actions) {
+
+            },
+            'MESSAGE': function (message) {
+
+            }
+        }
+
+        // Read one line at a time and apply commands
+        let i = 0;
+        try {
+            if (objArr[0].command != 'INITIALIZE_TRIM') {
+                throw 'Expected first line to be an "INITIALIZE_TRIM" command but got ' + objArr[0].command
+            }
+            while (i < objArr.length) {
+                let step = objArr[i];
+                commandHandler[step.command].apply(step, step.args);
+                step.beamPos = beamPos;
+                step.stepTime = stepTime;
+                step.realTime = realTime;
+                i++;
             }
         } catch (err) {
-            // Do something on error
-            console.log(err)
+            throw 'Error in executing line ' + i + '\n' + err
         }
     }
-
-    _commandHandler = {
-        'INITIALIZE_TRIM': function (ips, beams, planes, units) {
-
-        },
-        'SECONDS_WAIT': function (duration) {
-            let waitTime = parseFloat(duration);
-            if (!isFinite(waitTime)) {
-                throw 'Wait time has to be finite. Got: ' + duration
-            }
-            this.stepTime += waitTime;
-            this.realTime += waitTime;
-        },
-        'RELATIVE_TRIM': function (...actions) {
-
-        },
-        'ABSOLUTE_TRIM': function (...actions) {
-
-        },
-        'START_FIT': function (plane, type) {
-
-        },
-        'END_FIT': function (plane) {
-
-        },
-        'END_SEQUENCE': function (actions) {
-
-        },
-        'MESSAGE': function (message) {
-
-        }
-    }
-
 }
