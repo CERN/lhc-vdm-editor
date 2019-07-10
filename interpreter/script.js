@@ -1,6 +1,3 @@
-
-let source_commands = [{ "index": 0, "command": "INITIALIZE_TRIM", "args": ["IP(IP8)", "BEAM(BEAM1,BEAM2)", "PLANE(SEPARATION,CROSSING)", "UNITS(SIGMA)"], "beamPos": { "BEAM1": { "CROSSING": 0, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0, "SEPARATION": 0 } }, "realTime": 0, "stepTime": 0 }, { "index": 1, "command": "SECONDS_WAIT", "args": ["20"], "beamPos": { "BEAM1": { "CROSSING": 0, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0, "SEPARATION": 0 } }, "realTime": 20, "stepTime": 20 }, { "index": 2, "command": "RELATIVE_TRIM", "args": ["IP8", "BEAM1", "CROSSING", "-3.375", "SIGMA", "IP8", "BEAM2", "CROSSING", "3.375", "SIGMA"], "beamPos": { "BEAM1": { "CROSSING": -0.03375, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.03375, "SEPARATION": 0 } }, "realTime": 21.03375, "stepTime": 20 }, { "index": 3, "command": "SECONDS_WAIT", "args": ["10"], "beamPos": { "BEAM1": { "CROSSING": -0.03375, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.03375, "SEPARATION": 0 } }, "realTime": 31.03375, "stepTime": 30 }, { "index": 4, "command": "RELATIVE_TRIM", "args": ["IP8", "BEAM1", "CROSSING", "0.375", "SIGMA", "IP8", "BEAM2", "CROSSING", "-0.375", "SIGMA"], "beamPos": { "BEAM1": { "CROSSING": -0.030000000000000002, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.030000000000000002, "SEPARATION": 0 } }, "realTime": 32.0375, "stepTime": 30 }, { "index": 5, "command": "SECONDS_WAIT", "args": ["10"], "beamPos": { "BEAM1": { "CROSSING": -0.030000000000000002, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.030000000000000002, "SEPARATION": 0 } }, "realTime": 42.0375, "stepTime": 40 }, { "index": 6, "command": "RELATIVE_TRIM", "args": ["IP8", "BEAM1", "CROSSING", "0.375", "SIGMA", "IP8", "BEAM2", "CROSSING", "-0.375", "SIGMA"], "beamPos": { "BEAM1": { "CROSSING": -0.026250000000000002, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.026250000000000002, "SEPARATION": 0 } }, "realTime": 43.04125, "stepTime": 40 }, { "index": 7, "command": "SECONDS_WAIT", "args": ["10"], "beamPos": { "BEAM1": { "CROSSING": -0.026250000000000002, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.026250000000000002, "SEPARATION": 0 } }, "realTime": 53.04125, "stepTime": 50 }, { "index": 8, "command": "RELATIVE_TRIM", "args": ["IP8", "BEAM1", "CROSSING", "0.375", "SIGMA", "IP8", "BEAM2", "CROSSING", "-0.375", "SIGMA"], "beamPos": { "BEAM1": { "CROSSING": -0.022500000000000003, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.022500000000000003, "SEPARATION": 0 } }, "realTime": 54.044999999999995, "stepTime": 50 }, { "index": 9, "command": "SECONDS_WAIT", "args": ["10"], "beamPos": { "BEAM1": { "CROSSING": -0.022500000000000003, "SEPARATION": 0 }, "BEAM2": { "CROSSING": 0.022500000000000003, "SEPARATION": 0 } }, "realTime": 64.04499999999999, "stepTime": 60 }];
-
 $(document).ready(function () {
     // Put datastructure into the veiwer
     /* let table = document.getElementById('table');
@@ -17,40 +14,39 @@ $(document).ready(function () {
 
     // Here I do stuff with the object!
     VdMObject = new VdMConstructor(file);
-    console.log(VdMObject.lines);
-    // VdMObject.addLine('10 THIS_IS_AN_ADDED_LINE', 2);
-    // console.log(VdMObject.lines);
-    // VdMObject.removeLine(2);
-    // console.log(VdMObject.lines);
-    // VdMObject.replaceLine('100 THIS_IS_A_REPLACED_LINE', 2)
-    // console.log(VdMObject.lines);
 });
 
+class SyntaxError {
+    constructor(line, message) {
+        this.line = line;
+        this.message = message;
+    }
+}
 
 class VdMConstructor {
     /**
      * @param {string} data
      */
     constructor(data) {
-        let lineArr = data.split(/\n+/);
-        this.lines = this._commandlinesToObjects(lineArr);
+        this.lines = this._parse(data);
         this._simulateBeamPath(this.lines);
 
         // Some code that checks whether there is an INITIALIZE_TRIM line
     }
 
     /**
-     * @param {string} newLine
+     * @param {string} command
      * @param {int} newLineNum
+     * @param {Array} args
      */
-    addLine(newLine, newLineNum) {
+    addLine(newLineNum, command, args) {
+        let obj = {
+            'command': command,
+            'args': args
+        }
         let start = this.lines.slice(0, newLineNum);
-        let end = this.lines.slice(newLineNum).map(function (obj) {
-            obj.index++;
-            // Here we must add stuff when the structure gets more features
-            return obj;
-        });
-        let middle = this._commandlinesToObjects([newLine]);
+        let end = this.lines.slice(newLineNum);
+        let middle = [obj];
         this.lines = start.concat(middle, end);
         this._simulateBeamPath(this.lines);
     }
@@ -60,57 +56,92 @@ class VdMConstructor {
      */
     removeLine(lineNum) {
         let start = this.lines.slice(0, lineNum);
-        let end = this.lines.slice(lineNum + 1).map(function (obj) {
-            obj.index--;
-            // Here we must add stuff when the structure gets more features
-            return obj;
-        })
+        let end = this.lines.slice(lineNum + 1);
         this.lines = start.concat(end);
         this._simulateBeamPath(this.lines);
     }
     /**
-     * @param {string} newLine
+     * @param {string} command
      * @param {int} lineNum
+     * @param {Array} args
      */
-    replaceLine(newLine, lineNum) {
+    replaceLine(lineNum, command, args) {
         this.removeLine(lineNum);
-        this.addLine(newLine, lineNum);
+        this.addLine(lineNum, command, args);
     }
 
     /**
      * @param {Array} lineArr
      */
-    _commandlinesToObjects(lineArr) {
+    _parse(data) {
+        let lineArr = data.split(/\n/);
         let objArr = [];
-        let i = 0;
         try {
             if (!Array.isArray(lineArr)) {
-                throw '_commandlinesToObjects takes an array! Got "' + typeof lineArr + '" with value: ' + JSON.stringify(lineArr)
+                throw new SyntaxError({}'_commandlinesToObjects takes an array! Got "' + typeof lineArr + '" with value: ' + JSON.stringify(lineArr))
             }
-            while (i < lineArr.length) {
+            for (let i = 0; i < lineArr.length; i++) {
                 // Deconstruct string into arguments
                 let tmp = lineArr[i].trim().split(/\s+/);
-                if (tmp.length < 2) {
-                    throw 'Command line has to include: "int command". Got: ' + tmp
-                    // Maybe continue instead?
-                }
-
-                // Make object with areguments from string
                 let obj = {};
-                obj.index = parseInt(tmp[0]);
-                obj.command = tmp[1];
-                obj.args = tmp.slice(2);
-
-                // Add object to array
+                // Check for valid lines
+                if (!isInteger(tmp[0])) {
+                    if (tmp[0] == '') {
+                        // Do nothing
+                    } else if (tmp[0].charAt(0) == '#') {
+                        obj.comment = tmp[0];
+                    } else {
+                        throw new SyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
+                    }
+                } else { // Create object from command line
+                    if (tmp.length < 2) {
+                        throw new SyntaxError(i, 'Command line has to include: "int + command" but got: ' + tmp);
+                    }
+                    obj.command = tmp[1];
+                    obj.args = tmp.slice(2);
+                    try{_validateArgs(obj)} catch(err){throw new SyntaxError(i, err)}
+                }
                 objArr.push(obj);
-                i++;
             }
         } catch (err) {
-            throw 'Error in parsing line ' + i + " containing:\n" + JSON.stringify(lineArr[i]) + '\n' + err
+            throw Error('Error while parsing line' + err.line + '.\n' + err.message)
         }
         return objArr
     }
 
+    _validateArgs(obj) {
+        if (!commandHandler[obj.command]) {
+            throw 'Invalid command ' + obj.command
+        } else {
+            
+        }
+        let commandHandler = {
+            'INITIALIZE_TRIM': function (ips, beams, planes, units) {
+
+            },
+            'SECONDS_WAIT': function (arg) {
+
+            },
+            'RELATIVE_TRIM': function (...actions) {
+
+            },
+            'ABSOLUTE_TRIM': function (...actions) {
+
+            },
+            'START_FIT': function (plane, type) {
+
+            },
+            'END_FIT': function (plane) {
+
+            },
+            'END_SEQUENCE': function (actions) {
+
+            },
+            'MESSAGE': function (message) {
+
+            }
+        }
+    }
     /**
      * 
      * @param {*} objArr 
@@ -124,9 +155,10 @@ class VdMConstructor {
         let stepTime = 0.0;
         let realTime = 0.0;
 
+        function toMM()
         let commandHandler = {
             'INITIALIZE_TRIM': function (ips, beams, planes, units) {
-                
+
             },
             'SECONDS_WAIT': function (arg) {
                 let duration = parseFloat(arg);
@@ -138,7 +170,16 @@ class VdMConstructor {
             },
             'RELATIVE_TRIM': function (...actions) {
                 for (let i = 0; i < actions.length; i += 5) {
-
+                    // Check if IP = actions[0] is in INITIALIZE
+                    // Check if BEAM = actions[1] is in INITIALIZE
+                    // Check if PLANE = actions[2] is in INITIALIZE
+                    // Check if UNIT = actions[4] is in INITIALIZE
+                    let beam = actions[1];
+                    let plane = actions[2];
+                    let amount = actions[3];
+                    let unit = actions[4];
+                    if (unit == 'SIGMA') { amount = toMM(amount) };
+                    beamPos[beam][plane] += amount;
                 }
             },
             'ABSOLUTE_TRIM': function (...actions) {
