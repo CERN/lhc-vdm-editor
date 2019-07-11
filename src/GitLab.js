@@ -1,14 +1,6 @@
+import {gFetch} from "./HelperFunctions.js"
+
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
-
-function handleFetchErrors(response) {
-    if (!response.ok) {
-        throw Error(response.statusText);
-    }
-    return response;
-}
-
-/** @type {typeof fetch} */
-const gFetch = async (...args) => handleFetchErrors(await fetch(...args));
 
 export default class GitLab {
     /**

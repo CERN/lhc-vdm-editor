@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title></title>
+        <script type="module" src="./src/OverallEditor.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script type="module">
+            import GitLab from "./src/GitLab.js"
+            import {getJSON} from "./src/HelperFunctions.js"
+            $(async () => {
+                const token = (await getJSON("./secrets.json")).token;
+                
+                const gl = new GitLab(token);
+                let hobbitFile = await gl.readFile(
+                    "201605_VdM",
+                    5,
+                    "HobbitCrossing.txt"
+                );
+                if(hobbitFile.search("\r\n") != 0){
+                    hobbitFile = hobbitFile.replace(/\r\n/g, "\n");
+                }
+
+                document.querySelector("overall-editor").value = hobbitFile;
+            })
+        </script>
+    </head>
+    <body>
+        <overall-editor>
+        </overall-editor>
+    </body>
+</html>

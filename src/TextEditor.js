@@ -1,8 +1,6 @@
 import {range, css} from "./HelperFunctions.js"
 import {html, render} from 'https://unpkg.com/lit-html?module';
 
-const testText = (async () => await (await fetch("TestText.txt")).text())()
-
 const styling = css`
 .overall-container{
     font-size: 13.333333;
@@ -73,6 +71,14 @@ export default class TextEditor extends HTMLElement {
         }).slice(1).join("\n");
     }
 
+    set value(a){
+
+    }
+
+    get value(){
+        
+    }
+
     template(){
         return html`
             <style>
@@ -88,7 +94,7 @@ export default class TextEditor extends HTMLElement {
                     </div>
                 </div>
                 <div class="right-container">
-                    <textarea @scroll="${ev => this.handleScroll(ev)}">${
+                    <textarea ref="${this}" @scroll="${ev => this.handleScroll(ev)}">${
                         this.stripText(this.innerHTML.trim())
                     }</textarea>
                 </div>
