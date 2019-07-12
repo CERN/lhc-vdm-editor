@@ -1,14 +1,6 @@
 import {parseVdM, deparseVdM} from "./parser.js"
 
 describe("Parser", () => {
-    let file2 = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
-1 SECONDS_WAIT 10.0
-2 START_FIT SEPARATION GAUSSIAN
-3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
-4 SECONDS_WAIT 10.0
-5 END_FIT
-6 END_SEQUENCE`
-
     let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
 2 START_FIT SEPARATION GAUSSIAN
@@ -27,6 +19,7 @@ describe("Parser", () => {
 15 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
 16 SECONDS_WAIT 10.0
 17 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
+
 18 SECONDS_WAIT 10.0
 19 END_FIT
 20 END_SEQUENCE`
@@ -46,10 +39,10 @@ describe("Parser", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 END_SEQUENCE'))
         .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"comment","comment":"#"},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
     })
-    xit('File parse and then deparse', () => {
+    it('File parse and then deparse', () => {
         expect(deparseVdM(parseVdM(file))).toEqual(file)
     })
     it('Simple parse and then deparse', () => {
-        expect(deparseVdM(parseVdM(file2))).toEqual(file2)
+        expect(deparseVdM(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 END_SEQUENCE'))).toEqual('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 END_SEQUENCE')
     })
 })
