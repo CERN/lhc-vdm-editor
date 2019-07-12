@@ -27,15 +27,15 @@ describe("Parser", () => {
 20 END_SEQUENCE`
             )).toEqual(jasmine.any(Array))
     })
-    it("something", () => {
+    it("Simple parse successful ", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n 1 END_SEQUENCE'))
             .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
     })
-    it("something", () => {
+    it("Empty line parse successful", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 END_SEQUENCE'))
         .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"empty"},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
     })
-    it("something", () => {
+    it("Comment line parse successful", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 END_SEQUENCE'))
         .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"comment","comment":""},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
     })

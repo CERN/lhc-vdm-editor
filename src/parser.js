@@ -37,32 +37,36 @@ class SyntaxError {
 }
 
 /**
- * @param {Array} lineArr
+ * @param {string} data
  */
 export default function parseVdM(data) {
-    let lineArr = data.split(/\n/).map(x => x.trim());
+    // Array to be filled and then returned as the VdM structure
     let objArr = [];
-    let currentlineNum = 0;
-    let hasEnded = false;
+    // Containers for expected arguments
     let IP = [];
     let beams = [];
     let planes = [];
     let planesContainer = [];
     let units = [];
+    // Alowed arguments
+    // Valid IPs are IP1 IP2 IP5 IP8
     let fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
     let beamTypes = ['BEAM1', 'BEAM2'];
     let planeTypes = ['SEPARATION', 'CROSSING'];
     let unitTypes = ['SIGMA', 'MM'];
-
+    // Variables used during parseing
+    let lineArr = data.split(/\n/).map(x => x.trim());
+    let currentlineNum = 0;
+    let hasEnded = false;
+    // Parse
     try {
-        if (!Array.isArray(lineArr)) {
-            throw Error('_commandlinesToObjects takes an array! Got "' + typeof lineArr + '" with value: ' + JSON.stringify(lineArr))
-        }
         for (let i = 0; i < lineArr.length; i++) {
+            // Object to be pushed to the structure
+            let obj = {};
             // Deconstruct string into arguments
             let line = lineArr[i].split(/\s+/);
-            let obj = {};
             // Check line syntax
+            // Line type is NOT a command line (initialised with an integer)
             if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
                 if (line[0] == '') {
                     obj.type = 'empty';
@@ -72,20 +76,27 @@ export default function parseVdM(data) {
                 } else {
                     throw new SyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
                 }
-            } else if (hasEnded) {
-                throw new SyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
-            } else if (parseInt(line[0]) != currentlineNum) {
-                throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + currentlineNum + ' but got ' + line[0])
-            } else { // Create object from command line
+            } else {
+                // Line type is a command line! Check syntax:
+                if (hasEnded) {
+                    throw new SyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
+                }
+                if (currentlineNum == 0 && line[1] != 'INITIALIZE_COMMAND') {
+                    throw new SyntaxError(i, 'Expected first command to be INITIALIZE_COMMAND but got ' + lineArr[i])
+                }
+                if (parseInt(line[0]) != currentlineNum) {
+                    throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + currentlineNum + ' but got ' + line[0])
+                } 
                 obj.type = 'command';
                 obj.command = line[1];
                 obj.args = line.slice(2);
                 try { validateArgs(obj) } catch (err) { throw new SyntaxError(i, err) }
+
+                objArr.push(obj);
                 currentlineNum++;
             }
-            objArr.push(obj);
         }
-        if(!hasEnded) {
+        if (!hasEnded) {
             throw new SyntaxError('end', 'Missing END_SEQUENCE command')
         }
     } catch (err) {
@@ -132,9 +143,10 @@ export default function parseVdM(data) {
                 IP = getInnerBracket(obj.args[0], 'IP');
                 beams = getInnerBracket(obj.args[1], 'BEAM');
                 planes = getInnerBracket(obj.args[2], 'PLANE');
+                planesContainer = planes;
                 units = getInnerBracket(obj.args[3], 'UNITS');
                 if (IP.length != 1 || !IP[0].match(/^(?:IP)[1258]$/)) {
-                    throw 'Invalid INITIALIZE_TRIM command. Must include exactly one valid IP but got ' + IP
+                    throw 'Invalid INITIALIZE_TRIM command. Expected exactly one of [IP1,IP2,IP5,IP8] but got ' + IP
                 }
                 if (!beams.every(x => beamTypes.includes(x))) {
                     throw 'Invalid BEAM argument. Expected subset of ' + beamTypes + ' but got ' + beams
@@ -164,17 +176,17 @@ export default function parseVdM(data) {
                 checkTrim(obj)
             },
             'START_FIT': function (obj) {
-                if (!planes.includes(obj.args[0])) {
-                    throw 'Invalid START_FIT command. Expected plane in ' + planes + ' but got ' + obj.ars[0]
+                if (obj.args.length == 2) {
+                    if (!planes.includes(obj.args[0])) {
+                        throw 'Invalid START_FIT command. Expected plane in ' + planes + ' but got ' + obj.ars[0]
+                    }
+                    if (!fitTypes.includes(obj.args[1])) {
+                        throw 'Invalid START_FIT command. Expected fit type in ' + fitTypes + ' but got ' + obj.ars[1]
+                    }
+                    planes = [obj.args[0]];
+                } else {
+                    throw 'Invalid START_FIT command. Expected exactly two arguments "PLANE FIT_TYPE" but got ' + obj.args
                 }
-                if (!fitTypes.includes(obj.args[1])) {
-                    throw 'Invalid START_FIT command. Expected fit type in ' + fitTypes + ' but got ' + obj.ars[1]
-                }
-                if (obj.args.length != 2) {
-                    throw 'Invalid START_FIT command. Too many arguments. Overflow: ' + obj.args.slice(2)
-                }
-                planesContainer = planes;
-                planes = [obj.args[0]];
             },
             'END_FIT': function (obj) {
                 if (obj.args.length != 0) {
