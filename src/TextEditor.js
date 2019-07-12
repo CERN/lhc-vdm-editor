@@ -1,4 +1,5 @@
 import {range, css} from "./HelperFunctions.js"
+// @ts-ignore
 import {html, render} from 'https://unpkg.com/lit-html?module';
 
 const styling = css`
@@ -76,7 +77,7 @@ export default class TextEditor extends HTMLElement {
     }
 
     get value(){
-        
+        return ""
     }
 
     template(){

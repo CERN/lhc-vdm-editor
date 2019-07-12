@@ -6,6 +6,7 @@
         <script type="module">
             import GitLab from "./src/GitLab.js"
             import {getJSON} from "./src/HelperFunctions.js"
+            import "./extern/ace.min.js"
             $(async () => {
                 const token = (await getJSON("./secrets.json")).token;
                 

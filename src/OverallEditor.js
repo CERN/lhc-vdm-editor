@@ -1,7 +1,7 @@
 // @ts-check
 import {css, html} from "./HelperFunctions.js"
 import "./RawEditor.js"
-import "./TextEditor.js"
+import "./TextEditor-ace.js"
 import "./SwitchEditorButtons.js"
 
 const styling = css`
@@ -13,7 +13,7 @@ const styling = css`
 `
 
 const EDITOR_TAG_NAMES = [
-    "raw-editor",
+    "text-editor",
     "raw-editor",
     "raw-editor"
 ]
@@ -30,7 +30,7 @@ export default class OverallEditor extends HTMLElement {
         });
         this.editorContainer = this.root.getElementById("editor-container");
         /** @type {any} */
-        this.editor = this.root.querySelector("raw-editor");
+        this.editor = this.root.querySelector("text-editor");
     }
 
     
@@ -63,7 +63,7 @@ export default class OverallEditor extends HTMLElement {
         </style>
         <div id="container">
             <div id="editor-container">
-                <raw-editor></raw-editor>
+                <text-editor></text-editor>
             </div>
             <switch-editor-buttons></switch-editor-buttons>
         </div>

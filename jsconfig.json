@@ -1,7 +1,9 @@
 {
-    "checkJs": true,
     "compilerOptions": {
         "checkJs": true,
         "target": "es2018"
+    },
+    "typeAcquisition": {
+        "include": ["ace"]
     }
 }
