@@ -1,34 +1,3 @@
-$(document).ready(function () {
-    // Put datastructure into the veiwer
-    /* let table = document.getElementById('table');
-    table.content = source_commands; */
-
-    let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
-1 SECONDS_WAIT 10.0
-2 START_FIT SEPARATION GAUSSIAN
-3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
-4 SECONDS_WAIT 10.0
-5 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
-6 SECONDS_WAIT 10.0
-7 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
-8 SECONDS_WAIT 10.0
-9 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
-10 SECONDS_WAIT 10.0
-11 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
-12 SECONDS_WAIT 10.0
-13 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
-14 SECONDS_WAIT 10.0
-15 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
-16 SECONDS_WAIT 10.0
-17 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
-18 SECONDS_WAIT 10.0
-19 END_FIT
-20 END_SEQUENCE`
-
-    console.log(JSON.stringify(parseVdM(file)))
-    console.log(JSON.stringify(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n 1 END_SEQUENCE')))
-});
-
 class SyntaxError {
     constructor(line, message) {
         this.line = line;
@@ -36,10 +5,43 @@ class SyntaxError {
     }
 }
 
+/* try {
+
+} catch (err) {
+    throw Error('Error while parsing line ' + err.line + '.\n' + err.message)
+} */
+
+/**
+ * @param {Array} struct
+ */
+export function deparseVdM(struct) {
+    let string = '';
+    for (let i = 0; i < struct.length; i++) {
+        let obj = struct[i]
+        let line = '';
+        if (obj.type == 'command') {
+            line += i + ' ';
+            line += obj.command + ' ';
+            line += obj.args.join(' ');
+            line = line.trim()
+        } else if (obj.type == 'empty') {
+            // Do nothing
+        } else if (obj.type == 'comment') {
+            line += obj.comment;
+        } else {
+            throw new SyntaxError(i, 'Expected object of type command, empty, or comment but got ' + obj.type)
+        }
+        line += '\n';
+        string += line;
+    }
+    return string.trim();
+}
+
+
 /**
  * @param {string} data
  */
-export default function parseVdM(data) {
+export function parseVdM(data) {
     // Array to be filled and then returned as the VdM structure
     let objArr = [];
     // Containers for expected arguments
@@ -59,49 +61,47 @@ export default function parseVdM(data) {
     let currentlineNum = 0;
     let hasEnded = false;
     // Parse
-    try {
-        for (let i = 0; i < lineArr.length; i++) {
-            // Object to be pushed to the structure
-            let obj = {};
-            // Deconstruct string into arguments
-            let line = lineArr[i].split(/\s+/);
-            // Check line syntax
-            // Line type is NOT a command line (initialised with an integer)
-            if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
-                if (line[0] == '') {
-                    obj.type = 'empty';
-                } else if (line[0].charAt(0) == '#') {
-                    obj.type = 'comment';
-                    obj.comment = lineArr[i].slice(1).trim();
-                } else {
-                    throw new SyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
-                }
-            } else {
-                // Line type is a command line! Check syntax:
-                if (hasEnded) {
-                    throw new SyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
-                }
-                if (currentlineNum == 0 && line[1] != 'INITIALIZE_COMMAND') {
-                    throw new SyntaxError(i, 'Expected first command to be INITIALIZE_COMMAND but got ' + lineArr[i])
-                }
-                if (parseInt(line[0]) != currentlineNum) {
-                    throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + currentlineNum + ' but got ' + line[0])
-                } 
-                obj.type = 'command';
-                obj.command = line[1];
-                obj.args = line.slice(2);
-                try { validateArgs(obj) } catch (err) { throw new SyntaxError(i, err) }
 
-                objArr.push(obj);
-                currentlineNum++;
+    for (let i = 0; i < lineArr.length; i++) {
+        // Object to be pushed to the structure
+        let obj = {};
+        // Deconstruct string into arguments
+        let line = lineArr[i].split(/\s+/);
+        // Check line syntax
+        // Line type is NOT a command line (initialised with an integer)
+        if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
+            if (line[0] == '') {
+                obj.type = 'empty';
+            } else if (line[0].charAt(0) == '#') {
+                obj.type = 'comment';
+                obj.comment = lineArr[i].trim();
+            } else {
+                throw new SyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
             }
+        } else {
+            // Line type is a command line! Check syntax:
+            if (hasEnded) {
+                throw new SyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
+            }
+            if (currentlineNum == 0 && line[1] != 'INITIALIZE_TRIM') {
+                throw new SyntaxError(i, 'Expected first command to be INITIALIZE_TRIM but got ' + lineArr[i])
+            }
+            if (parseInt(line[0]) != currentlineNum) {
+                throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + currentlineNum + ' but got ' + line[0])
+            }
+            obj.type = 'command';
+            obj.command = line[1];
+            obj.args = line.slice(2);
+            try { validateArgs(obj) } catch (err) { throw new SyntaxError(i, err) }
+
+            currentlineNum++;
         }
-        if (!hasEnded) {
-            throw new SyntaxError('end', 'Missing END_SEQUENCE command')
-        }
-    } catch (err) {
-        throw Error('Error while parsing line ' + err.line + '.\n' + err.message)
+        objArr.push(obj);
     }
+    if (!hasEnded) {
+        throw new SyntaxError('end', 'Missing END_SEQUENCE command')
+    }
+    // Return the structure
     return objArr
 
     function validateArgs(obj) {
@@ -213,9 +213,9 @@ export default function parseVdM(data) {
     }
 }
 
-/* *
+/**
  * @param {string} command
- * @param {int} newLineNum
+ * @param {number} newLineNum
  * @param {Array} args
  */
 function addLine(newLineNum, command, args) {
@@ -230,8 +230,7 @@ function addLine(newLineNum, command, args) {
     this._simulateBeamPath(this.lines);
 }
 /**
- * @param {string} newLine
- * @param {int} newLineNum
+ * @param {number} lineNum
  */
 function removeLine(lineNum) {
     let start = this.lines.slice(0, lineNum);
@@ -241,7 +240,7 @@ function removeLine(lineNum) {
 }
 /**
  * @param {string} command
- * @param {int} lineNum
+ * @param {number} lineNum
  * @param {Array} args
  */
 function replaceLine(lineNum, command, args) {
