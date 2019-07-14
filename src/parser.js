@@ -17,10 +17,10 @@ function genInitTrimArgs(objArr) {
     ];
     for (let obj of objArr) {
         if (obj.command.match(/(?:TRIM)$/)) {
-            argArr[0].values.add(obj.arg[0]);
-            argArr[1].values.add(obj.arg[1]);
-            argArr[2].values.add(obj.arg[2]);
-            argArr[3].values.add(obj.arg[4]);
+            argArr[0].values.add(obj.args[0]);
+            argArr[1].values.add(obj.args[1]);
+            argArr[2].values.add(obj.args[2]);
+            argArr[3].values.add(obj.args[4]);
         }
     }
     for (let type of argArr) {
@@ -37,11 +37,12 @@ function addHeaders(objArr) {
         'type': 'command',
         'command': 'INITIALIZE_TRIM',
         'args': genInitTrimArgs(objArr)
-    }).push({
+    });
+    res.push({
         'type': 'command',
         'command': 'END_SEQUENCE',
         'args': []
-    })
+    });
     return res;
 }
 
@@ -258,5 +259,5 @@ export function parseVdM(data, genHeaders) {
     }
 
     // Run main
-    main();
+    return main();
 }
