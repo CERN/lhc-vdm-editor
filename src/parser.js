@@ -4,30 +4,72 @@ class SyntaxError {
         this.message = message;
     }
 }
+function isSubsetOf(arr1, arr2) {
+    // returns true iff arr1 is a subset of arr2
+    return new Boolean(arr1.every(x => arr2.includes(x)))
+}
+function genInitTrimArgs(objArr) {
+    let argArr = [
+        { 'type': 'IP', 'values': new Set([]) },
+        { 'type': 'BEAM', 'values': new Set([]) },
+        { 'type': 'PLANE', 'values': new Set([]) },
+        { 'type': 'UNITS', 'values': new Set([]) },
+    ];
+    for (let obj of objArr) {
+        if (obj.command.match(/(?:TRIM)$/)) {
+            argArr[0].values.add(obj.arg[0]);
+            argArr[1].values.add(obj.arg[1]);
+            argArr[2].values.add(obj.arg[2]);
+            argArr[3].values.add(obj.arg[4]);
+        }
+    }
+    for (let type of argArr) {
+        if (type.values.size < 1) {
+            throw new Error('Missing ' + type.type + ' argument to generate INITIALIZE_TRIM command')
+        }
+    }
+    let strArr = argArr.map(x => x.type + '(' + Array.from(x.values).join(',').trim() + ')');
+    return strArr;
+}
+function addHeaders(objArr) {
+    let res = objArr;
+    res.unshift({
+        'type': 'command',
+        'command': 'INITIALIZE_TRIM',
+        'args': genInitTrimArgs(objArr)
+    }).push({
+        'type': 'command',
+        'command': 'END_SEQUENCE',
+        'args': []
+    })
+    return res;
+}
 
-/* try {
 
-} catch (err) {
-    throw Error('Error while parsing line ' + err.line + '.\n' + err.message)
-} */
+
+
+
+
 
 /**
  * @param {Array} struct
  */
 export function deparseVdM(struct) {
     let string = '';
+    let currentLineNum = 0;
     for (let i = 0; i < struct.length; i++) {
         let obj = struct[i]
         let line = '';
         if (obj.type == 'command') {
-            line += obj.index + ' ';
+            line += currentLineNum + ' ';
             line += obj.command + ' ';
             line += obj.args.join(' ');
             line = line.trim();
+            currentLineNum++;
         } else if (obj.type == 'empty') {
-            // Do nothing
+            // Line stays empty
         } else if (obj.type == 'comment') {
-            line += obj.comment;
+            line += '# ' + obj.comment;
         } else {
             throw new SyntaxError(i, 'Expected object of type command, empty, or comment but got ' + obj.type)
         }
@@ -37,14 +79,11 @@ export function deparseVdM(struct) {
     return string.trim();
 }
 
-
 /**
  * @param {string} data
  * @param {boolean} genHeaders
  */
 export function parseVdM(data, genHeaders) {
-    // Array to be filled and then returned as the VdM structure
-    let objArr = [];
     // Alowed arguments
     let IPs = ['IP1', 'IP2', 'IP5', 'IP8'];
     let fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
@@ -56,23 +95,24 @@ export function parseVdM(data, genHeaders) {
     let planesContainer = [];
     let isFitting = false;
     let hasEnded = false;
-    // Parse
+    let currentLineNum = 0;
 
     function main() {
+        // Array to be filled and then returned as the VdM structure
+        let objArr = [];
         for (let i = 0; i < lineArr.length; i++) {
-            // Object to be pushed to the structure
+            // Object to be created and pushed to the structure
             let obj = {};
             // Deconstruct string into arguments
             let line = lineArr[i].split(/ +/);
-            let currentlineNum = 0;
             // Check line syntax
-            // Line type is NOT a command line (initialised with an integer)
+            // Line type is NOT a command line (not initialised with an integer)
             if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
                 if (line[0] == '') {
                     obj.type = 'empty';
                 } else if (line[0].charAt(0) == '#') {
                     obj.type = 'comment';
-                    obj.comment = lineArr[i].trim();
+                    obj.comment = lineArr[i].slice(1).trim();
                 } else {
                     throw new SyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
                 }
@@ -81,19 +121,18 @@ export function parseVdM(data, genHeaders) {
                 if (hasEnded) {
                     throw new SyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
                 }
-                if (currentlineNum == 0 && line[1] != 'INITIALIZE_TRIM' && !genHeaders) {
+                if (currentLineNum == 0 && line[1] != 'INITIALIZE_TRIM' && !genHeaders) {
                     throw new SyntaxError(i, 'Expected first command to be INITIALIZE_TRIM but got ' + lineArr[i])
                 }
-                if (parseInt(line[0]) != currentlineNum) {
-                    throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + currentlineNum + ' but got ' + line[0])
+                if (parseInt(line[0]) != currentLineNum) {
+                    throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + currentLineNum + ' but got ' + line[0])
                 }
                 obj.type = 'command';
-                obj.index = currentlineNum;
                 obj.command = line[1];
                 obj.args = line.slice(2);
                 try { validateArgs(obj) } catch (err) { throw new SyntaxError(i, err) }
 
-                currentlineNum++;
+                currentLineNum++;
             }
             objArr.push(obj);
         }
@@ -101,36 +140,12 @@ export function parseVdM(data, genHeaders) {
             throw new SyntaxError(lineArr.length, 'Missing END_FIT command')
         }
         if (genHeaders) {
-            let usedIPs = new Set([]);
-            let usedBeams = new Set([]);
-            let usedPlanes = new Set([]);
-            let usedUnits = new Set([]);
-            for (let obj of objArr) {
-                if (obj.command.match(/(?:TRIM)$/)){
-                    usedIPs.add(obj.arg[0]);
-                    usedBeams.add(obj.arg[1]);
-                    usedPlanes.add(obj.arg[2]);
-                    usedUnits.add(obj.arg[4]);
-                }
-            }
-            objArr = [{
-                'type': 'command',
-                'command': 'INITIALIZE_TRIM',
-                'args': '' //----------------------------------------------------get the sets into strings------------------------------------------------
-            }].concat(objArr)
-            objArr.push({
-                'type': 'command',
-                'command': 'END_SEQUENCE',
-                'args': ''
-            })
+            objArr = addHeaders(objArr);
         } else if (!hasEnded) {
             throw new SyntaxError(lineArr.length, 'Missing END_SEQUENCE command')
         }
         // Return the finished structure
         return objArr
-    }
-    function isSubsetOf(arr1, arr2) {
-        return new Boolean(arr1.every(x => arr2.includes(x)))
     }
     function checkTrim(obj) {
         for (let i = 0; i < obj.args.length; i += 5) {
@@ -151,23 +166,19 @@ export function parseVdM(data, genHeaders) {
             }
         }
     }
+    function getInnerBracket(str, type) {
+        let match = str.match(new RegExp('^' + type + '\\((.*)\\)$'));
+        if (!match) {
+            throw 'Invalid INITIALIZE_TRIM command. Expected "' + type + '(...)" but got' + str
+        }
+        match = match[1].split(',');
+        return match;
+    }
     let commandHandler = {
         'INITIALIZE_TRIM': function (obj) {
-            if (obj.index != 0) {
+            if (currentLineNum != 0) {
                 throw 'Invalid INITIALIZE_TRIM command. Must occur on line zero'
             }
-            function getInnerBracket(str, type) {
-                let match = str.match(new RegExp('^' + type + '\\((.*)\\)$'));
-                if (!match) {
-                    throw 'Invalid INITIALIZE_TRIM command. Argument "' + type + '(...)" missing'
-                }
-                match = match[1].split(',');
-                if (match.length > 2) {
-                    throw 'Invalid INITIALIZE_TRIM command. "' + type + '(...)" can include at most 2 arguments but got ' + match
-                }
-                return match;
-            }
-
             let givenIP = getInnerBracket(obj.args[0], 'IP');
             let givenBeams = getInnerBracket(obj.args[1], 'BEAM');
             let givenPlanes = getInnerBracket(obj.args[2], 'PLANE');
@@ -248,39 +259,4 @@ export function parseVdM(data, genHeaders) {
 
     // Run main
     main();
-}
-
-/**
- * @param {string} command
- * @param {number} newLineNum
- * @param {Array} args
- */
-function addLine(newLineNum, command, args) {
-    let obj = {
-        'command': command,
-        'args': args
-    }
-    let start = this.lines.slice(0, newLineNum);
-    let end = this.lines.slice(newLineNum);
-    let middle = [obj];
-    this.lines = start.concat(middle, end);
-    this._simulateBeamPath(this.lines);
-}
-/**
- * @param {number} lineNum
- */
-function removeLine(lineNum) {
-    let start = this.lines.slice(0, lineNum);
-    let end = this.lines.slice(lineNum + 1);
-    this.lines = start.concat(end);
-    this._simulateBeamPath(this.lines);
-}
-/**
- * @param {string} command
- * @param {number} lineNum
- * @param {Array} args
- */
-function replaceLine(lineNum, command, args) {
-    this.removeLine(lineNum);
-    this.addLine(lineNum, command, args);
 }
