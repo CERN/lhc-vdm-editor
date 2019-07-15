@@ -1,4 +1,4 @@
-import {parseVdM, deparseVdM} from "./parser.js"
+import { parseVdM, deparseVdM } from "./parser.js"
 
 describe("Parser", () => {
     let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
@@ -19,7 +19,6 @@ describe("Parser", () => {
 15 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
 16 SECONDS_WAIT 10.0
 17 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
-
 18 SECONDS_WAIT 10.0
 19 END_FIT
 20 END_SEQUENCE`
@@ -33,16 +32,21 @@ describe("Parser", () => {
     })
     it("Empty line parse", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 END_SEQUENCE'))
-        .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"empty"},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
+            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"empty"},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
     })
     it("Comment line parse", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 END_SEQUENCE'))
-        .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"comment","comment":"#"},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
+            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"comment","comment":""},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
     })
     it('File parse and then deparse', () => {
         expect(deparseVdM(parseVdM(file))).toEqual(file)
     })
     it('Simple parse and then deparse', () => {
-        expect(deparseVdM(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 END_SEQUENCE'))).toEqual('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 END_SEQUENCE')
+        expect(deparseVdM(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 END_SEQUENCE')))
+            .toEqual('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 END_SEQUENCE')
+    })
+    it('Generate headers parse', () => {
+        expect(deparseVdM(parseVdM('1 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA\n2 RELATIVE_TRIM IP1 BEAM2 CROSSING -1.0 MM', true)))
+            .toEqual('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION,CROSSING) UNITS(SIGMA,MM)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA\n2 RELATIVE_TRIM IP1 BEAM2 CROSSING -1.0 MM\n3 END_SEQUENCE')
     })
 })
