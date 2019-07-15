@@ -63,8 +63,13 @@ export function html(literals, ...expressions) {
 
 /** @type {(x: TemplateStringsArray, ...xs: string[]) => string} */
 export const css = interpolate;
+// /** @type {(x: TemplateStringsArray, ...xs: string[]) => string} */
+// export const html = interpolate;
 
-/** @type {typeof fetch} */
+
+/**
+ * @param {Response} response
+ */
 export function handleFetchErrors(response) {
     if (!response.ok) {
         throw Error(response.statusText);
@@ -72,6 +77,7 @@ export function handleFetchErrors(response) {
     return response;
 }
 
+/** @type {typeof fetch} */
 export const gFetch = async (...args) => handleFetchErrors(await fetch(...args));
 export const getText = async (...args) => await (await gFetch(...args)).text();
 export const getJSON = async (...args) => await (await gFetch(...args)).json();

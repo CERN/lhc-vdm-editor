@@ -3,12 +3,24 @@ import {css, html} from "./HelperFunctions.js"
 import "./RawEditor.js"
 import "./TextEditor-ace.js"
 import "./SwitchEditorButtons.js"
+import "./CommitElement.js"
 
 const styling = css`
-#container {
+#editor-container {
+    height: inherit;
+    position: relative;
+    height: calc(100% - 17px);
+}
+.header {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-align: right;
+}
+.container {
     width: calc(100% - 30px);
     height: calc(100% - 8px);
-    position: relative;
+    max-width: 1300px;
+    margin: 0 auto;
 }
 `
 
@@ -28,7 +40,7 @@ export default class OverallEditor extends HTMLElement {
             // @ts-ignore
             this.switchToEditor(ev.detail)
         });
-        this.editorContainer = this.root.getElementById("editor-container");
+        this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
         this.editor = this.root.querySelector("text-editor");
     }
@@ -61,11 +73,16 @@ export default class OverallEditor extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <div id="container">
-            <div id="editor-container">
-                <text-editor></text-editor>
+        <div class="container">
+            <div class="header">
+                <commit-element></commit-element>
             </div>
-            <switch-editor-buttons></switch-editor-buttons>
+            <div id="editor-container">
+                <div id="editor">
+                    <text-editor></text-editor>
+                </div>
+                <switch-editor-buttons></switch-editor-buttons>
+            </div>
         </div>
         `
     }
