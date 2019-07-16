@@ -2,7 +2,7 @@
 import GitLab from "./GitLab.js"
 import { getJSON } from "./HelperFunctions.js"
 import OverallEditor from "./OverallEditor.js"
-import "./extern/ace.js"
+import "../extern/ace.js"
 $(async () => {
     const token = (await getJSON("./secrets.json")).token;
     const filePath = "201605_VdM/IP5/HobbitCrossing.txt";

@@ -47,11 +47,20 @@ export default class SwitchEditorButtons extends HTMLElement {
     }
 
     /**
+     * @public
+     * @param {number} index
+     */
+    setActiveButton(index){
+        this.DOMbuttons[this.activeButtonIndex].classList.remove("active");
+        this.DOMbuttons[index].classList.add("active");
+    }
+
+    /**
+     * @private
      * @param {number} buttonIndex
      */
     selectButton(buttonIndex) {
-        this.DOMbuttons[this.activeButtonIndex].classList.remove("active");
-        this.DOMbuttons[buttonIndex].classList.add("active");
+        this.setActiveButton(buttonIndex);
 
         this.activeButtonIndex = buttonIndex;
 

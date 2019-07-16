@@ -51,6 +51,14 @@ export default class OverallEditor extends HTMLElement {
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             this.gitlabInterface.writeFile(filePath, ev.detail, this.value);
         })
+
+        this.setUpAutoSave(initContent);
+    }
+
+    /**
+     * @param {string} initContent
+     */
+    setUpAutoSave(initContent){
         this.editorContainer.addEventListener('editor-content-change', () => {
             localStorage.setItem('content', this.editor.value);
         })
@@ -59,8 +67,12 @@ export default class OverallEditor extends HTMLElement {
         } else {
             this.value = initContent
         }
+
         if (localStorage.getItem('open-tab')) {
-            this.switchToEditor(parseInt(localStorage.getItem('open-tab')))
+            const buttonIndex = parseInt(localStorage.getItem('open-tab'));
+            this.switchToEditor(buttonIndex);
+            // @ts-ignore
+            this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
         }
     }
 
