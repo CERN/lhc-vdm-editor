@@ -85,7 +85,7 @@ function checkTrim(obj, state) {
         if (!state.planes.includes(obj.args[i + 2])) {
             throw 'Invalid TRIM command. Expected plane in [' + state.planes + '] but got ' + obj.args[i + 2]
         }
-        if (!isFinite(parseFloat(obj.args[i + 3]))) {
+        if (!isFinite(Number(obj.args[i + 3]))) {
             throw 'Invalid TRIM command. Amount has to be finite but got ' + obj.args[i + 3]
         }
         if (!state.units.includes(obj.args[i + 4])) {
