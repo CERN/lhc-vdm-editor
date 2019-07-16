@@ -24,7 +24,7 @@ describe("GitLab", () => {
         ).catch(() => -1)).toBe(-1)
     })
 
-    it("can commit something", async () => {
+    xit("can commit something", async () => {
         expect(await gitlab.writeFile(
             "201605_VdM/IP5/TestFile.txt",
             "Test commit",
