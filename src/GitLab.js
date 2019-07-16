@@ -8,30 +8,28 @@ export default class GitLab {
      * @param {string} token 
      */
     constructor(token, branch = "master", authorEmail = "lhcvdm@cern.ch", authorUsername = "lhcvdm") {
+        /** @private */
         this.token = token;
-        this._branch = branch;
-        this._authorEmail = authorEmail;
-        this._authorUsername = authorUsername;
-    }
-
-    _getURLFileName(campain, ipNum, fileName) {
-        return `${campain}/IP${ipNum}/${fileName}`;
+        /** @private */
+        this.branch = branch;
+        /** @private */
+        this.authorEmail = authorEmail;
+        /** @private */
+        this.authorUsername = authorUsername;
     }
 
     /**
      * Returns the plaintext of the given file
      * 
-     * @param {string} campain 
-     * @param {number} ipNum 
-     * @param {string} fileName 
+     * @param {string} filePath
      */
 
-    async readFile(campain, ipNum, fileName){
+    async readFile(filePath){
         return await (
             await gFetch(
                 `${URL_START}/repository/files/${
-                    encodeURIComponent(this._getURLFileName(campain, ipNum, fileName))
-                }/raw?ref=${this._branch}`, 
+                    encodeURIComponent(filePath)
+                }/raw?ref=${this.branch}`, 
                 {headers: new Headers({'Private-Token': this.token})}
             )
         ).text();
@@ -39,13 +37,11 @@ export default class GitLab {
 
     /**
      * 
-     * @param {string} campain 
-     * @param {number} ipNum 
-     * @param {string} fileName 
+     * @param {string} filePath
      * @param {string} commitMessage 
      * @param {string} fileText 
      */
-    async writeFile(campain, ipNum, fileName, commitMessage, fileText) {
+    async writeFile(filePath, commitMessage, fileText) {
         await gFetch(
             `${URL_START}/repository/commits`,
             {
@@ -55,13 +51,13 @@ export default class GitLab {
                 }),
                 method: "POST",
                 body: JSON.stringify({
-                    branch: this._branch,
+                    branch: this.branch,
                     commit_message: commitMessage,
-                    author_email: this._authorEmail,
-                    author_username: this._authorUsername,
+                    author_email: this.authorEmail,
+                    author_username: this.authorUsername,
                     actions: [{
                         action: "update",
-                        file_path: this._getURLFileName(campain, ipNum, fileName),
+                        file_path: filePath,
                         content: fileText
                     }]
                 })
@@ -71,12 +67,10 @@ export default class GitLab {
 
     /**
      * 
-     * @param {string} campain 
-     * @param {number} ipNum 
-     * @param {string} fileName 
+     * @param {string} filePath
      * @param {string} commitMessage 
      */
-    async createFile(campain, ipNum, fileName, commitMessage) {
+    async createFile(filePath, commitMessage) {
         await gFetch(
             `${URL_START}/repository/commits`,
             {
@@ -86,13 +80,13 @@ export default class GitLab {
                 }),
                 method: "POST",
                 body: JSON.stringify({
-                    branch: this._branch,
+                    branch: this.branch,
                     commit_message: commitMessage,
-                    author_email: this._authorEmail,
-                    author_username: this._authorUsername,
+                    author_email: this.authorEmail,
+                    author_username: this.authorUsername,
                     actions: [{
                         action: "create",
-                        file_path: this._getURLFileName(campain, ipNum, fileName),
+                        file_path: filePath,
                         content: ''
                     }]
                 })
@@ -103,6 +97,10 @@ export default class GitLab {
     async listCampains(){
         return await this.listFiles('/');
     }
+
+    /**
+     * @param {string} campain
+     */
     async listIPs(campain){
         return await this.listFiles(campain);
     }
@@ -114,23 +112,25 @@ export default class GitLab {
     async listFiles(path){
         const perPage = 100;
         const page = await gFetch(
-            `${URL_START}/repository/tree?ref=${this._branch}&per_page=${perPage}&page=1&path=${path}`,
+            `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${path}`,
             {
                 headers: new Headers({'Private-Token': this.token})
             }
         )
         let campainList = (await page.json()).map(x => x.name);
-        let lastPage = Math.ceil(page.headers.get('X-Total')/perPage);
+        let lastPage = Math.ceil(parseInt(page.headers.get('X-Total'))/perPage);
         for(let i=2; i<=lastPage; i++){
             const page = await gFetch(
-                `${URL_START}/repository/tree?ref=${this._branch}&per_page=${perPage}&page=${i}&path=${path}`,
+                `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=${i}&path=${path}`,
                 {
                     headers: new Headers({'Private-Token': this.token})
                 }
             );
-            let tmp = (await page.json()).map(x => x.name)
-            campainList = campainList.concat(tmp);
+            campainList = campainList.concat((await page.json()).map(x => x.name));
         }
-        return campainList.filter(x => x!='readme.md');
+        /**
+         * @param {string} x
+         */
+        return campainList.filter(x => x != 'readme.md');
     }
 }

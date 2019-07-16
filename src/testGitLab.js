@@ -14,25 +14,19 @@ describe("GitLab", () => {
 
     it("can get files", async () => {
         expect(await gitlab.readFile(
-            "201605_VdM",
-            5,
-            "HobbitCrossing.txt"
+            "201605_VdM/IP5/HobbitCrossing.txt",
         )).toEqual(jasmine.any(String))
     })
 
     it("doesn't get incorrect files", async () => {
         expect(await gitlab.readFile(
-            "no_file",
-            -9,
-            "DoesntExist.txt"
+            "KJSNDKJASDK_not_a_file.txt",
         ).catch(() => -1)).toBe(-1)
     })
 
     it("can commit something", async () => {
         expect(await gitlab.writeFile(
-            "201605_VdM",
-            5,
-            "TestFile.txt",
+            "201605_VdM/IP5/TestFile.txt",
             "Test commit",
             Math.random().toString()
         )).toBeUndefined()
@@ -48,9 +42,7 @@ describe("GitLab", () => {
 
     xit("can create something", async () => {
         expect(await gitlab.createFile(
-            "201605_VdM",
-            5,
-            Math.random().toString(),
+            `201605_VdM/IP5/${Math.random()}`,
             "Test create",
         )).toBeUndefined()
     })

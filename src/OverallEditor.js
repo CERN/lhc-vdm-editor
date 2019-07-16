@@ -4,6 +4,7 @@ import "./RawEditor.js"
 import "./TextEditor-ace.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
+import GitLab from "./GitLab.js"
 
 const styling = css`
 #editor-container {
@@ -32,20 +33,26 @@ const EDITOR_TAG_NAMES = [
 
 
 export default class OverallEditor extends HTMLElement {
-    constructor(){
+    /**
+     * @param {GitLab} gitlab
+     * @param {string} filePath
+     */
+    constructor(gitlab, filePath){
         super();
         this.root = this.attachShadow({mode: "open"});
         this.root.appendChild(this.template())
-        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => {
-            // @ts-ignore
+        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
             this.switchToEditor(ev.detail)
         });
         this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
         this.editor = this.root.querySelector("text-editor");
+        this.gitlabInterface = gitlab;
+        this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
+            this.gitlabInterface.writeFile(filePath, ev.detail, this.value);
+        })
     }
 
-    
     get value(){
         return this.editor.value;
     }

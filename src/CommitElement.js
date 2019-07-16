@@ -34,7 +34,17 @@ export default class CommitElement extends HTMLElement {
     constructor(){
         super();
         this.root = this.attachShadow({mode: "open"});
-        this.root.appendChild(this.template())
+        this.root.appendChild(this.template());
+        this.root.querySelector("form").addEventListener("submit", () => {
+            if(confirm("Are you sure you want to commit?")){
+                this.dispatchEvent(new CustomEvent("commit-button-press", {
+                    // @ts-ignore
+                    detail: this.root.querySelector("input[type=text]").value
+                }));
+                // @ts-ignore
+                this.root.querySelector(".commit-message").value = "";
+            }
+        })
     }
 
     template(){
@@ -42,8 +52,10 @@ export default class CommitElement extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <input class="commit-message" type="input" placeholder="Commit message" />
-        <button class="commit-button">Commit</button>
+        <form method="get" action="javascript:void(0)">
+            <input class="commit-message" type="text" placeholder="Commit message" />
+            <input type="submit" class="commit-button" value="Commit"/>
+        </form>
         `
     }
 }
