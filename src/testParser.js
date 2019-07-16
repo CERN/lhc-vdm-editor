@@ -1,7 +1,6 @@
 import { parseVdM, deparseVdM, MySyntaxError } from "./parser.js"
 
-describe("Parser", () => {
-    let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
+let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
 2 START_FIT SEPARATION GAUSSIAN
 3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
@@ -22,7 +21,7 @@ describe("Parser", () => {
 18 SECONDS_WAIT 10.0
 19 END_FIT
 20 END_SEQUENCE`
-    let faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) UNITS(SIGMA)
+let faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
 1 START_FIT SEPARATION GAUSSIAN
 3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 sigma 
@@ -31,6 +30,8 @@ describe("Parser", () => {
 6 SECONDS_WAIT 10.0 seconds
 7 SECONDS_WAIT 10.0`
 
+// Tests on the parser and deparser functions
+describe("Parser", () => {
     it("File parse", () => {
         expect(parseVdM(file)).toEqual(jasmine.any(Array))
     })
@@ -71,16 +72,6 @@ describe("Parser", () => {
     })
     it('Faulty file parse', () => {
         expect(function () { parseVdM(faultyFile) })
-            .toThrow(jasmine.arrayWithExactContents([
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError),
-                jasmine.any(MySyntaxError)
-            ]))
+            .toThrow(jasmine.arrayWithExactContents(new Array(8).fill(jasmine.any(MySyntaxError))))
     }) 
-    // Add other error tests...
 })

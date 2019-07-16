@@ -64,9 +64,9 @@ function addHeaders(objArr) {
  * @param {string} type
  */
 function getInnerBracket(str, type) {
-    let match = str.match(new RegExp('^' + type + '\\((.*)\\)$'));
+    const match = str.match(new RegExp('^' + type + '\\((.*)\\)$'));
     if (!match) {
-        throw 'Invalid INITIALIZE_TRIM command. Expected "' + type + '(...)" but got' + str
+        throw 'Invalid INITIALIZE_TRIM command. Expected "' + type + '(...)" but got ' + str
     }
     return match[1].split(',');
 }
@@ -106,10 +106,10 @@ let commandHandler = {
             if (obj.args.length != 4) {
                 throw 'Invalid INITIALIZE_TRIM command. Must have exactly four arguments: IP(...) BEAM(...) PLANE(...) UNITS(...), but got ' + obj.args
             }
-            let IPs = getInnerBracket(obj.args[0], 'IP');
-            let beams = getInnerBracket(obj.args[1], 'BEAM');
-            let planes = getInnerBracket(obj.args[2], 'PLANE');
-            let units = getInnerBracket(obj.args[3], 'UNITS');
+            const IPs = getInnerBracket(obj.args[0], 'IP');
+            const beams = getInnerBracket(obj.args[1], 'BEAM');
+            const planes = getInnerBracket(obj.args[2], 'PLANE');
+            const units = getInnerBracket(obj.args[3], 'UNITS');
 
             if (IPs.length == 1 && isSubsetOf(IPs, state.IPs)) { state.IPs = IPs; }
             else { throw 'Invalid INITIALIZE_TRIM command. Expected exactly one of ' + state.IPs + ' but got ' + IPs }
@@ -244,7 +244,7 @@ export function deparseVdM(struct) {
     let string = '';
     let currentLineNum = 0;
     for (let i = 0; i < struct.length; i++) {
-        let obj = struct[i]
+        const obj = struct[i]
         let line = '';
         if (obj.type == 'command') {
             line += currentLineNum + ' ';
@@ -284,7 +284,7 @@ export function parseVdM(data, genHeaders = false) {
     }
 
     // Split data into array containing each line
-    let lineArr = data.split(/\n/).map(x => x.trim());
+    const lineArr = data.split(/\n/).map(x => x.trim());
     // Array to be filled and then returned as the VdM structure + array to contain possible line errors
     let objArr = [];
     let errArr = [];
@@ -293,7 +293,7 @@ export function parseVdM(data, genHeaders = false) {
             // Object to be created and pushed to the structure
             let obj = {};
             // Deconstruct string into arguments by spaces
-            let line = lineArr[i].split(/ +/);
+            const line = lineArr[i].split(/ +/);
             
             // Check line syntax
             if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
