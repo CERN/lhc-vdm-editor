@@ -1,10 +1,11 @@
 // @ts-check
-import {css, html} from "./HelperFunctions.js"
+import { css, html } from "./HelperFunctions.js"
 import "./RawEditor.js"
 import "./TextEditor-ace.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
 import GitLab from "./GitLab.js"
+import { parseVdM, deparseVdM } from "./parser.js"
 
 const styling = css`
 #editor-container {
@@ -37,9 +38,9 @@ export default class OverallEditor extends HTMLElement {
      * @param {GitLab} gitlab
      * @param {string} filePath
      */
-    constructor(gitlab, filePath, initContent = ''){
+    constructor(gitlab, filePath, initContent = '') {
         super();
-        this.root = this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(this.template())
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
             this.switchToEditor(ev.detail)
@@ -49,7 +50,17 @@ export default class OverallEditor extends HTMLElement {
         this.editor = this.root.querySelector("text-editor");
         this.gitlabInterface = gitlab;
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
-            this.gitlabInterface.writeFile(filePath, ev.detail, this.value);
+            try {
+                this.gitlabInterface.writeFile(
+                    filePath,
+                    ev.detail,
+                    deparseVdM(parseVdM(this.value))
+                );
+            } catch (errArr) {
+                if (Array.isArray(errArr)){
+                    alert(errArr.map(x => x.message).join('\n'))
+                } else throw errArr
+            }
         })
 
         this.setUpAutoSave(initContent);
@@ -58,17 +69,17 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {string} initContent
      */
-    setUpAutoSave(initContent){
+    setUpAutoSave(initContent) {
         this.editorContainer.addEventListener('editor-content-change', () => {
             localStorage.setItem('content', this.editor.value);
         })
-        if (localStorage.getItem('content')){
+        if (localStorage.getItem('content') !== null) {
             this.value = localStorage.getItem('content')
         } else {
             this.value = initContent
         }
 
-        if (localStorage.getItem('open-tab')) {
+        if (localStorage.getItem('open-tab') !== null) {
             const buttonIndex = parseInt(localStorage.getItem('open-tab'));
             this.switchToEditor(buttonIndex);
             // @ts-ignore
@@ -76,18 +87,18 @@ export default class OverallEditor extends HTMLElement {
         }
     }
 
-    get value(){
+    get value() {
         return this.editor.value;
     }
 
-    set value(newValue){
+    set value(newValue) {
         this.editor.value = newValue;
     }
 
     /**
      * @param {number} index
      */
-    switchToEditor(index){
+    switchToEditor(index) {
         const editorElement = document.createElement(EDITOR_TAG_NAMES[index]);
         // @ts-ignore
         editorElement.value = this.editor.value;
@@ -99,7 +110,7 @@ export default class OverallEditor extends HTMLElement {
         localStorage.setItem('open-tab', index.toString());
     }
 
-    template(){
+    template() {
         return html`
         <style>
             ${styling}

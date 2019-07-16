@@ -294,7 +294,7 @@ export function parseVdM(data, genHeaders = false) {
             let obj = {};
             // Deconstruct string into arguments by spaces
             const line = lineArr[i].split(/ +/);
-            
+
             // Check line syntax
             if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
                 // Line type is NOT a command line (not initialised with integer)
