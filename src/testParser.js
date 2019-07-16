@@ -1,4 +1,4 @@
-import { parseVdM, deparseVdM } from "./parser.js"
+import { parseVdM, deparseVdM, MySyntaxError } from "./parser.js"
 
 describe("Parser", () => {
     let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
@@ -22,6 +22,14 @@ describe("Parser", () => {
 18 SECONDS_WAIT 10.0
 19 END_FIT
 20 END_SEQUENCE`
+    let faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) UNITS(SIGMA)
+1 SECONDS_WAIT 10.0
+1 START_FIT SEPARATION GAUSSIAN
+3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 sigma 
+4 SECONDS_WAIT ten
+5 RELATIVE_TRIM IP2 BEAM1 SEPARATION 1.0 SIGMA
+6 SECONDS_WAIT 10.0 seconds
+7 SECONDS_WAIT 10.0`
 
     it("File parse", () => {
         expect(parseVdM(file)).toEqual(jasmine.any(Array))
@@ -49,4 +57,30 @@ describe("Parser", () => {
         expect(deparseVdM(parseVdM('1 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA\n2 RELATIVE_TRIM IP1 BEAM2 CROSSING -1.0 MM', true)))
             .toEqual('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION,CROSSING) UNITS(SIGMA,MM)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA\n2 RELATIVE_TRIM IP1 BEAM2 CROSSING -1.0 MM\n3 END_SEQUENCE')
     })
+    it('Faulty INITIALIZE_TRIM', () => {
+        expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
+            .toThrow(jasmine.any(Array))
+    })
+    it('Faulty INITIALIZE_TRIM', () => {
+        expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
+            .toThrow(jasmine.any(Array))
+    })
+    it('Faulty INITIALIZE_TRIM', () => {
+        expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
+            .toThrow(jasmine.arrayContaining([jasmine.any(MySyntaxError)]))
+    })
+    it('Faulty file parse', () => {
+        expect(function () { parseVdM(faultyFile) })
+            .toThrow(jasmine.arrayWithExactContents([
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError),
+                jasmine.any(MySyntaxError)
+            ]))
+    }) 
+    // Add other error tests...
 })

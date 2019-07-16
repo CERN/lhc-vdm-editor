@@ -4,6 +4,6 @@
         "target": "es2018"
     },
     "typeAcquisition": {
-        "include": ["ace"]
+        "include": ["ace", "jquery"]
     }
 }

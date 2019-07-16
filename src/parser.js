@@ -1,13 +1,25 @@
-class SyntaxError {
+export class MySyntaxError extends Error {
+    /**
+     * @param {number} line
+     * @param {string} message
+     */
     constructor(line, message) {
+        super();
         this.line = line;
         this.message = message;
     }
 }
+/**
+ * @param {any[]} arr1
+ * @param {any[]} arr2
+ */
 function isSubsetOf(arr1, arr2) {
     // returns true iff arr1 is a subset of arr2
-    return new Boolean(arr1.every(x => arr2.includes(x)))
+    return arr1.every(x => arr2.includes(x))
 }
+/**
+ * @param {object[]} objArr
+ */
 function genInitTrimArgs(objArr) {
     let argArr = [
         { 'type': 'IP', 'values': new Set([]) },
@@ -28,9 +40,11 @@ function genInitTrimArgs(objArr) {
             throw new Error('Missing ' + type.type + ' argument to generate INITIALIZE_TRIM command')
         }
     }
-    let strArr = argArr.map(x => x.type + '(' + Array.from(x.values).join(',').trim() + ')');
-    return strArr;
+    return argArr.map(x => x.type + '(' + Array.from(x.values).join(',').trim() + ')');
 }
+/**
+ * @param {object[]} objArr
+ */
 function addHeaders(objArr) {
     let res = objArr;
     res.unshift({
@@ -45,14 +59,21 @@ function addHeaders(objArr) {
     });
     return res;
 }
+/**
+ * @param {string} str
+ * @param {string} type
+ */
 function getInnerBracket(str, type) {
     let match = str.match(new RegExp('^' + type + '\\((.*)\\)$'));
     if (!match) {
         throw 'Invalid INITIALIZE_TRIM command. Expected "' + type + '(...)" but got' + str
     }
-    match = match[1].split(',');
-    return match;
+    return match[1].split(',');
 }
+/**
+ * @param {{ args: string[]; }} obj
+ * @param {{ IPs: string; beams: string; planes: string; units: string; }} state
+ */
 function checkTrim(obj, state) {
     for (let i = 0; i < obj.args.length; i += 5) {
         if (!state.IPs.includes(obj.args[i])) {
@@ -64,7 +85,7 @@ function checkTrim(obj, state) {
         if (!state.planes.includes(obj.args[i + 2])) {
             throw 'Invalid TRIM command. Expected plane in [' + state.planes + '] but got ' + obj.args[i + 2]
         }
-        if (!isFinite(obj.args[i + 3])) {
+        if (!isFinite(parseFloat(obj.args[i + 3]))) {
             throw 'Invalid TRIM command. Amount has to be finite but got ' + obj.args[i + 3]
         }
         if (!state.units.includes(obj.args[i + 4])) {
@@ -73,85 +94,132 @@ function checkTrim(obj, state) {
     }
 }
 let commandHandler = {
-    'INITIALIZE_TRIM': function (obj, state) {
-        if (state.currentLineNum != 0) {
-            throw 'Invalid INITIALIZE_TRIM command. Must occur on line zero'
-        }
-        let IPs = getInnerBracket(obj.args[0], 'IP');
-        let beams = getInnerBracket(obj.args[1], 'BEAM');
-        let planes = getInnerBracket(obj.args[2], 'PLANE');
-        let units = getInnerBracket(obj.args[3], 'UNITS');
-
-        if (IPs.length == 1 && isSubsetOf(IPs, state.IPs)) { state.IPs = IPs; }
-        else { throw 'Invalid INITIALIZE_TRIM command. Expected exactly one of ' + state.IPs + ' but got ' + IPs }
-
-        if (isSubsetOf(beams, state.beams)) { state.beams = beams; }
-        else { throw 'Invalid BEAM argument. Expected subset of ' + state.beams + ' but got ' + beams }
-
-        if (isSubsetOf(planes, state.planes)) {
-            state.planes = planes;
-            state.planesContainer = planes;
-        }
-        else { throw 'Invalid PLANE argument. Expected subset of ' + state.planes + ' but got ' + planes }
-
-        if (isSubsetOf(units, state.units)) { state.units = units; }
-        else { throw 'Invalid UNITS argument. Expected subset of ' + state.units + ' but got ' + units }
-
-        if (obj.args.length > 4) {
-            throw 'Invalid INITIALIZE_TRIM command. Too many arguments. Overflow: ' + obj.args.slice(4)
-        }
-    },
-    'SECONDS_WAIT': function (obj, state) {
-        if (obj.args.length != 1) {
-            throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
-        }
-        if (!isFinite(obj.args)) {
-            throw 'Invalid SECONDS_WAIT command. Argument must be finte but got ' + obj.args
-        }
-    },
-    'RELATIVE_TRIM': function (obj, state) {
-        checkTrim(obj, state)
-    },
-    'ABSOLUTE_TRIM': function (obj, state) {
-        checkTrim(obj, state)
-    },
-    'START_FIT': function (obj, state) {
-        if (state.isFitting) {
-            throw 'Invalid START_FIT command. Previous fit command not teminated'
-        }
-        if (obj.args.length == 2) {
-            if (!state.planes.includes(obj.args[0])) {
-                throw 'Invalid START_FIT command. Expected plane in ' + state.planes + ' but got ' + obj.args[0]
+    'INITIALIZE_TRIM':
+        /**
+         * @param {{ args: any[]; }} obj
+         * @param {{ currentLineNum: number; IPs: string[]; beams: string[]; planes: string[]; planesContainer: string[]; units: string[]; }} state
+         */
+        function (obj, state) {
+            if (state.currentLineNum != 0) {
+                throw 'Invalid INITIALIZE_TRIM command. Must occur on line zero'
             }
-            if (!state.fitTypes.includes(obj.args[1])) {
-                throw 'Invalid START_FIT command. Expected fit type in ' + state.fitTypes + ' but got ' + obj.args[1]
+            if (obj.args.length != 4) {
+                throw 'Invalid INITIALIZE_TRIM command. Must have exactly four arguments: IP(...) BEAM(...) PLANE(...) UNITS(...), but got ' + obj.args
             }
-            state.planes = [obj.args[0]];
-        } else {
-            throw 'Invalid START_FIT command. Expected exactly two arguments "PLANE FIT_TYPE" but got ' + obj.args
+            let IPs = getInnerBracket(obj.args[0], 'IP');
+            let beams = getInnerBracket(obj.args[1], 'BEAM');
+            let planes = getInnerBracket(obj.args[2], 'PLANE');
+            let units = getInnerBracket(obj.args[3], 'UNITS');
+
+            if (IPs.length == 1 && isSubsetOf(IPs, state.IPs)) { state.IPs = IPs; }
+            else { throw 'Invalid INITIALIZE_TRIM command. Expected exactly one of ' + state.IPs + ' but got ' + IPs }
+
+            if (isSubsetOf(beams, state.beams)) { state.beams = beams; }
+            else { throw 'Invalid BEAM argument. Expected subset of ' + state.beams + ' but got ' + beams }
+
+            if (isSubsetOf(planes, state.planes)) {
+                state.planes = planes;
+                state.planesContainer = planes;
+            }
+            else { throw 'Invalid PLANE argument. Expected subset of ' + state.planes + ' but got ' + planes }
+
+            if (isSubsetOf(units, state.units)) { state.units = units; }
+            else { throw 'Invalid UNITS argument. Expected subset of ' + state.units + ' but got ' + units }
+        },
+    'SECONDS_WAIT':
+        /**
+         * @param {{ args: string[]; }} obj
+         * @param {any} state
+         */
+        function (obj, state) {
+            if (obj.args.length != 1) {
+                throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
+            }
+            if (!isFinite(parseFloat(obj.args[0]))) {
+                throw 'Invalid SECONDS_WAIT command. Argument must be finte but got ' + obj.args
+            }
+        },
+    'RELATIVE_TRIM':
+        /**
+         * @param {any} obj
+         * @param {any} state
+         */
+        function (obj, state) {
+            checkTrim(obj, state)
+        },
+    'ABSOLUTE_TRIM':
+        /**
+         * @param {any} obj
+         * @param {any} state
+         */
+        function (obj, state) {
+            checkTrim(obj, state)
+        },
+    'START_FIT':
+        /**
+         * @param {{ args: string | any[]; }} obj
+         * @param {{ isFitting: boolean; planes: string | any[]; fitTypes: string; }} state
+         */
+        function (obj, state) {
+            try {
+                if (state.isFitting) {
+                    throw 'Invalid START_FIT command. Previous fit command not teminated'
+                }
+                if (obj.args.length == 2) {
+                    if (!state.planes.includes(obj.args[0])) {
+                        throw 'Invalid START_FIT command. Expected plane in ' + state.planes + ' but got ' + obj.args[0]
+                    }
+                    if (!state.fitTypes.includes(obj.args[1])) {
+                        throw 'Invalid START_FIT command. Expected fit type in ' + state.fitTypes + ' but got ' + obj.args[1]
+                    }
+                    state.planes = [obj.args[0]];
+                } else {
+                    throw 'Invalid START_FIT command. Expected exactly two arguments "PLANE FIT_TYPE" but got ' + obj.args
+                }
+            } finally { state.isFitting = true }
+        },
+    'END_FIT':
+        /**
+         * @param {{ args: string; }} obj
+         * @param {{ isFitting: boolean; planes: any; planesContainer: any; }} state
+         */
+        function (obj, state) {
+            try {
+                if (!state.isFitting) {
+                    throw 'Invalid END_FIT command. Missing START_FIT command'
+                }
+                if (obj.args.length != 0) {
+                    throw 'Invalid END_FIT command. No arguments allowed but got ' + obj.args
+                }
+            } finally {
+                state.planes = state.planesContainer;
+                state.isFitting = false;
+            }
+        },
+    'END_SEQUENCE':
+        /**
+         * @param {{ args: string; }} obj
+         * @param {{ hasEnded: boolean; }} state
+         */
+        function (obj, state) {
+            state.hasEnded = true;
+            if (obj.args.length != 0) {
+                throw 'Invalid END_SEQUENCE command. No arguments allowed but got ' + obj.args
+            }
+        },
+    'MESSAGE':
+        /**
+         * @param {any} obj
+         * @param {any} state
+         */
+        function (obj, state) {
+            // Do nothing
         }
-        state.isFitting = true;
-    },
-    'END_FIT': function (obj, state) {
-        if (!state.isFitting) {
-            throw 'Invalid END_FIT command. Missing START_FIT command'
-        }
-        if (obj.args.length != 0) {
-            throw 'Invalid END_FIT command. No arguments allowed but got ' + obj.args
-        }
-        state.planes = state.planesContainer;
-        state.isFitting = false;
-    },
-    'END_SEQUENCE': function (obj, state) {
-        if (obj.args.length != 0) {
-            throw 'Invalid END_SEQUENCE command. No arguments allowed but got ' + obj.args
-        }
-        state.hasEnded = true;
-    },
-    'MESSAGE': function (obj, state) {
-        // Do nothing
-    }
 }
+/**
+ * @param {{ command?: any; }} obj
+ * @param {{ IPs: string[]; beams: string[]; planes: string[]; units: string[]; fitTypes: string[]; planesContainer: string[]; isFitting: boolean; hasEnded: boolean; currentLineNum: number; }} state
+ */
 function validateArgs(obj, state) {
     if (commandHandler[obj.command]) {
         commandHandler[obj.command](obj, state);
@@ -189,7 +257,7 @@ export function deparseVdM(struct) {
         } else if (obj.type == 'comment') {
             line += '# ' + obj.comment;
         } else {
-            throw new SyntaxError(i, 'Expected object of type command, empty, or comment but got ' + obj.type)
+            throw new MySyntaxError(i, 'Expected object of type command, empty, or comment but got ' + obj.type)
         }
         line += '\n';
         string += line;
@@ -215,55 +283,73 @@ export function parseVdM(data, genHeaders = false) {
         'currentLineNum': genHeaders ? 1 : 0,
     }
 
+    // Split data into array containing each line
     let lineArr = data.split(/\n/).map(x => x.trim());
-    // Array to be filled and then returned as the VdM structure
+    // Array to be filled and then returned as the VdM structure + array to contain possible line errors
     let objArr = [];
+    let errArr = [];
     for (let i = 0; i < lineArr.length; i++) {
-        // Object to be created and pushed to the structure
-        let obj = {};
-        // Deconstruct string into arguments
-        let line = lineArr[i].split(/ +/);
-        // Check line syntax
-        // Line type is NOT a command line (not initialised with an integer)
-        if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
-            if (line[0] == '') {
-                obj.type = 'empty';
-            } else if (line[0].charAt(0) == '#') {
-                obj.type = 'comment';
-                obj.comment = lineArr[i].slice(1).trim();
+        try {
+            // Object to be created and pushed to the structure
+            let obj = {};
+            // Deconstruct string into arguments by spaces
+            let line = lineArr[i].split(/ +/);
+            
+            // Check line syntax
+            if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
+                // Line type is NOT a command line (not initialised with integer)
+                if (line[0] == '') {
+                    obj.type = 'empty';
+                } else if (line[0].charAt(0) == '#') {
+                    obj.type = 'comment';
+                    obj.comment = lineArr[i].slice(1).trim();
+                } else {
+                    throw new MySyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
+                }
             } else {
-                throw new SyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
-            }
-        } else {
-            // Line type is a command line! Check syntax:
-            if (state.hasEnded) {
-                throw new SyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
-            }
-            if (state.currentLineNum == 0 && line[1] != 'INITIALIZE_TRIM' && !genHeaders) {
-                throw new SyntaxError(i, 'Expected first command to be INITIALIZE_TRIM but got ' + lineArr[i])
-            }
-            if (parseInt(line[0]) != state.currentLineNum) {
-                throw new SyntaxError(i, 'Incorrect line numbering. Expected ' + state.currentLineNum + ' but got ' + line[0])
-            }
-            obj.type = 'command';
-            obj.command = line[1];
-            obj.args = line.slice(2);
-            try { validateArgs(obj, state) } catch (err) { throw new SyntaxError(i, err) }
+                // Line type is a command line (initialised with integer)! Check syntax:
+                try {
+                    if (state.hasEnded) {
+                        throw new MySyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
+                    }
+                    if (line.length < 2) {
+                        throw new MySyntaxError(i, 'Lines initiated with an integer cannot be empty. Missing a valid command')
+                    }
+                    if (state.currentLineNum == 0 && line[1] != 'INITIALIZE_TRIM' && !genHeaders) {
+                        throw new MySyntaxError(i, 'Expected first command to be INITIALIZE_TRIM but got ' + lineArr[i])
+                    }
 
-            state.currentLineNum++;
+                    // Add object values and check validity of arguments
+                    obj.type = 'command';
+                    obj.command = line[1];
+                    obj.args = line.slice(2);
+                    try { validateArgs(obj, state) } catch (err) { throw new MySyntaxError(i, err) }
+
+                    // Check line numbering. Must be last for command terminations to be detected before throwing error
+                    if (parseInt(line[0]) != state.currentLineNum) {
+                        throw new MySyntaxError(i, 'Incorrect line numbering. Expected ' + state.currentLineNum + ' but got ' + line[0])
+                    }
+                } finally { state.currentLineNum++; }
+            }
+            objArr.push(obj);
+        } catch (err) {
+            errArr.push(err)
         }
-        objArr.push(obj);
     }
+
+    // Command termination tests + header generation
     if (state.isFitting) {
-        throw new SyntaxError(lineArr.length, 'Missing command END_FIT')
+        errArr.push(new MySyntaxError(lineArr.length + 1, 'Missing command END_FIT'))
     }
     if (genHeaders) {
         objArr = addHeaders(objArr);
         state.currentLineNum = 0;
-        try { validateArgs(objArr[0], state) } catch (err) { throw new SyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err) }
+        try { validateArgs(objArr[0], state) } catch (err) { errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err)) }
     } else if (!state.hasEnded) {
-        throw new SyntaxError(lineArr.length, 'Missing command END_SEQUENCE')
+        errArr.push(new MySyntaxError(lineArr.length + 1, 'Missing command END_SEQUENCE'))
     }
-    // Return the finished structure
-    return objArr
+
+    // Return finished structure or throw error array
+    if (errArr.length == 0) { return objArr }
+    else throw errArr
 }
