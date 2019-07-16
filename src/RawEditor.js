@@ -1,4 +1,4 @@
-import {css, html} from "./HelperFunctions.js"
+import { css, html } from "./HelperFunctions.js"
 import "./SwitchEditorButtons.js"
 
 const styling = css`
@@ -43,22 +43,25 @@ button.active{
 `
 
 export default class RawEditor extends HTMLElement {
-    constructor(){
+    constructor() {
         super();
-        this.root = this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(this.template())
         this.textarea = this.root.querySelector("textarea");
+        $(this.textarea).change(() => {
+            this.dispatchEvent(new CustomEvent("editor-content-change", { bubbles: true }))
+        })
     }
 
-    get value(){
+    get value() {
         return this.textarea.innerHTML;
     }
 
-    set value(newValue){
+    set value(newValue) {
         this.textarea.innerHTML = newValue;
     }
 
-    template(){
+    template() {
         return html`
         <div class="container">
             <style>

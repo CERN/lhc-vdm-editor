@@ -37,7 +37,7 @@ export default class OverallEditor extends HTMLElement {
      * @param {GitLab} gitlab
      * @param {string} filePath
      */
-    constructor(gitlab, filePath){
+    constructor(gitlab, filePath, initContent = ''){
         super();
         this.root = this.attachShadow({mode: "open"});
         this.root.appendChild(this.template())
@@ -51,6 +51,17 @@ export default class OverallEditor extends HTMLElement {
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             this.gitlabInterface.writeFile(filePath, ev.detail, this.value);
         })
+        this.editorContainer.addEventListener('editor-content-change', () => {
+            localStorage.setItem('content', this.editor.value);
+        })
+        if (localStorage.getItem('content')){
+            this.value = localStorage.getItem('content')
+        } else {
+            this.value = initContent
+        }
+        if (localStorage.getItem('open-tab')) {
+            this.switchToEditor(parseInt(localStorage.getItem('open-tab')))
+        }
     }
 
     get value(){
@@ -73,6 +84,7 @@ export default class OverallEditor extends HTMLElement {
         this.editorContainer.appendChild(editorElement);
 
         this.editor = editorElement;
+        localStorage.setItem('open-tab', index.toString());
     }
 
     template(){
@@ -93,5 +105,7 @@ export default class OverallEditor extends HTMLElement {
         </div>
         `
     }
+
+
 }
 customElements.define('overall-editor', OverallEditor);

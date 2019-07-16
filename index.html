@@ -2,29 +2,7 @@
     <head>
         <title></title>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script type="module">
-            import GitLab from "./src/GitLab.js"
-            import {getJSON} from "./src/HelperFunctions.js"
-            import OverallEditor from "./src/OverallEditor.js"
-            import "./extern/ace.js"
-            $(async () => {
-                const token = (await getJSON("./secrets.json")).token;
-                const filePath = "201605_VdM/IP5/HobbitCrossing.txt";
-                
-                const gl = new GitLab(token, "vdm-editor-test");
-                let hobbitFile = await gl.readFile(
-                    filePath,
-                );
-                if(hobbitFile.search("\r\n") != 0){
-                    hobbitFile = hobbitFile.replace(/\r\n/g, "\n");
-                }
-
-                const overallEditor = new OverallEditor(gl, filePath);
-
-                document.body.appendChild(overallEditor);
-                overallEditor.value = hobbitFile;
-            })
-        </script>
+        <script type='module' src='src/main.js'></script>
     </head>
     <body>
     </body>

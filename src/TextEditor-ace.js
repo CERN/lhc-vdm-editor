@@ -1,4 +1,4 @@
-import {html, css} from "./HelperFunctions.js"
+import { html, css } from "./HelperFunctions.js"
 import "../extern/ace.js"
 import "../extern/ace-lang-tools.js"
 import "./mode-vdm.js"
@@ -22,21 +22,21 @@ const styling = css`
 /**
  * @param {string} text
  */
-function getTopLine(text){
+function getTopLine(text) {
     return "TODO: generate top line";
 }
 
 /**
  * @param {string} text
  */
-function unStripText(text){
+function unStripText(text) {
     let currentLine = 0;
 
     return [getTopLine(text)].concat(text.split("\n")).map((line) => {
-        if(line[0] == "#" || line.trim() == ""){
+        if (line[0] == "#" || line.trim() == "") {
             return line;
         }
-        else{
+        else {
             let newLine = currentLine.toString() + " " + line;
             currentLine++;
             return newLine;
@@ -44,21 +44,21 @@ function unStripText(text){
     }).join("\n");
 }
 
-function calculateLineNumber(file, absLineNum){
+function calculateLineNumber(file, absLineNum) {
     const lines = file.split("\n");
     let currentCalcLineNum = 1;
     let currentAbsLineNum = 0;
 
-    for(let line of lines){
+    for (let line of lines) {
         const trimmedLine = line.trim();
 
-        if(trimmedLine[0] == "#" || trimmedLine == ""){
-            if (currentAbsLineNum == absLineNum){
+        if (trimmedLine[0] == "#" || trimmedLine == "") {
+            if (currentAbsLineNum == absLineNum) {
                 return "";
             }
         }
-        else{
-            if (currentAbsLineNum == absLineNum){
+        else {
+            if (currentAbsLineNum == absLineNum) {
                 return currentCalcLineNum;
             }
             currentCalcLineNum++;
@@ -68,9 +68,9 @@ function calculateLineNumber(file, absLineNum){
 }
 
 export default class TextEditor extends HTMLElement {
-    constructor(){
+    constructor() {
         super();
-        this.root = this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(this.template());
         this.editor = ace.edit(this.root.getElementById("editor"));
         //this.topLineEditor = ace.edit(this.root.getElementById("top-line-editor"));
@@ -82,7 +82,7 @@ export default class TextEditor extends HTMLElement {
         this.setupAce();
     }
 
-    setupAce(){
+    setupAce() {
         // @ts-ignore
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
@@ -110,10 +110,10 @@ export default class TextEditor extends HTMLElement {
 
         var langTools = ace.require("ace/ext/language_tools");
 
-        this.editor.setOptions({enableBasicAutocompletion: true, enableLiveAutocompletion: true});
+        this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
 
         var testCompleter = {
-            getCompletions: function(editor, session, pos, prefix, callback) {
+            getCompletions: function (editor, session, pos, prefix, callback) {
                 if (prefix.length === 0) { callback(null, []); return }
                 callback(null, [
                     {
@@ -129,7 +129,7 @@ export default class TextEditor extends HTMLElement {
     }
 
     webWorkerMessage(message) {
-        if(message.data.type == "lint"){
+        if (message.data.type == "lint") {
             this.editor.getSession().setAnnotations(message.data.errors);
         }
     }
@@ -138,45 +138,46 @@ export default class TextEditor extends HTMLElement {
         const TIMEOUT = 1000;
         clearTimeout(this.lastEditorChangeTimeout);
         this.lastEditorChangeTimeout = setTimeout(() => {
-            if(Date.now() - this.lastEditorChange >= TIMEOUT){
+            if (Date.now() - this.lastEditorChange >= TIMEOUT) {
                 this.errorWebWorker.postMessage({
                     type: "text_change",
                     text: this.value
                 })
-                
+
             }
         }, TIMEOUT + 100);
 
         this.lastEditorChange = Date.now();
+        this.dispatchEvent(new CustomEvent("editor-content-change", { bubbles: true }))
     }
 
     get rawValue() {
         return this.editor.getValue();
     }
 
-    get value(){
+    get value() {
         return unStripText(this.editor.getValue());
     }
 
-    stripText(text){
+    stripText(text) {
         return text.split("\n").map(x => {
             const match = x.match(/^[0-9]+ +/);
-            if (match !== null){
+            if (match !== null) {
                 const numMatchLength = match[0].length;
                 return x.slice(numMatchLength);
             }
-            else{
+            else {
                 return x;
             }
 
         }).slice(1).join("\n");
     }
 
-    set value(newValue){
+    set value(newValue) {
         this.editor.setValue(this.stripText(newValue), -1); // use -1 move the cursor to the start of the file
     }
 
-    template(){
+    template() {
         return html`
             <style>
                 ${styling}
