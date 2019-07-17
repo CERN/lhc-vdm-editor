@@ -64,6 +64,8 @@ function calculateLineNumber(file, absLineNum) {
 }
 
 export default class TextEditor extends HTMLElement {
+    static errorWebWorker = new Worker("./src/worker-vdm.js");
+
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -72,8 +74,7 @@ export default class TextEditor extends HTMLElement {
         //this.topLineEditor = ace.edit(this.root.getElementById("top-line-editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
-        this.errorWebWorker = new Worker("./src/worker-vdm.js");
-        this.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
+        TextEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
 
         this.setupAce();
     }
@@ -135,7 +136,7 @@ export default class TextEditor extends HTMLElement {
         clearTimeout(this.lastEditorChangeTimeout);
         this.lastEditorChangeTimeout = setTimeout(() => {
             if (Date.now() - this.lastEditorChange >= TIMEOUT) {
-                this.errorWebWorker.postMessage({
+                TextEditor.errorWebWorker.postMessage({
                     type: "text_change",
                     text: this.value
                 })

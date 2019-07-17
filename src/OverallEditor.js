@@ -27,9 +27,8 @@ const styling = css`
 `
 
 const EDITOR_TAG_NAMES = [
-    "text-editor",
     "raw-editor",
-    "raw-editor"
+    "text-editor",
 ]
 
 

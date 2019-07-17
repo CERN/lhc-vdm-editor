@@ -77,7 +77,6 @@ export default class SwitchEditorButtons extends HTMLElement {
         <div class="container">
             <button>Raw</button>
             <button>Code</button>
-            <button>Rich</button>
         </div>
         `
     }
