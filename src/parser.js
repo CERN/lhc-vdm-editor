@@ -346,8 +346,13 @@ export function parseVdM(data, genHeaders = false) {
     }
     if (genHeaders && errArr.length == 0) {
         objArr = addHeaders(objArr);
-        state.currentLineNum = 0;
-        try { validateArgs(objArr[0], state) } catch (err) { errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err)) }
+        try { 
+            validateArgs(objArr[objArr.length], state);
+            state.currentLineNum = 0;
+            validateArgs(objArr[0], state);
+        } catch (err) {
+            errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+        }
     } else if (!state.hasEnded) {
         errArr.push(new MySyntaxError(lineArr.length + 1, 'Missing command END_SEQUENCE'))
     }

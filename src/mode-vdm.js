@@ -5,40 +5,52 @@
 ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop', 'ace/mode/text_highlight_rules'], (acequire, exports) => {
     const oop = acequire('ace/lib/oop');
     const TextHighlightRules = acequire('ace/mode/text_highlight_rules').TextHighlightRules;
+    const defaultTypes = [
+        {
+            token: 'keyword',
+            regex: '\\b(?:INITIALIZE_TRIM|SECONDS_WAIT|RELATIVE_TRIM|ABSOLUTE_TRIM|END_SEQUENCE)\\b',
+        },
+        {
+            token: 'keyword',
+            regex: '\\b(?:MESSAGE)\\b',
+            next: 'message'
+        },
+        {
+            token: 'constant',
+            regex: '-?\\b\\d+((\\.|e-?)\\d*)?\\b\\.*'
+        },
+        {
+            token: 'comment',
+            regex: '#.*'
+        }
+    ]
 
     const VDMHighlightRules = function () {
-
         this.$rules = {
-            start: [
-                {
-                    token: 'keyword',
-                    regex: '\\b(?:INITIALIZE_TRIM|SECONDS_WAIT|RELATIVE_TRIM|ABSOLUTE_TRIM|END_SEQUENCE)\\b',
-                },
-                {
-                    token: 'keyword',
-                    regex: '\\b(?:MESSAGE)\\b',
-                    next: 'message'
-                },
-                {
-                    token: 'constant',
-                    regex: '-?\\b\\d+((\\.|e-?)\\d*)?\\b\\.*'
-                },
-                {
-                    token: 'comment',
-                    regex: '#.*'
-                },
+            start: defaultTypes.concat([
                 {
                     token: 'keyword',
                     regex: 'START_FIT',
+                    next: 'fitting'
                 }
-            ],
+            ]),
             message: [
                 {
                     token: 'string',
                     regex: '.*',
                     next: 'start'
                 }
-            ]
+            ],
+            fitting: defaultTypes.concat([
+                {
+                    defaultToken: 'fitting-lines'
+                },
+                {
+                    token: 'keyword',
+                    regex: '\\b(?:END_FIT)\\b',
+                    next: 'start'
+                }
+            ])
         };
 
         this.normalizeRules();
