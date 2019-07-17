@@ -53,6 +53,8 @@ export default class SwitchEditorButtons extends HTMLElement {
     setActiveButton(index){
         this.DOMbuttons[this.activeButtonIndex].classList.remove("active");
         this.DOMbuttons[index].classList.add("active");
+
+        this.activeButtonIndex = index;
     }
 
     /**
@@ -61,8 +63,6 @@ export default class SwitchEditorButtons extends HTMLElement {
      */
     selectButton(buttonIndex) {
         this.setActiveButton(buttonIndex);
-
-        this.activeButtonIndex = buttonIndex;
 
         this.dispatchEvent(new CustomEvent("editor-button-press", {
             detail: buttonIndex
