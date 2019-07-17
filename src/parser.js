@@ -342,19 +342,21 @@ export function parseVdM(data, genHeaders = false) {
 
     // Command termination tests + header generation
     if (state.isFitting) {
-        errArr.push(new MySyntaxError(lineArr.length + 1, 'Missing command END_FIT'))
+        errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
     }
-    if (genHeaders && errArr.length == 0) {
-        objArr = addHeaders(objArr);
-        try { 
-            validateArgs(objArr[objArr.length], state);
-            state.currentLineNum = 0;
-            validateArgs(objArr[0], state);
-        } catch (err) {
-            errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+    if (genHeaders) {
+        if (errArr.length == 0) {
+            objArr = addHeaders(objArr);
+            try {
+                state.currentLineNum = 0;
+                validateArgs(objArr[0], state);
+            } catch (err) {
+                errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+            }
         }
+        if (state.hasEnded) { errArr.push(new MySyntaxError(objArr.length - 1, 'Command END_SEQUENCE not allowed. It is being generated!')) }
     } else if (!state.hasEnded) {
-        errArr.push(new MySyntaxError(lineArr.length + 1, 'Missing command END_SEQUENCE'))
+        errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
     }
 
     // Return finished structure or throw error array
