@@ -50,13 +50,16 @@ export default class OverallEditor extends HTMLElement {
         this.gitlabInterface = gitlab;
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             try {
-                this.gitlabInterface.writeFile(
-                    filePath,
-                    ev.detail,
-                    deparseVdM(parseVdM(this.value))
-                );
+                const fileContent = deparseVdM(parseVdM(this.value));
+                if (confirm("Are you sure you want to commit?")) {
+                    this.gitlabInterface.writeFile(
+                        filePath,
+                        ev.detail,
+                        fileContent
+                    );
+                }
             } catch (errArr) {
-                if (Array.isArray(errArr)){
+                if (Array.isArray(errArr)) {
                     alert(errArr.map(x => x.message).join('\n'))
                 } else throw errArr
             }
