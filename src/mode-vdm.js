@@ -2,6 +2,7 @@
 //     // TODO:
 // });
 
+// @ts-ignore
 ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop', 'ace/mode/text_highlight_rules'], (acequire, exports) => {
     const oop = acequire('ace/lib/oop');
     const TextHighlightRules = acequire('ace/mode/text_highlight_rules').TextHighlightRules;
@@ -49,7 +50,7 @@ ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop',
 
     exports.vdmHighlightRules = VDMHighlightRules;
 });
-
+// @ts-ignore
 ace.define("ace/mode/vdm", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/worker/worker_client"], function (require, exports, module) {
     "use strict";
 

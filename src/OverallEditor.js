@@ -71,7 +71,7 @@ export default class OverallEditor extends HTMLElement {
                 } else throw errArr
             }
         })
-
+        // @ts-ignore
         this.root.querySelector("#file-name").innerText = filePath;
 
         this.setUpAutoSave(initContent);

@@ -89,6 +89,7 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = "0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
 
         this.setupAce();
+        // @ts-ignore
         window.editor = this.editor;
     }
 
@@ -104,6 +105,7 @@ export default class TextEditor extends HTMLElement {
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
         this.editor.session.setMode("ace/mode/vdm");
+        // @ts-ignore
         ace.config.set('basePath', './extern');
         this.editor.setTheme("ace/theme/xcode");
         // @ts-ignore
