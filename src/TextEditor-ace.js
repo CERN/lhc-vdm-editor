@@ -25,6 +25,9 @@ const styling = css`
     font-size: 12px;
     text-align: right;
 }
+.ace_fitting-lines {
+    background: lightgray
+}
 `
 
 /**

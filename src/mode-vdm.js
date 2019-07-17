@@ -9,17 +9,36 @@ ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop',
     const VDMHighlightRules = function () {
 
         this.$rules = {
-            start:
-                [{
-                    token: 'keyword.control.vdm',
-                    regex: '\\b(?:INITIALIZE_TRIM|SECONDS_WAIT|RELATIVE_TRIM|ABSOLUTE_TRIM|START_FIT|END_FIT|END_SEQUENCE|MESSAGE)\\b',
-                    caseInsensitive: true
+            start: [
+                {
+                    token: 'keyword',
+                    regex: '\\b(?:INITIALIZE_TRIM|SECONDS_WAIT|RELATIVE_TRIM|ABSOLUTE_TRIM|END_SEQUENCE)\\b',
                 },
                 {
-                    token: 'constant.character.decimal.assembly',
-                    regex: '\\b[0-9]+\\b'
+                    token: 'keyword',
+                    regex: '\\b(?:MESSAGE)\\b',
+                    next: 'message'
                 },
-                { token: 'comment.assembly', regex: '#' }]
+                {
+                    token: 'constant',
+                    regex: '-?\\b\\d+((\\.|e-?)\\d*)?\\b\\.*'
+                },
+                {
+                    token: 'comment',
+                    regex: '#.*'
+                },
+                {
+                    token: 'keyword',
+                    regex: 'START_FIT',
+                }
+            ],
+            message: [
+                {
+                    token: 'string',
+                    regex: '.*',
+                    next: 'start'
+                }
+            ]
         };
 
         this.normalizeRules();
@@ -30,11 +49,11 @@ ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop',
         name: 'VDM',
         scopeName: 'source.vdm'
     };
-  
+
     oop.inherits(VDMHighlightRules, TextHighlightRules);
-  
+
     exports.vdmHighlightRules = VDMHighlightRules;
-  });
+});
 
 ace.define("ace/mode/vdm", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/worker/worker_client"], function (require, exports, module) {
     "use strict";
