@@ -7,11 +7,7 @@ import { parseVdM, deparseVdM } from "./parser.js"
 
 const styling = css`
 #editor { 
-    position: absolute;
-    top: 14px;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    min-height: 400px;
 }
 #top-line-editor{
     display: inline-block;
@@ -20,9 +16,7 @@ const styling = css`
     font-family: monospace;
     color: green;
 }
-.editor-container{
-}
-#top-line-editor-number {
+.editor-number {
     display: inline-block;
     font-family: monospace;
     background-color: #f0f0f0;
@@ -95,6 +89,14 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = "0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
 
         this.setupAce();
+        window.editor = this.editor;
+    }
+
+    connectedCallback(){
+        this.editor.setOptions({
+            maxLines: Math.floor(this.root.querySelector("#editor-container").getBoundingClientRect()
+                .width / 14/* 14 is the height of 1 line*/) - 2 /* - the start and end line*/
+        });
     }
 
     setupAce() {
@@ -102,6 +104,8 @@ export default class TextEditor extends HTMLElement {
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
         this.editor.session.setMode("ace/mode/vdm");
+        ace.config.set('basePath', './extern');
+        this.editor.setTheme("ace/theme/xcode");
         // @ts-ignore
         ace.config.set('basePath', './src')
 
@@ -118,7 +122,9 @@ export default class TextEditor extends HTMLElement {
                 // TODO: could make this correct
                 const width = (config.lastRow + 1).toString().length * config.characterWidth;
                 // @ts-ignore
-                this.root.querySelector("#top-line-editor-number").style.width = `${width}px`;
+                Array.from(this.root.querySelectorAll(".editor-number")).map(x => x.style.width = `${width}px`);
+                // @ts-ignore
+                this.root.querySelector("#editor-number-end").innerText = parseInt(_lastLineNumber) + 1;
                 return width;
             }
         };
@@ -230,9 +236,14 @@ export default class TextEditor extends HTMLElement {
             <style>
                 ${styling}
             </style>
-            <div class="editor-container">
-                <div style="width: 15px;" id="top-line-editor-number">0</div><div id="top-line-editor">INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()</div>
+            <div id="editor-container">
+                <div>
+                    <div style="width: 15px;" class="editor-number">0</div><div id="top-line-editor">INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()</div>
+                </div>
                 <div id="editor"></div>
+                <div>
+                    <div style="width: 15px;" id="editor-number-end" class="editor-number">48</div><div id="top-line-editor">END_SEQUENCE</div>
+                </div>
             </div>
         `
     }

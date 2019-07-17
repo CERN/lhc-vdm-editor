@@ -11,18 +11,28 @@ const styling = css`
 #editor-container {
     height: inherit;
     position: relative;
-    height: calc(100% - 30px);;
+    height: calc(100% - 45px);
 }
 .header {
     margin-top: 5px;
     margin-bottom: 5px;
     text-align: right;
 }
+commit-element {
+    display: inline-block;
+}
 .container {
     width: calc(100% - 30px);
     height: calc(100% - 8px);
     max-width: 1300px;
     margin: 0 auto;
+}
+#file-name {
+    display: inline-block;
+    float: left;
+    padding: 7px;
+    font-size: 16px;
+    font-family: monospace;
 }
 `
 
@@ -61,6 +71,8 @@ export default class OverallEditor extends HTMLElement {
                 } else throw errArr
             }
         })
+
+        this.root.querySelector("#file-name").innerText = filePath;
 
         this.setUpAutoSave(initContent);
     }
@@ -116,6 +128,7 @@ export default class OverallEditor extends HTMLElement {
         </style>
         <div class="container">
             <div class="header">
+                <div id="file-name"></div>
                 <commit-element></commit-element>
             </div>
             <div id="editor-container">
