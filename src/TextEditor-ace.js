@@ -3,6 +3,7 @@ import "../extern/ace.js"
 import "../extern/ace-lang-tools.js"
 import "./mode-vdm.js"
 
+
 const styling = css`
 #editor { 
     position: absolute;
@@ -20,19 +21,14 @@ const styling = css`
 `
 
 /**
+ * Adds the VDM line numbers to a file without line numbers
+ * 
  * @param {string} text
  */
-function getTopLine(text) {
-    return "TODO: generate top line";
-}
+function addLineNumbers(text) {
+    let currentLine = 1;
 
-/**
- * @param {string} text
- */
-function unStripText(text) {
-    let currentLine = 0;
-
-    return [getTopLine(text)].concat(text.split("\n")).map((line) => {
+    return text.split("\n").map((line) => {
         if (line[0] == "#" || line.trim() == "") {
             return line;
         }
@@ -156,7 +152,7 @@ export default class TextEditor extends HTMLElement {
     }
 
     get value() {
-        return unStripText(this.editor.getValue());
+        return addLineNumbers(this.editor.getValue());
     }
 
     stripText(text) {
