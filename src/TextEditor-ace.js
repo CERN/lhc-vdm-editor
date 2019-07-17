@@ -2,21 +2,34 @@ import { html, css } from "./HelperFunctions.js"
 import "../extern/ace.js"
 import "../extern/ace-lang-tools.js"
 import "./mode-vdm.js"
+import { parseVdM, deparseVdM } from "./parser.js"
 
 
 const styling = css`
 #editor { 
     position: absolute;
-    top: 15px;
+    top: 14px;
     right: 0;
     bottom: 0;
     left: 0;
 }
-.top-line {
+#top-line-editor{
+    display: inline-block;
+    margin-left: 3px;
+    font-size: 12px;
     font-family: monospace;
-    margin-left: 50px;
+    color: green;
 }
 .editor-container{
+}
+#top-line-editor-number {
+    display: inline-block;
+    font-family: monospace;
+    background-color: #f0f0f0;
+    padding-left: 21px;
+    padding-right: 13px;
+    font-size: 12px;
+    text-align: right;
 }
 `
 
@@ -71,10 +84,15 @@ export default class TextEditor extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(this.template());
         this.editor = ace.edit(this.root.getElementById("editor"));
-        //this.topLineEditor = ace.edit(this.root.getElementById("top-line-editor"));
+        const highlight = ace.require("ace/ext/static_highlight")
+        // this.topLineEditor = highlight(this.root.getElementById("top-line-editor"), {
+        //     mode: "ace/mode/vdm",
+        //     startLineNumber: 0
+        // });
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
         TextEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
+        this.lastHeader = "0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
 
         this.setupAce();
     }
@@ -92,13 +110,16 @@ export default class TextEditor extends HTMLElement {
         })
 
         let VDMNumberRenderer = {
-            getText: (session, row) => {
+            getText: (_session, row) => {
                 return calculateLineNumber(this.rawValue, row) + "";
             },
-            getWidth: (session, lastLineNumber, config) => {
+            getWidth: (_session, _lastLineNumber, config) => {
                 // This is not really correct, as we have empty lines
                 // TODO: could make this correct
-                return (config.lastRow + 1).toString().length * config.characterWidth;
+                const width = (config.lastRow + 1).toString().length * config.characterWidth;
+                // @ts-ignore
+                this.root.querySelector("#top-line-editor-number").style.width = `${width}px`;
+                return width;
             }
         };
 
@@ -110,7 +131,7 @@ export default class TextEditor extends HTMLElement {
         this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
 
         var testCompleter = {
-            getCompletions: function (editor, session, pos, prefix, callback) {
+            getCompletions: function (_editor, _session, _pos, prefix, callback) {
                 if (prefix.length === 0) { callback(null, []); return }
                 callback(null, [
                     {
@@ -125,10 +146,33 @@ export default class TextEditor extends HTMLElement {
         langTools.addCompleter(testCompleter);
     }
 
+    /**
+     * @param {string} newHeader
+     */
+    setNewHeader(newHeader){
+        this.lastHeader = newHeader;
+        // @ts-ignore
+        this.root.querySelector("#top-line-editor").innerText = newHeader.slice(2);
+    }
+
+    /**
+     * @param {MessageEvent} message
+     */
     webWorkerMessage(message) {
         if (message.data.type == "lint") {
             this.editor.getSession().setAnnotations(message.data.errors);
+
+            if(message.data.header !== undefined){
+                this.setNewHeader(message.data.header);
+            }
         }
+    }
+
+    postWebWorkerMessage(){
+        TextEditor.errorWebWorker.postMessage({
+            type: "text_change",
+            text: addLineNumbers(this.rawValue)
+        })
     }
 
     editorChange() {
@@ -136,11 +180,7 @@ export default class TextEditor extends HTMLElement {
         clearTimeout(this.lastEditorChangeTimeout);
         this.lastEditorChangeTimeout = setTimeout(() => {
             if (Date.now() - this.lastEditorChange >= TIMEOUT) {
-                TextEditor.errorWebWorker.postMessage({
-                    type: "text_change",
-                    text: this.value
-                })
-
+                this.postWebWorkerMessage();
             }
         }, TIMEOUT + 100);
 
@@ -153,7 +193,17 @@ export default class TextEditor extends HTMLElement {
     }
 
     get value() {
-        return addLineNumbers(this.editor.getValue());
+        try{
+            return deparseVdM(parseVdM(addLineNumbers(this.editor.getValue())));
+        }
+        catch(error) {
+            if(Array.isArray(error)){
+                return this.lastHeader + "\n" + addLineNumbers(this.editor.getValue());
+            }
+            else{
+                throw error;
+            }
+        }
     }
 
     stripText(text) {
@@ -172,6 +222,7 @@ export default class TextEditor extends HTMLElement {
 
     set value(newValue) {
         this.editor.setValue(this.stripText(newValue), -1); // use -1 move the cursor to the start of the file
+        this.postWebWorkerMessage();
     }
 
     template() {
@@ -180,7 +231,7 @@ export default class TextEditor extends HTMLElement {
                 ${styling}
             </style>
             <div class="editor-container">
-                <div class="top-line">INITIALIZE_TRIM IP(IP8) BEAM(BEAM1,BEAM2) PLANE(SEPARATION,CROSSING) UNITS(SIGMA)</div>
+                <div style="width: 15px;" id="top-line-editor-number">0</div><div id="top-line-editor">INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()</div>
                 <div id="editor"></div>
             </div>
         `

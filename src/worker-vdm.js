@@ -17,26 +17,32 @@ async function getParser(){
     const parser = await getParser();
     addEventListener("message", (message) => {
         if(message.data.type == "text_change"){
+            let messageToSend = {
+                type: "lint"
+            }
+
             try {
-                parser.parseVdM(message.data.text, true)
+                const result = parser.deparseVdM(parser.parseVdM(message.data.text, true));
+
+                messageToSend.header = result.split("\n")[0];
             }
             catch(errors){
                 if(Array.isArray(errors)){
                     // @ts-ignore
-                    postMessage({
-                        type: "lint",
-                        errors: errors.map(error => ({
-                            row: error.line,
-                            column: 0,
-                            text: error.message,
-                            type: "error"
-                        }))
-                    })
+                    messageToSend.errors = errors.map(error => ({
+                        row: error.line,
+                        column: 0,
+                        text: error.message,
+                        type: "error"
+                    }))
                 }
                 else{
                     throw errors;
                 }
             }
+
+            // @ts-ignore
+            postMessage(messageToSend);
         }
     })
 })()

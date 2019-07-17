@@ -11,7 +11,7 @@ const styling = css`
 #editor-container {
     height: inherit;
     position: relative;
-    height: calc(100% - 17px);
+    height: calc(100% - 30px);;
 }
 .header {
     margin-top: 5px;
