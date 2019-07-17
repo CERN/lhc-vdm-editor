@@ -1,5 +1,5 @@
 // @ts-check
-import {css, html} from "./HelperFunctions.js"
+import { css, html } from "./HelperFunctions.js"
 
 const styling = css`
 .commit-button {
@@ -31,23 +31,26 @@ const styling = css`
 `
 
 export default class CommitElement extends HTMLElement {
-    constructor(){
+    constructor() {
         super();
-        this.root = this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(this.template());
         this.root.querySelector("form").addEventListener("submit", () => {
-            if(confirm("Are you sure you want to commit?")){
-                this.dispatchEvent(new CustomEvent("commit-button-press", {
+            // @ts-ignore
+            let message = this.root.querySelector("input[type=text]").value;
+            if (message) {
+                if (confirm("Are you sure you want to commit?")) {
+                    this.dispatchEvent(new CustomEvent("commit-button-press", {
+                        detail: message
+                    }));
                     // @ts-ignore
-                    detail: this.root.querySelector("input[type=text]").value
-                }));
-                // @ts-ignore
-                this.root.querySelector(".commit-message").value = "";
-            }
+                    this.root.querySelector(".commit-message").value = "";
+                }
+            } else { alert("Error! No commit message.") }
         })
     }
 
-    template(){
+    template() {
         return html`
         <style>
             ${styling}

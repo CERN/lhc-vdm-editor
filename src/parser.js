@@ -138,7 +138,7 @@ let commandHandler = {
             if (obj.args.length != 1) {
                 throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
             }
-            if (!isFinite(parseFloat(obj.args[0]))) {
+            if (!isFinite(Number(obj.args[0]))) {
                 throw 'Invalid SECONDS_WAIT command. Argument must be finte but got ' + obj.args
             }
         },
