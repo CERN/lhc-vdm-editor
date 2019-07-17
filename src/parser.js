@@ -1,3 +1,6 @@
+// NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
+
+
 export class MySyntaxError extends Error {
     /**
      * @param {number} line
@@ -28,7 +31,7 @@ function genInitTrimArgs(objArr) {
         { 'type': 'UNITS', 'values': new Set([]) },
     ];
     for (let obj of objArr) {
-        if (obj.command.match(/(?:TRIM)$/)) {
+        if (obj.type == 'command' && obj.command.match(/(?:TRIM)$/)) {
             argArr[0].values.add(obj.args[0]);
             argArr[1].values.add(obj.args[1]);
             argArr[2].values.add(obj.args[2]);
@@ -341,7 +344,7 @@ export function parseVdM(data, genHeaders = false) {
     if (state.isFitting) {
         errArr.push(new MySyntaxError(lineArr.length + 1, 'Missing command END_FIT'))
     }
-    if (genHeaders) {
+    if (genHeaders && errArr.length == 0) {
         objArr = addHeaders(objArr);
         state.currentLineNum = 0;
         try { validateArgs(objArr[0], state) } catch (err) { errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err)) }
