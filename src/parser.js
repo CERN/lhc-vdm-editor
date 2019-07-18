@@ -346,16 +346,18 @@ export function parseVdM(data, genHeaders = false) {
         errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
     }
     if (genHeaders) {
-        //if (errArr.length == 0) {
-        objArr = addHeaders(objArr);
+        if (state.hasEnded) { 
+            const index = objArr.findIndex(x => x.command == 'END_SEQUENCE');
+            errArr.push(new MySyntaxError(index, 'Command END_SEQUENCE not allowed. It is being generated!'))
+        }
         try {
+            objArr = addHeaders(objArr);
             state.currentLineNum = 0;
             validateArgs(objArr[0], state);
         } catch (err) {
             errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
         }
-        //}
-        if (state.hasEnded) { errArr.push(new MySyntaxError(objArr.length - 1, 'Command END_SEQUENCE not allowed. It is being generated!')) }
+        
     } else if (!state.hasEnded) {
         errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
     }
