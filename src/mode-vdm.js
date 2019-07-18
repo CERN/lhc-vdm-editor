@@ -12,7 +12,7 @@ ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop',
             start: [
                 {
                     token: 'keyword',
-                    regex: '\\b(?:INITIALIZE_TRIM|SECONDS_WAIT|RELATIVE_TRIM|ABSOLUTE_TRIM|START_FIT|END_FIT|END_SEQUENCE)\\b',
+                    regex: '\\b(?:INITIALIZE_TRIM|SECONDS_WAIT|RELATIVE_TRIM|ABSOLUTE_TRIM|END_SEQUENCE)\\b',
                 },
                 {
                     token: 'keyword',
@@ -26,6 +26,10 @@ ace.define('ace/mode/vdm_highlight_rules', ['require', 'exports', 'ace/lib/oop',
                 {
                     token: 'comment.italic',
                     regex: '#.*'
+                },
+                {
+                    token: 'keyword.bold',
+                    regex: '\\b(?:START_FIT|END_FIT)\\b'
                 },
             ],
             message: [

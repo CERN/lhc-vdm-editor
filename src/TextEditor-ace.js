@@ -143,11 +143,70 @@ export default class TextEditor extends HTMLElement {
                 if (prefix.length === 0) { callback(null, []); return }
                 callback(null, [
                     {
-                        name: "Test AC",
-                        value: "SIGMAA",
+                        value: "RELATIVE_TRIM",
                         score: 20,
-                        meta: "Complete"
-                    }
+                        meta: "custom"
+                    },
+                    {
+                        value: "ABSOLUTE_TRIM",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "SECONDS_WAIT",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "START_FIT",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "END_FIT",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "CROSSING",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "SEPARATION",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "SIGMA",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "MM",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "GAUSSIAN",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "GAUSSIAN_PLUS_CONSTANT",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "BEAM1",
+                        score: 20,
+                        meta: "custom"
+                    },
+                    {
+                        value: "BEAM2",
+                        score: 20,
+                        meta: "custom"
+                    },
                 ])
             }
         }

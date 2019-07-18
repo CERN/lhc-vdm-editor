@@ -292,12 +292,11 @@ export function parseVdM(data, genHeaders = false) {
     let objArr = [];
     let errArr = [];
     for (let i = 0; i < lineArr.length; i++) {
+        // Object to be created and pushed to the structure
+        let obj = {};
         try {
-            // Object to be created and pushed to the structure
-            let obj = {};
             // Deconstruct string into arguments by spaces
             const line = lineArr[i].split(/ +/);
-
             // Check line syntax
             if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
                 // Line type is NOT a command line (not initialised with integer)
@@ -328,15 +327,17 @@ export function parseVdM(data, genHeaders = false) {
                     obj.args = line.slice(2);
                     try { validateArgs(obj, state) } catch (err) { throw new MySyntaxError(i, err) }
 
-                    // Check line numbering. Must be last for command terminations to be detected before throwing error
+                    // Check line numbering.
+                    // Must be executed last for command terminations to be detected beforehand
                     if (parseInt(line[0]) != state.currentLineNum) {
                         throw new MySyntaxError(i, 'Incorrect line numbering. Expected ' + state.currentLineNum + ' but got ' + line[0])
                     }
                 } finally { state.currentLineNum++; }
             }
-            objArr.push(obj);
         } catch (err) {
             errArr.push(err)
+        } finally {
+            objArr.push(obj);
         }
     }
 
@@ -345,15 +346,15 @@ export function parseVdM(data, genHeaders = false) {
         errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
     }
     if (genHeaders) {
-        if (errArr.length == 0) {
-            objArr = addHeaders(objArr);
-            try {
-                state.currentLineNum = 0;
-                validateArgs(objArr[0], state);
-            } catch (err) {
-                errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
-            }
+        //if (errArr.length == 0) {
+        objArr = addHeaders(objArr);
+        try {
+            state.currentLineNum = 0;
+            validateArgs(objArr[0], state);
+        } catch (err) {
+            errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
         }
+        //}
         if (state.hasEnded) { errArr.push(new MySyntaxError(objArr.length - 1, 'Command END_SEQUENCE not allowed. It is being generated!')) }
     } else if (!state.hasEnded) {
         errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
