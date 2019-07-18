@@ -9,13 +9,31 @@ const styling = css`
 #editor { 
     min-height: 400px;
 }
-#top-line-editor{
+
+.fake-ace-line{
     display: inline-block;
     margin-left: 3px;
     font-size: 12px;
     font-family: monospace;
     color: green;
 }
+
+#top-line-editor .ace_cursor {
+    display: none !important;
+}
+
+#top-line-editor .ace_selection {
+    display: none !important;
+}
+
+#top-line-editor {
+    border-bottom: solid 2px #b9b9b9;
+}
+
+#last-line {
+    border-top: solid 2px #b9b9b9;
+}
+
 .editor-number {
     display: inline-block;
     font-family: monospace;
@@ -47,6 +65,13 @@ function addLineNumbers(text) {
     }).join("\n");
 }
 
+/**
+ * Calculates the line number used in vdm (empty lines and comments don't have line numbers).
+ * 
+ * @param {string} file
+ * @param {number} absLineNum For this parameter, putting -1 determines what the last 
+ * numbered line is
+ */
 function calculateLineNumber(file, absLineNum) {
     const lines = file.split("\n");
     let currentCalcLineNum = 1;
@@ -68,6 +93,36 @@ function calculateLineNumber(file, absLineNum) {
         }
         currentAbsLineNum++;
     }
+
+    return currentCalcLineNum - 1; // this will happen is absLineNum is -1
+}
+
+function removeLineNumbers(text){
+    return text.split("\n").map(x => {
+        const match = x.match(/^[0-9]+ +/);
+        if (match !== null) {
+            const numMatchLength = match[0].length;
+            return x.slice(numMatchLength);
+        }
+        else {
+            return x;
+        }
+
+    }).join("\n");
+}
+
+function stripText(text) {
+    return text.split("\n").map(x => {
+        const match = x.match(/^[0-9]+ +/);
+        if (match !== null) {
+            const numMatchLength = match[0].length;
+            return x.slice(numMatchLength);
+        }
+        else {
+            return x;
+        }
+
+    }).slice(1, -2).join("\n");
 }
 
 export default class TextEditor extends HTMLElement {
@@ -78,19 +133,64 @@ export default class TextEditor extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(this.template());
         this.editor = ace.edit(this.root.getElementById("editor"));
-        const highlight = ace.require("ace/ext/static_highlight")
-        // this.topLineEditor = highlight(this.root.getElementById("top-line-editor"), {
-        //     mode: "ace/mode/vdm",
-        //     startLineNumber: 0
-        // });
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
         TextEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
         this.lastHeader = "0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
-
-        this.setupAce();
+        this.numberBarWidth = 14;
+        this.topLineHeaderPosition = 0;
+        
+        this.setUpTopLine();
+        this.setupEditor();
+        this.setNewTopLine("#Version 1.0\nINITIALIZE_TRIM IP() BEAM() PLANE() UNITS()");
         // @ts-ignore
         window.editor = this.editor;
+    }
+
+    setUpTopLine(){
+        this.topLineEditor = ace.edit(this.root.getElementById("top-line-editor"));
+        // @ts-ignore
+        this.topLineEditor.renderer.attachToShadowRoot();
+        this.topLineEditor.setOptions({
+            firstLineNumber: 0,
+            mode: "ace/mode/vdm",
+            readOnly: true,
+            highlightActiveLine: false,
+            highlightGutterLine: false
+        });
+        let ConstWidthLineNum = {
+            getText: (_session, row) => {
+                if(row == this.topLineHeaderPosition){
+                    return 0;
+                }
+                else{
+                    return "";
+                }
+            },
+            getWidth: (_session, _lastLineNumber, _config) => {
+                return this.numberBarWidth;
+            }
+        };
+
+        // @ts-ignore
+        this.topLineEditor.session.gutterRenderer = ConstWidthLineNum;
+        // @ts-ignore
+        ace.config.set('basePath', './extern');
+        this.topLineEditor.setTheme("ace/theme/xcode");
+        this.topLineEditor.setReadOnly(true);
+    }
+
+    /**
+     * @param {string} newTopLine
+     */
+    setNewTopLine(newTopLine) {
+        const topLineLines = newTopLine.split("\n").length;
+
+        this.topLineEditor.setValue(newTopLine, -1);
+
+        this.topLineEditor.setOption("maxLines", topLineLines);
+
+        this.topLineHeaderPosition = topLineLines - 1;
     }
 
     connectedCallback(){
@@ -100,7 +200,7 @@ export default class TextEditor extends HTMLElement {
         });
     }
 
-    setupAce() {
+    setupEditor() {
         // @ts-ignore
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
@@ -109,7 +209,8 @@ export default class TextEditor extends HTMLElement {
         ace.config.set('basePath', './extern');
         this.editor.setTheme("ace/theme/xcode");
         // @ts-ignore
-        ace.config.set('basePath', './src')
+        ace.config.set('basePath', './src');
+        this.topLineEditor.setOptions({firstLineNumber: 1});
 
         this.editor.session.on("change", () => {
             this.editorChange();
@@ -122,11 +223,20 @@ export default class TextEditor extends HTMLElement {
             getWidth: (_session, _lastLineNumber, config) => {
                 // This is not really correct, as we have empty lines
                 // TODO: could make this correct
-                const width = (config.lastRow + 1).toString().length * config.characterWidth;
+                const lastRealLineNumber = calculateLineNumber(this.rawValue, -1);
+                const width = lastRealLineNumber.toString().length * config.characterWidth;
                 // @ts-ignore
                 Array.from(this.root.querySelectorAll(".editor-number")).map(x => x.style.width = `${width}px`);
                 // @ts-ignore
-                this.root.querySelector("#editor-number-end").innerText = parseInt(_lastLineNumber) + 1;
+                this.root.querySelector("#editor-number-end").innerText = parseInt(lastRealLineNumber) + 1;
+
+                // Set width for top line
+                this.numberBarWidth = width;
+                // @ts-ignore
+                this.topLineEditor.session.replace({
+                    start: {row: 0, column: 0},
+                    end: {row: 0, column: 0}
+                }, "")
                 return width;
             }
         };
@@ -159,7 +269,10 @@ export default class TextEditor extends HTMLElement {
     setNewHeader(newHeader){
         this.lastHeader = newHeader;
         // @ts-ignore
-        this.root.querySelector("#top-line-editor").innerText = newHeader.slice(2);
+        this.topLineEditor.session.replace({
+            start: {row: this.topLineHeaderPosition, column: 0},
+            end: {row: this.topLineHeaderPosition, column: Number.MAX_VALUE}
+        }, newHeader.slice(2))
     }
 
     /**
@@ -199,36 +312,27 @@ export default class TextEditor extends HTMLElement {
         return this.editor.getValue();
     }
 
+    set rawValue(newRawValue){
+        this.editor.setValue(newRawValue);
+    }
+
     get value() {
         try{
-            return deparseVdM(parseVdM(addLineNumbers(this.editor.getValue())));
+            // Add the headers (we don't know if this.lastHeader is stale)
+            return deparseVdM(parseVdM(addLineNumbers(this.editor.getValue()), true));
         }
         catch(error) {
             if(Array.isArray(error)){
-                return this.lastHeader + "\n" + addLineNumbers(this.editor.getValue());
+                return this.lastHeader + "\n" + addLineNumbers(this.editor.getValue()) + "\n" + "END_SEQUENCE";
             }
             else{
                 throw error;
             }
         }
     }
-
-    stripText(text) {
-        return text.split("\n").map(x => {
-            const match = x.match(/^[0-9]+ +/);
-            if (match !== null) {
-                const numMatchLength = match[0].length;
-                return x.slice(numMatchLength);
-            }
-            else {
-                return x;
-            }
-
-        }).slice(1).join("\n");
-    }
-
+    
     set value(newValue) {
-        this.editor.setValue(this.stripText(newValue), -1); // use -1 move the cursor to the start of the file
+        this.editor.setValue(stripText(newValue), -1); // use -1 move the cursor to the start of the file
         this.postWebWorkerMessage();
     }
 
@@ -239,11 +343,12 @@ export default class TextEditor extends HTMLElement {
             </style>
             <div id="editor-container">
                 <div>
-                    <div style="width: 15px;" class="editor-number">0</div><div id="top-line-editor">INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()</div>
+                    <div id="top-line-editor"></div>
+                    <!--<div style="width: 15px;" class="editor-number">0</div><div id="top-line-editor">INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()</div>-->
                 </div>
                 <div id="editor"></div>
-                <div>
-                    <div style="width: 15px;" id="editor-number-end" class="editor-number">48</div><div id="top-line-editor">END_SEQUENCE</div>
+                <div id="last-line">
+                    <div style="width: 15px;" id="editor-number-end" class="editor-number">48</div><div class="fake-ace-line">END_SEQUENCE</div>
                 </div>
             </div>
         `

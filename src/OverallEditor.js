@@ -82,12 +82,12 @@ export default class OverallEditor extends HTMLElement {
      */
     setUpAutoSave(initContent) {
         this.editorContainer.addEventListener('editor-content-change', () => {
-            localStorage.setItem('content', this.editor.value);
+            localStorage.setItem('content', this.editor.rawValue);
         })
         if (localStorage.getItem('content') !== null) {
-            this.value = localStorage.getItem('content')
+            this.editor.rawValue = localStorage.getItem('content')
         } else {
-            this.value = initContent
+            this.editor.value = initContent
         }
 
         if (localStorage.getItem('open-tab') !== null) {

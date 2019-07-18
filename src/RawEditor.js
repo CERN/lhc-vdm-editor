@@ -53,6 +53,14 @@ export default class RawEditor extends HTMLElement {
         )
     }
 
+    get rawValue(){
+        return this.value;
+    }
+
+    set rawValue(newRawValue){
+        this.value = newRawValue;
+    }
+
     get value() {
         return this.textarea.value;
     }
