@@ -49,7 +49,10 @@ export default class RawEditor extends HTMLElement {
         this.root.appendChild(this.template())
         this.textarea = this.root.querySelector("textarea");
         $(this.textarea).bind('input propertychange',
-            () => this.dispatchEvent(new CustomEvent("editor-content-change", { bubbles: true })),
+            () => this.dispatchEvent(new CustomEvent("editor-content-change", {
+                bubbles: true,
+                detail: this.value
+            })),
         )
     }
 

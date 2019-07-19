@@ -43,6 +43,10 @@ const styling = css`
     font-size: 12px;
     text-align: right;
 }
+
+#editor-container{
+    height: 100%;
+}
 `
 
 /**
@@ -97,6 +101,9 @@ function calculateLineNumber(file, absLineNum) {
     return currentCalcLineNum - 1; // this will happen is absLineNum is -1
 }
 
+/**
+ * @param {string} text 
+ */
 function removeLineNumbers(text){
     return text.split("\n").map(x => {
         const match = x.match(/^[0-9]+ +/);
@@ -111,19 +118,40 @@ function removeLineNumbers(text){
     }).join("\n");
 }
 
+/**
+ * @param {string} text
+ * @returns {[string, string]} [The stripped top line, The main stripped text]
+ */
 function stripText(text) {
-    return text.split("\n").map(x => {
-        const match = x.match(/^[0-9]+ +/);
-        if (match !== null) {
-            const numMatchLength = match[0].length;
-            return x.slice(numMatchLength);
-        }
-        else {
-            return x;
-        }
+    const noNumbersText = removeLineNumbers(text);
+    let topLines = [];
+    let state = "TOP_LINE";
 
-    }).slice(1, -2).join("\n");
+    const mainText = noNumbersText.split("\n").map(line => {
+        if (state == "TOP_LINE"){
+            topLines.push(line);
+
+            if(line.startsWith("INITIALIZE_TRIM")){
+                state = "MAIN";
+            }
+        }
+        else if (state == "MAIN"){
+            if (line.startsWith("END_SEQUENCE")){
+                state = "FOOTER";
+            }
+            else{
+                return line;
+            }
+        }
+    }).filter(x => x != undefined);
+
+    return [
+        topLines.join("\n"),
+        mainText.join("\n")
+    ];
 }
+
+const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
 
 export default class TextEditor extends HTMLElement {
     static errorWebWorker = new Worker("./src/worker-vdm.js");
@@ -136,13 +164,12 @@ export default class TextEditor extends HTMLElement {
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
         TextEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
-        this.lastHeader = "0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
+        this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
         
         this.setUpTopLine();
         this.setupEditor();
-        this.setNewTopLine("#Version 1.0\nINITIALIZE_TRIM IP() BEAM() PLANE() UNITS()");
         // @ts-ignore
         window.editor = this.editor;
     }
@@ -156,7 +183,8 @@ export default class TextEditor extends HTMLElement {
             mode: "ace/mode/vdm",
             readOnly: true,
             highlightActiveLine: false,
-            highlightGutterLine: false
+            highlightGutterLine: false,
+            showPrintMargin: false
         });
         let ConstWidthLineNum = {
             getText: (_session, row) => {
@@ -194,10 +222,13 @@ export default class TextEditor extends HTMLElement {
     }
 
     connectedCallback(){
-        this.editor.setOptions({
-            maxLines: Math.floor(this.root.querySelector("#editor-container").getBoundingClientRect()
-                .width / 14/* 14 is the height of 1 line*/) - 2 /* - the start and end line*/
-        });
+        // @ts-ignore
+        this.editor.renderer.once("afterRender", () => {
+            this.editor.setOptions({
+                maxLines: Math.floor(this.root.querySelector("#editor-container").getBoundingClientRect()
+                    .height / this.editor.renderer.lineHeight) - this.topLineHeaderPosition - 2 /* - the start and end line*/
+            });
+        })
     }
 
     setupEditor() {
@@ -210,7 +241,12 @@ export default class TextEditor extends HTMLElement {
         this.editor.setTheme("ace/theme/xcode");
         // @ts-ignore
         ace.config.set('basePath', './src');
-        this.topLineEditor.setOptions({firstLineNumber: 1});
+        this.editor.setOptions({
+            minLines: 20,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            showPrintMargin: false
+        })
 
         this.editor.session.on("change", () => {
             this.editorChange();
@@ -233,10 +269,7 @@ export default class TextEditor extends HTMLElement {
                 // Set width for top line
                 this.numberBarWidth = width;
                 // @ts-ignore
-                this.topLineEditor.session.replace({
-                    start: {row: 0, column: 0},
-                    end: {row: 0, column: 0}
-                }, "")
+                this.topLineEditor.renderer.updateLines(0, 1); // Calculate the top row update
                 return width;
             }
         };
@@ -245,8 +278,6 @@ export default class TextEditor extends HTMLElement {
         this.editor.session.gutterRenderer = VDMNumberRenderer;
 
         var langTools = ace.require("ace/ext/language_tools");
-
-        this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
 
         var testCompleter = {
             getCompletions: function (_editor, _session, _pos, prefix, callback) {
@@ -272,7 +303,7 @@ export default class TextEditor extends HTMLElement {
         this.topLineEditor.session.replace({
             start: {row: this.topLineHeaderPosition, column: 0},
             end: {row: this.topLineHeaderPosition, column: Number.MAX_VALUE}
-        }, newHeader.slice(2))
+        }, newHeader)
     }
 
     /**
@@ -283,7 +314,7 @@ export default class TextEditor extends HTMLElement {
             this.editor.getSession().setAnnotations(message.data.errors);
 
             if(message.data.header !== undefined){
-                this.setNewHeader(message.data.header);
+                this.setNewHeader(removeLineNumbers(message.data.header));
             }
         }
     }
@@ -305,7 +336,10 @@ export default class TextEditor extends HTMLElement {
         }, TIMEOUT + 100);
 
         this.lastEditorChange = Date.now();
-        this.dispatchEvent(new CustomEvent("editor-content-change", { bubbles: true }))
+        this.dispatchEvent(new CustomEvent("editor-content-change", {
+            bubbles: true,
+            detail: this.noParseValue
+        }))
     }
 
     get rawValue() {
@@ -313,17 +347,26 @@ export default class TextEditor extends HTMLElement {
     }
 
     set rawValue(newRawValue){
-        this.editor.setValue(newRawValue);
+        this.editor.setValue(newRawValue, -1);
+    }
+
+    /**
+     * Gets the value, without a need for parsing the document (so uses the latest header)
+     */
+    get noParseValue() {
+        return addLineNumbers(this.lastHeader + "\n" + this.rawValue + "\n" + "END_SEQUENCE");
     }
 
     get value() {
+        const editorValue = this.rawValue;
+
         try{
             // Add the headers (we don't know if this.lastHeader is stale)
-            return deparseVdM(parseVdM(addLineNumbers(this.editor.getValue()), true));
+            return deparseVdM(parseVdM(addLineNumbers(editorValue), true));
         }
         catch(error) {
             if(Array.isArray(error)){
-                return this.lastHeader + "\n" + addLineNumbers(this.editor.getValue()) + "\n" + "END_SEQUENCE";
+                return this.noParseValue;
             }
             else{
                 throw error;
@@ -332,7 +375,16 @@ export default class TextEditor extends HTMLElement {
     }
     
     set value(newValue) {
-        this.editor.setValue(stripText(newValue), -1); // use -1 move the cursor to the start of the file
+        const [topLine, mainText] = stripText(newValue);
+
+        if(topLine == ""){
+            this.setNewTopLine(DEFAULT_HEADER)
+        }
+        else{
+            this.setNewTopLine(topLine);
+        }
+
+        this.editor.setValue(mainText, -1); // use -1 move the cursor to the start of the file
         this.postWebWorkerMessage();
     }
 

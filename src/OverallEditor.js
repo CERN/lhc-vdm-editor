@@ -56,7 +56,7 @@ export default class OverallEditor extends HTMLElement {
         });
         this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
-        this.editor = this.root.querySelector("text-editor");
+        this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             try {
@@ -81,21 +81,26 @@ export default class OverallEditor extends HTMLElement {
      * @param {string} initContent
      */
     setUpAutoSave(initContent) {
-        this.editorContainer.addEventListener('editor-content-change', () => {
-            localStorage.setItem('content', this.editor.rawValue);
+        this.editorContainer.addEventListener('editor-content-change', ev => {
+            // @ts-ignore
+            localStorage.setItem('content', ev.detail);
         })
+
+        if (localStorage.getItem('open-tab') !== null) {
+            const buttonIndex = parseInt(localStorage.getItem('open-tab'));
+
+            this.switchToEditor(buttonIndex);
+            
+            // @ts-ignore
+            this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
+        }
+
         if (localStorage.getItem('content') !== null) {
-            this.editor.rawValue = localStorage.getItem('content')
+            this.editor.value = localStorage.getItem('content')
         } else {
             this.editor.value = initContent
         }
 
-        if (localStorage.getItem('open-tab') !== null) {
-            const buttonIndex = parseInt(localStorage.getItem('open-tab'));
-            this.switchToEditor(buttonIndex);
-            // @ts-ignore
-            this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
-        }
     }
 
     get value() {
@@ -109,10 +114,12 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {number} index
      */
-    switchToEditor(index) {
+    switchToEditor(index, setValue=true) {
         const editorElement = document.createElement(EDITOR_TAG_NAMES[index]);
-        // @ts-ignore
-        editorElement.value = this.editor.value;
+        if(setValue){
+            // @ts-ignore
+            editorElement.value = this.editor.value;
+        }
 
         this.editorContainer.innerHTML = "";
         this.editorContainer.appendChild(editorElement);
@@ -133,7 +140,7 @@ export default class OverallEditor extends HTMLElement {
             </div>
             <div id="editor-container">
                 <div id="editor">
-                    <text-editor></text-editor>
+                    <raw-editor></raw-editor>
                 </div>
                 <switch-editor-buttons></switch-editor-buttons>
             </div>

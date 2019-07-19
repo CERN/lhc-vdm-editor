@@ -5,7 +5,7 @@ const styling = css`
 .container {
     position: absolute;
     top: 5px;
-    right: 5px;
+    right: 20px;
 }
 button {
     background-color: #dcdcdc;
