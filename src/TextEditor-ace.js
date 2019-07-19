@@ -54,8 +54,8 @@ const styling = css`
  * 
  * @param {string} text
  */
-function addLineNumbers(text) {
-    let currentLine = 1;
+function addLineNumbers(text, start=1) {
+    let currentLine = start;
 
     return text.split("\n").map((line) => {
         if (line[0] == "#" || line.trim() == "") {
@@ -395,7 +395,7 @@ export default class TextEditor extends HTMLElement {
      * Gets the value, without a need for parsing the document (so uses the latest header)
      */
     get noParseValue() {
-        return addLineNumbers(this.lastHeader + "\n" + this.rawValue + "\n" + "END_SEQUENCE");
+        return addLineNumbers(this.topLineEditor.getValue() + "\n" + this.rawValue + "\n" + "END_SEQUENCE", 0);
     }
 
     get value() {
