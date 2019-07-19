@@ -97,7 +97,7 @@ function calculateLineNumber(file, absLineNum) {
     return currentCalcLineNum - 1; // this will happen is absLineNum is -1
 }
 
-function removeLineNumbers(text){
+function removeLineNumbers(text) {
     return text.split("\n").map(x => {
         const match = x.match(/^[0-9]+ +/);
         if (match !== null) {
@@ -139,7 +139,7 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = "0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
-        
+
         this.setUpTopLine();
         this.setupEditor();
         this.setNewTopLine("#Version 1.0\nINITIALIZE_TRIM IP() BEAM() PLANE() UNITS()");
@@ -147,7 +147,7 @@ export default class TextEditor extends HTMLElement {
         window.editor = this.editor;
     }
 
-    setUpTopLine(){
+    setUpTopLine() {
         this.topLineEditor = ace.edit(this.root.getElementById("top-line-editor"));
         // @ts-ignore
         this.topLineEditor.renderer.attachToShadowRoot();
@@ -160,10 +160,10 @@ export default class TextEditor extends HTMLElement {
         });
         let ConstWidthLineNum = {
             getText: (_session, row) => {
-                if(row == this.topLineHeaderPosition){
+                if (row == this.topLineHeaderPosition) {
                     return 0;
                 }
-                else{
+                else {
                     return "";
                 }
             },
@@ -193,7 +193,7 @@ export default class TextEditor extends HTMLElement {
         this.topLineHeaderPosition = topLineLines - 1;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         this.editor.setOptions({
             maxLines: Math.floor(this.root.querySelector("#editor-container").getBoundingClientRect()
                 .width / 14/* 14 is the height of 1 line*/) - 2 /* - the start and end line*/
@@ -210,7 +210,7 @@ export default class TextEditor extends HTMLElement {
         this.editor.setTheme("ace/theme/xcode");
         // @ts-ignore
         ace.config.set('basePath', './src');
-        this.topLineEditor.setOptions({firstLineNumber: 1});
+        this.topLineEditor.setOptions({ firstLineNumber: 1 });
 
         this.editor.session.on("change", () => {
             this.editorChange();
@@ -234,8 +234,8 @@ export default class TextEditor extends HTMLElement {
                 this.numberBarWidth = width;
                 // @ts-ignore
                 this.topLineEditor.session.replace({
-                    start: {row: 0, column: 0},
-                    end: {row: 0, column: 0}
+                    start: { row: 0, column: 0 },
+                    end: { row: 0, column: 0 }
                 }, "")
                 return width;
             }
@@ -259,15 +259,15 @@ export default class TextEditor extends HTMLElement {
 
                 // Syntax of a suggestion
                 function syntaxify(arr, score, meta) {
-                    return arr.map(x => ({ value: x, score: score, meta: meta }))
+                    return arr.map(x => ({ value: x, score: score, meta: meta, docText: 'some text goes here'}))
                 }
 
                 const words = editor.session
                     .getLine(pos.row)
-                    .slice(0, pos.column + 1)
+                    .slice(0, pos.column)
                     .match(/\b\w+\b(?= +)/g);
                 if (!words) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
-
+                
                 let suggestions = [];
                 const firstWord = words[0]
                 const prevWord = words.pop()
@@ -299,7 +299,7 @@ export default class TextEditor extends HTMLElement {
             }
         }
         langTools.setCompleters([testCompleter]);
-        this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true});
+        this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
     }
 
     /**
@@ -309,8 +309,8 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = newHeader;
         // @ts-ignore
         this.topLineEditor.session.replace({
-            start: {row: this.topLineHeaderPosition, column: 0},
-            end: {row: this.topLineHeaderPosition, column: Number.MAX_VALUE}
+            start: { row: this.topLineHeaderPosition, column: 0 },
+            end: { row: this.topLineHeaderPosition, column: Number.MAX_VALUE }
         }, newHeader.slice(2))
     }
 
@@ -351,17 +351,17 @@ export default class TextEditor extends HTMLElement {
         return this.editor.getValue();
     }
 
-    set rawValue(newRawValue){
+    set rawValue(newRawValue) {
         this.editor.setValue(newRawValue);
     }
 
     get value() {
-        try{
+        try {
             // Add the headers (we don't know if this.lastHeader is stale)
             return deparseVdM(parseVdM(addLineNumbers(this.editor.getValue()), true));
         }
-        catch(error) {
-            if(Array.isArray(error)){
+        catch (error) {
+            if (Array.isArray(error)) {
                 return this.lastHeader + "\n" + addLineNumbers(this.editor.getValue()) + "\n" + "END_SEQUENCE";
             }
             else {
@@ -369,7 +369,7 @@ export default class TextEditor extends HTMLElement {
             }
         }
     }
-    
+
     set value(newValue) {
         this.editor.setValue(stripText(newValue), -1); // use -1 move the cursor to the start of the file
         this.postWebWorkerMessage();
