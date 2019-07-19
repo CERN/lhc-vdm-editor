@@ -78,9 +78,10 @@ function getInnerBracket(str, type) {
  * @param {{ IPs: string; beams: string; planes: string; units: string; }} state
  */
 function checkTrim(obj, state) {
+    if (obj.args.length == 0) { throw 'Invalid TRIM command. Command has to include arguments: IP BEAM PLANE AMOUNT UNIT' }
     for (let i = 0; i < obj.args.length; i += 5) {
         if (!state.IPs.includes(obj.args[i])) {
-            throw 'Invalid TRIM command. Expected ' + state.IPs + ' but got ' + obj.args[i]
+            throw 'Invalid TRIM command. Expected IP to be' + state.IPs + ' but got ' + obj.args[i]
         }
         if (!state.beams.includes(obj.args[i + 1])) {
             throw 'Invalid TRIM command. Expected beam in [' + state.beams + '] but got ' + obj.args[i + 1]
@@ -139,7 +140,7 @@ let commandHandler = {
                 throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
             }
             if (!isFinite(Number(obj.args[0]))) {
-                throw 'Invalid SECONDS_WAIT command. Argument must be finte but got ' + obj.args
+                throw 'Invalid SECONDS_WAIT command. Argument must be a finte number but got ' + obj.args
             }
         },
     'RELATIVE_TRIM':
@@ -346,18 +347,19 @@ export function parseVdM(data, genHeaders = false) {
         errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
     }
     if (genHeaders) {
-        if (state.hasEnded) { 
+        if (state.hasEnded) {
             const index = objArr.findIndex(x => x.command == 'END_SEQUENCE');
             errArr.push(new MySyntaxError(index, 'Command END_SEQUENCE not allowed. It is being generated!'))
         }
-        try {
-            objArr = addHeaders(objArr);
-            state.currentLineNum = 0;
-            validateArgs(objArr[0], state);
-        } catch (err) {
-            errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+        if (errArr.length == 0) {
+            try {
+                objArr = addHeaders(objArr);
+                state.currentLineNum = 0;
+                validateArgs(objArr[0], state);
+            } catch (err) {
+                errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+            }
         }
-        
     } else if (!state.hasEnded) {
         errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
     }
