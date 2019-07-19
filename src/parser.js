@@ -78,9 +78,10 @@ function getInnerBracket(str, type) {
  * @param {{ IPs: string; beams: string; planes: string; units: string; }} state
  */
 function checkTrim(obj, state) {
+    if (obj.args.length == 0) {throw 'Invalid TRIM command. Command has to include arguments: IP BEAM PLANE AMOUNT UNIT'}
     for (let i = 0; i < obj.args.length; i += 5) {
         if (!state.IPs.includes(obj.args[i])) {
-            throw 'Invalid TRIM command. Expected ' + state.IPs + ' but got ' + obj.args[i]
+            throw 'Invalid TRIM command. Expected IP to be' + state.IPs + ' but got ' + obj.args[i]
         }
         if (!state.beams.includes(obj.args[i + 1])) {
             throw 'Invalid TRIM command. Expected beam in [' + state.beams + '] but got ' + obj.args[i + 1]

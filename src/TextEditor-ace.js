@@ -246,27 +246,66 @@ export default class TextEditor extends HTMLElement {
 
         var langTools = ace.require("ace/ext/language_tools");
 
-        this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
-
         var testCompleter = {
-            getCompletions: function (_editor, _session, _pos, prefix, callback) {
-                if (prefix.length === 0) { callback(null, []); return }
-                callback(null, [
-                    {
-                        value: "RELATIVE_TRIM",
-                        score: 20,
-                        meta: "custom"
-                    },
-                ])
+            getCompletions: function (editor, _session, pos, _prefix, callback) {
+                const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
+                const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
+                const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
+                const arg2 = ['BEAM1', 'BEAM2'];
+                const arg3 = ['CROSSING', 'SEPARATION'];
+                //    arg4 = some number
+                const arg5 = ['SIGMA', 'MM'];
+                const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
+
+                // Syntax of a suggestion
+                function syntaxify(arr, score, meta) {
+                    return arr.map(x => ({ value: x, score: score, meta: meta }))
+                }
+
+                const words = editor.session
+                    .getLine(pos.row)
+                    .slice(0, pos.column + 1)
+                    .match(/\b\w+\b(?= +)/g);
+                if (!words) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
+
+                let suggestions = [];
+                const firstWord = words[0]
+                const prevWord = words.pop()
+
+                // Check _TRIM command context
+                if (trim.includes(firstWord)) {
+                    if (trim.includes(prevWord)) {
+                        suggestions = syntaxify(arg1, 10, 'IP')
+                    } else if (arg1.includes(prevWord)) {
+                        suggestions = syntaxify(arg2, 10, 'beam')
+                    } else if (arg2.includes(prevWord)) {
+                        suggestions = syntaxify(arg3, 10, 'plane')
+                    } else if (arg3.includes(prevWord)) {
+                        suggestions = [];
+                    } else if (isFinite(Number(prevWord))) {
+                        suggestions = syntaxify(arg5, 10, 'unit')
+                    }
+                    // Check START_FIT command context
+                } else if (firstWord == 'START_FIT') {
+                    if (prevWord == 'START_FIT') {
+                        suggestions = syntaxify(arg3, 10, 'plane')
+                    } else if (arg3.includes(prevWord)) {
+                        suggestions = syntaxify(fitTypes)
+                    }
+                }
+
+                // State autocompletion suggestions
+                callback(null, suggestions); return
             }
         }
-        langTools.addCompleter(testCompleter);
+        langTools.setCompleters([testCompleter]);
+        this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true});
     }
 
     /**
      * @param {string} newHeader
      */
-    setNewHeader(newHeader){
+    setNewHeader(newHeader) {
         this.lastHeader = newHeader;
         // @ts-ignore
         this.topLineEditor.session.replace({
@@ -282,13 +321,13 @@ export default class TextEditor extends HTMLElement {
         if (message.data.type == "lint") {
             this.editor.getSession().setAnnotations(message.data.errors);
 
-            if(message.data.header !== undefined){
+            if (message.data.header !== undefined) {
                 this.setNewHeader(message.data.header);
             }
         }
     }
 
-    postWebWorkerMessage(){
+    postWebWorkerMessage() {
         TextEditor.errorWebWorker.postMessage({
             type: "text_change",
             text: addLineNumbers(this.rawValue)
@@ -325,7 +364,7 @@ export default class TextEditor extends HTMLElement {
             if(Array.isArray(error)){
                 return this.lastHeader + "\n" + addLineNumbers(this.editor.getValue()) + "\n" + "END_SEQUENCE";
             }
-            else{
+            else {
                 throw error;
             }
         }
