@@ -265,12 +265,12 @@ export default class TextEditor extends HTMLElement {
                 const words = editor.session
                     .getLine(pos.row)
                     .slice(0, pos.column)
-                    .match(/\b\w+\b(?= +)/g);
-                if (!words) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
+                    .split(/ +/);
+                if (words.length < 2) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
                 
                 let suggestions = [];
-                const firstWord = words[0]
-                const prevWord = words.pop()
+                const firstWord = words[0];
+                const prevWord = words.slice(-2,-1);
 
                 // Check _TRIM command context
                 if (trim.includes(firstWord)) {
@@ -285,7 +285,7 @@ export default class TextEditor extends HTMLElement {
                     } else if (isFinite(Number(prevWord))) {
                         suggestions = syntaxify(arg5, 10, 'unit')
                     }
-                    // Check START_FIT command context
+                // Check START_FIT command context
                 } else if (firstWord == 'START_FIT') {
                     if (prevWord == 'START_FIT') {
                         suggestions = syntaxify(arg3, 10, 'plane')
