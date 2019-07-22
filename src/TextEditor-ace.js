@@ -280,7 +280,9 @@ export default class TextEditor extends HTMLElement {
         var langTools = ace.require("ace/ext/language_tools");
 
         var testCompleter = {
-            getCompletions: function (editor, _session, pos, _prefix, callback) {
+            //identifierRegexps: [/\b\w+\b| +/g],
+            getCompletions: function (editor, _session, pos, prefix, callback) {
+                console.log(prefix)
                 const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
                 const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
                 const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
@@ -303,8 +305,7 @@ export default class TextEditor extends HTMLElement {
                 
                 let suggestions = [];
                 const firstWord = words[0];
-                const prevWord = words.slice(-2,-1);
-
+                const prevWord = words.slice(-2,-1)[0];
                 // Check _TRIM command context
                 if (trim.includes(firstWord)) {
                     if (trim.includes(prevWord)) {
