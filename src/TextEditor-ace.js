@@ -296,19 +296,20 @@ export default class TextEditor extends HTMLElement {
         var langTools = ace.require("ace/ext/language_tools");
 
         var testCompleter = {
-            getCompletions: function (editor, _session, pos, _prefix, callback) {
+            identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/],
+            getCompletions: function (editor, _session, pos, prefix, callback) {
                 const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
                 const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
                 const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
                 const arg2 = ['BEAM1', 'BEAM2'];
                 const arg3 = ['CROSSING', 'SEPARATION'];
-                //    arg4 = some number
+                const arg4 = ['0'];
                 const arg5 = ['SIGMA', 'MM'];
                 const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
 
                 // Syntax of a suggestion
                 function syntaxify(arr, score, meta) {
-                    return arr.map(x => ({ value: x, score: score, meta: meta, docText: 'some text goes here' }))
+                    return arr.map(x => ({ value: prefix == " " ? ' ' + x : x, score: score, meta: meta, docText: 'some text goes here' }))
                 }
 
                 const words = editor.session
@@ -319,8 +320,7 @@ export default class TextEditor extends HTMLElement {
 
                 let suggestions = [];
                 const firstWord = words[0];
-                const prevWord = words.slice(-2, -1);
-
+                const prevWord = words.slice(-2, -1)[0];
                 // Check _TRIM command context
                 if (trim.includes(firstWord)) {
                     if (trim.includes(prevWord)) {
