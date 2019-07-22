@@ -54,7 +54,7 @@ const styling = css`
  * 
  * @param {string} text
  */
-function addLineNumbers(text, start=1) {
+function addLineNumbers(text, start = 1) {
     let currentLine = start;
 
     return text.split("\n").map((line) => {
@@ -104,7 +104,7 @@ function calculateLineNumber(file, absLineNum) {
 /**
  * @param {string} text 
  */
-function removeLineNumbers(text){
+function removeLineNumbers(text) {
     return text.split("\n").map(x => {
         const match = x.match(/^[0-9]+ +/);
         if (match !== null) {
@@ -128,18 +128,18 @@ function stripText(text) {
     let state = "TOP_LINE";
 
     const mainText = noNumbersText.split("\n").map(line => {
-        if (state == "TOP_LINE"){
+        if (state == "TOP_LINE") {
             topLines.push(line);
 
-            if(line.startsWith("INITIALIZE_TRIM")){
+            if (line.startsWith("INITIALIZE_TRIM")) {
                 state = "MAIN";
             }
         }
-        else if (state == "MAIN"){
-            if (line.startsWith("END_SEQUENCE")){
+        else if (state == "MAIN") {
+            if (line.startsWith("END_SEQUENCE")) {
                 state = "FOOTER";
             }
-            else{
+            else {
                 return line;
             }
         }
@@ -221,7 +221,7 @@ export default class TextEditor extends HTMLElement {
         this.topLineHeaderPosition = topLineLines - 1;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         // @ts-ignore
         this.editor.renderer.once("afterRender", () => {
             this.editor.setOptions({
@@ -280,21 +280,20 @@ export default class TextEditor extends HTMLElement {
         var langTools = ace.require("ace/ext/language_tools");
 
         var testCompleter = {
-            //identifierRegexps: [/\b\w+\b| +/g],
+            identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/],
             getCompletions: function (editor, _session, pos, prefix, callback) {
-                console.log(prefix)
                 const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
                 const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
                 const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
                 const arg2 = ['BEAM1', 'BEAM2'];
                 const arg3 = ['CROSSING', 'SEPARATION'];
-                //    arg4 = some number
+                const arg4 = ['0'];
                 const arg5 = ['SIGMA', 'MM'];
                 const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
 
                 // Syntax of a suggestion
                 function syntaxify(arr, score, meta) {
-                    return arr.map(x => ({ value: x, score: score, meta: meta, docText: 'some text goes here'}))
+                    return arr.map(x => ({ value: prefix == " " ? ' ' + x : x, score: score, meta: meta, docText: 'some text goes here' }))
                 }
 
                 const words = editor.session
@@ -302,10 +301,10 @@ export default class TextEditor extends HTMLElement {
                     .slice(0, pos.column)
                     .split(/ +/);
                 if (words.length < 2) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
-                
+
                 let suggestions = [];
                 const firstWord = words[0];
-                const prevWord = words.slice(-2,-1)[0];
+                const prevWord = words.slice(-2, -1)[0];
                 // Check _TRIM command context
                 if (trim.includes(firstWord)) {
                     if (trim.includes(prevWord)) {
@@ -319,7 +318,7 @@ export default class TextEditor extends HTMLElement {
                     } else if (isFinite(Number(prevWord))) {
                         suggestions = syntaxify(arg5, 10, 'unit')
                     }
-                // Check START_FIT command context
+                    // Check START_FIT command context
                 } else if (firstWord == 'START_FIT') {
                     if (prevWord == 'START_FIT') {
                         suggestions = syntaxify(arg3, 10, 'plane')
@@ -343,8 +342,8 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = newHeader;
         // @ts-ignore
         this.topLineEditor.session.replace({
-            start: {row: this.topLineHeaderPosition, column: 0},
-            end: {row: this.topLineHeaderPosition, column: Number.MAX_VALUE}
+            start: { row: this.topLineHeaderPosition, column: 0 },
+            end: { row: this.topLineHeaderPosition, column: Number.MAX_VALUE }
         }, newHeader)
     }
 
@@ -355,7 +354,7 @@ export default class TextEditor extends HTMLElement {
         if (message.data.type == "lint") {
             this.editor.getSession().setAnnotations(message.data.errors);
 
-            if(message.data.header !== undefined){
+            if (message.data.header !== undefined) {
                 this.setNewHeader(removeLineNumbers(message.data.header));
             }
         }
@@ -388,7 +387,7 @@ export default class TextEditor extends HTMLElement {
         return this.editor.getValue();
     }
 
-    set rawValue(newRawValue){
+    set rawValue(newRawValue) {
         this.editor.setValue(newRawValue, -1);
     }
 
@@ -402,12 +401,12 @@ export default class TextEditor extends HTMLElement {
     get value() {
         const editorValue = this.rawValue;
 
-        try{
+        try {
             // Add the headers (we don't know if this.lastHeader is stale)
             return deparseVdM(parseVdM(addLineNumbers(editorValue), true));
         }
-        catch(error) {
-            if(Array.isArray(error)){
+        catch (error) {
+            if (Array.isArray(error)) {
                 return this.noParseValue;
             }
             else {
@@ -419,10 +418,10 @@ export default class TextEditor extends HTMLElement {
     set value(newValue) {
         const [topLine, mainText] = stripText(newValue);
 
-        if(topLine == ""){
+        if (topLine == "") {
             this.setNewTopLine(DEFAULT_HEADER)
         }
-        else{
+        else {
             this.setNewTopLine(topLine);
         }
 
