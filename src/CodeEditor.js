@@ -357,7 +357,7 @@ export default class CodeEditor extends HTMLElement {
             } else if (arg2.includes(prevWord)) {
                 suggestions = syntaxify(arg3, 10, 'plane')
             } else if (arg3.includes(prevWord)) {
-                suggestions = [];
+                suggestions = syntaxify(arg4, 10, 'plane')
             } else if (isFinite(Number(prevWord))) {
                 suggestions = syntaxify(arg5, 10, 'unit')
             }
@@ -368,6 +368,8 @@ export default class CodeEditor extends HTMLElement {
             } else if (arg3.includes(prevWord)) {
                 suggestions = syntaxify(fitTypes)
             }
+        } else if (firstWord == 'SECONDS_WAIT' && prevWord == 'SECONDS_WAIT') {
+            suggestions = syntaxify(arg4, 10, 'plane')
         }
 
         // State autocompletion suggestions
