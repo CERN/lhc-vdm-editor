@@ -16,7 +16,10 @@ const styling = css`
     margin-left: 3px;
     font-size: 12px;
     font-family: monospace;
-    color: green;
+}
+
+.fake-ace-keyword{
+    color: #C800A4;
 }
 
 #top-line-editor .ace_cursor {
@@ -33,12 +36,13 @@ const styling = css`
 
 #last-line {
     border-top: solid 2px #b9b9b9;
+    font: 12px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
 .editor-number {
     display: inline-block;
     font-family: monospace;
-    background-color: #f0f0f0;
+    background-color: #e8e8e8;
     padding-left: 21px;
     padding-right: 13px;
     font-size: 12px;
@@ -457,7 +461,7 @@ export default class TextEditor extends HTMLElement {
                 </div>
                 <div id="editor"></div>
                 <div id="last-line">
-                    <div style="width: 15px;" id="editor-number-end" class="editor-number">48</div><div class="fake-ace-line">END_SEQUENCE</div>
+                    <div style="width: 15px;" id="editor-number-end" class="editor-number">48</div><div class="fake-ace-line fake-ace-keyword">END_SEQUENCE</div>
                 </div>
             </div>
         `
