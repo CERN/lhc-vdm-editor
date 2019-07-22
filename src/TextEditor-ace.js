@@ -3,6 +3,7 @@ import "../extern/ace.js"
 import "../extern/ace-lang-tools.js"
 import "./mode-vdm.js"
 import { parseVdM, deparseVdM } from "./parser.js"
+import "./token_tooltip.js"
 
 
 const styling = css`
@@ -47,6 +48,10 @@ const styling = css`
 #editor-container{
     height: 100%;
 }
+
+.ace_vdm-command-marker{
+    background: lightgrey;
+}
 `
 
 /**
@@ -54,7 +59,7 @@ const styling = css`
  * 
  * @param {string} text
  */
-function addLineNumbers(text, start=1) {
+function addLineNumbers(text, start = 1) {
     let currentLine = start;
 
     return text.split("\n").map((line) => {
@@ -104,7 +109,7 @@ function calculateLineNumber(file, absLineNum) {
 /**
  * @param {string} text 
  */
-function removeLineNumbers(text){
+function removeLineNumbers(text) {
     return text.split("\n").map(x => {
         const match = x.match(/^[0-9]+ +/);
         if (match !== null) {
@@ -128,18 +133,18 @@ function stripText(text) {
     let state = "TOP_LINE";
 
     const mainText = noNumbersText.split("\n").map(line => {
-        if (state == "TOP_LINE"){
+        if (state == "TOP_LINE") {
             topLines.push(line);
 
-            if(line.startsWith("INITIALIZE_TRIM")){
+            if (line.startsWith("INITIALIZE_TRIM")) {
                 state = "MAIN";
             }
         }
-        else if (state == "MAIN"){
-            if (line.startsWith("END_SEQUENCE")){
+        else if (state == "MAIN") {
+            if (line.startsWith("END_SEQUENCE")) {
                 state = "FOOTER";
             }
-            else{
+            else {
                 return line;
             }
         }
@@ -151,7 +156,17 @@ function stripText(text) {
     ];
 }
 
+const commandHints = {
+    "RELATIVE_TRIM": "(command) RELATIVE_TRIM <IP> <BEAM> <PLANE> <UNITS>",
+    "ABSOLUTE_TRIM": "(command) ABSOLUTE_TRIM <IP> <BEAM> <PLANE> <UNITS>",
+    'SECONDS_WAIT': "(command) SECONDS_WAIT <NUMBER>",
+    'START_FIT': "(command) START_FIT <PLANE> <FIT_TYPE>",
+    'END_FIT': "(command) END_FIT",
+    'MESSAGE': "(command) MESSAGE <STRING>"
+}
+
 const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
+const token_tooltip = ace.require("ace/token_tooltip");
 
 export default class TextEditor extends HTMLElement {
     static errorWebWorker = new Worker("./src/worker-vdm.js");
@@ -167,6 +182,7 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
+        this.tooltip = new token_tooltip.TokenTooltip(this.editor, value => commandHints[value]);
 
         this.setUpTopLine();
         this.setupEditor();
@@ -221,7 +237,7 @@ export default class TextEditor extends HTMLElement {
         this.topLineHeaderPosition = topLineLines - 1;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         // @ts-ignore
         this.editor.renderer.once("afterRender", () => {
             this.editor.setOptions({
@@ -292,7 +308,7 @@ export default class TextEditor extends HTMLElement {
 
                 // Syntax of a suggestion
                 function syntaxify(arr, score, meta) {
-                    return arr.map(x => ({ value: x, score: score, meta: meta, docText: 'some text goes here'}))
+                    return arr.map(x => ({ value: x, score: score, meta: meta, docText: 'some text goes here' }))
                 }
 
                 const words = editor.session
@@ -300,10 +316,10 @@ export default class TextEditor extends HTMLElement {
                     .slice(0, pos.column)
                     .split(/ +/);
                 if (words.length < 2) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
-                
+
                 let suggestions = [];
                 const firstWord = words[0];
-                const prevWord = words.slice(-2,-1);
+                const prevWord = words.slice(-2, -1);
 
                 // Check _TRIM command context
                 if (trim.includes(firstWord)) {
@@ -318,7 +334,7 @@ export default class TextEditor extends HTMLElement {
                     } else if (isFinite(Number(prevWord))) {
                         suggestions = syntaxify(arg5, 10, 'unit')
                     }
-                // Check START_FIT command context
+                    // Check START_FIT command context
                 } else if (firstWord == 'START_FIT') {
                     if (prevWord == 'START_FIT') {
                         suggestions = syntaxify(arg3, 10, 'plane')
@@ -342,8 +358,8 @@ export default class TextEditor extends HTMLElement {
         this.lastHeader = newHeader;
         // @ts-ignore
         this.topLineEditor.session.replace({
-            start: {row: this.topLineHeaderPosition, column: 0},
-            end: {row: this.topLineHeaderPosition, column: Number.MAX_VALUE}
+            start: { row: this.topLineHeaderPosition, column: 0 },
+            end: { row: this.topLineHeaderPosition, column: Number.MAX_VALUE }
         }, newHeader)
     }
 
@@ -354,7 +370,7 @@ export default class TextEditor extends HTMLElement {
         if (message.data.type == "lint") {
             this.editor.getSession().setAnnotations(message.data.errors);
 
-            if(message.data.header !== undefined){
+            if (message.data.header !== undefined) {
                 this.setNewHeader(removeLineNumbers(message.data.header));
             }
         }
@@ -387,7 +403,7 @@ export default class TextEditor extends HTMLElement {
         return this.editor.getValue();
     }
 
-    set rawValue(newRawValue){
+    set rawValue(newRawValue) {
         this.editor.setValue(newRawValue, -1);
     }
 
@@ -401,12 +417,12 @@ export default class TextEditor extends HTMLElement {
     get value() {
         const editorValue = this.rawValue;
 
-        try{
+        try {
             // Add the headers (we don't know if this.lastHeader is stale)
             return deparseVdM(parseVdM(addLineNumbers(editorValue), true));
         }
-        catch(error) {
-            if(Array.isArray(error)){
+        catch (error) {
+            if (Array.isArray(error)) {
                 return this.noParseValue;
             }
             else {
@@ -418,10 +434,10 @@ export default class TextEditor extends HTMLElement {
     set value(newValue) {
         const [topLine, mainText] = stripText(newValue);
 
-        if(topLine == ""){
+        if (topLine == "") {
             this.setNewTopLine(DEFAULT_HEADER)
         }
-        else{
+        else {
             this.setNewTopLine(topLine);
         }
 
