@@ -111,6 +111,8 @@ function calculateLineNumber(file, absLineNum) {
 }
 
 /**
+ * Removes the line numbers from the text of a VDM file
+ * 
  * @param {string} text 
  */
 function removeLineNumbers(text) {
@@ -128,8 +130,12 @@ function removeLineNumbers(text) {
 }
 
 /**
+ * Converts a VDM file into a portion including INITIALIZE_TRIM and comments above
+ * and the main body of the VDM file, excluding END_SEQUENCE. All of this text has line
+ * numbers removed
+ * 
  * @param {string} text
- * @returns {[string, string]} [The stripped top line, The main stripped text]
+ * @returns {[string, string]} [The top lines, The main text]
  */
 function stripText(text) {
     const noNumbersText = removeLineNumbers(text);
@@ -383,7 +389,9 @@ export default class CodeEditor extends HTMLElement {
     postWebWorkerMessage() {
         CodeEditor.errorWebWorker.postMessage({
             type: "text_change",
-            text: addLineNumbers(this.rawValue)
+            // NOTE: the web worker works on the assumption that the header is the top line, 
+            // - here we ensure that this is the case
+            text: addLineNumbers(this.rawValue.split("\n").slice(this.topLineHeaderPosition).join("\n"))
         })
     }
 
