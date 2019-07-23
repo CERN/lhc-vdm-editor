@@ -38,7 +38,7 @@ commit-element {
 
 const EDITOR_TAG_NAMES = [
     "raw-editor",
-    "text-editor",
+    "code-editor",
 ]
 
 

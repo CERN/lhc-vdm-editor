@@ -5,6 +5,7 @@ import "../extern/ace-searchbox.js"
 import "./mode-vdm.js"
 import { parseVdM, deparseVdM } from "./parser.js"
 import "./token_tooltip.js"
+const token_tooltip = ace.require("ace/token_tooltip");
 
 
 const styling = css`
@@ -177,7 +178,6 @@ const commandHints = {
 }
 
 const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
-const token_tooltip = ace.require("ace/token_tooltip");
 
 export default class CodeEditor extends HTMLElement {
     static errorWebWorker = new Worker("./src/worker-vdm.js");
@@ -500,4 +500,4 @@ export default class CodeEditor extends HTMLElement {
         `
     }
 }
-customElements.define('text-editor', CodeEditor);
+customElements.define('code-editor', CodeEditor);
