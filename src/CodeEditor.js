@@ -1,6 +1,7 @@
 import { html, css } from "./HelperFunctions.js"
 import "../extern/ace.js"
 import "../extern/ace-lang-tools.js"
+import "../extern/ace-searchbox.js"
 import "./mode-vdm.js"
 import { parseVdM, deparseVdM } from "./parser.js"
 import "./token_tooltip.js"
