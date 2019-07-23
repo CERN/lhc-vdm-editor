@@ -10,7 +10,7 @@ export class OAuth {
         localStorage.setItem("oauth_state", oauthState)
         // @ts-ignore
         window.location = `https://gitlab.cern.ch/oauth/authorize?client_id=${clientId
-            }&redirect_uri=${redirectURI}&state=${oauthState}`
+            }&redirect_uri=${redirectURI}&state=${oauthState}&response_type=token`
     }
 
     getAccessToken() {
