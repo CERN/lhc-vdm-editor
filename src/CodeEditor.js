@@ -172,7 +172,7 @@ const commandHints = {
 const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
 const token_tooltip = ace.require("ace/token_tooltip");
 
-export default class TextEditor extends HTMLElement {
+export default class CodeEditor extends HTMLElement {
     static errorWebWorker = new Worker("./src/worker-vdm.js");
 
     constructor() {
@@ -182,7 +182,7 @@ export default class TextEditor extends HTMLElement {
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
-        TextEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
+        CodeEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
         this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
@@ -381,7 +381,7 @@ export default class TextEditor extends HTMLElement {
     }
 
     postWebWorkerMessage() {
-        TextEditor.errorWebWorker.postMessage({
+        CodeEditor.errorWebWorker.postMessage({
             type: "text_change",
             text: addLineNumbers(this.rawValue)
         })
@@ -467,4 +467,4 @@ export default class TextEditor extends HTMLElement {
         `
     }
 }
-customElements.define('text-editor', TextEditor);
+customElements.define('text-editor', CodeEditor);

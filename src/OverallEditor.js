@@ -1,7 +1,7 @@
 // @ts-check
 import { css, html } from "./HelperFunctions.js"
 import "./RawEditor.js"
-import "./TextEditor-ace.js"
+import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
 import GitLab from "./GitLab.js"
