@@ -31,8 +31,7 @@ commit-element {
     display: inline-block;
     float: left;
     padding: 7px;
-    font-size: 16px;
-    font-family: monospace;
+    font: 16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 `
 
