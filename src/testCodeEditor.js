@@ -13,13 +13,13 @@ fdescribe("CodeEditor", () => {
             ce = new CodeEditor();
         })
 
-        it("parses and deparses a simple file", async () => {
+        it("parses and deparses a simple file", () => {
             ce.value = simpleFile;
 
             expect(ce.value).toBe(simpleFile)
         })
 
-        it("parses and deparses a file with comments", async () => {
+        it("parses and deparses a file with comments", () => {
             ce.value = simpleFileWithComments;
 
             expect(ce.value).toBe(simpleFileWithComments)

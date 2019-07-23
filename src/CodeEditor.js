@@ -6,6 +6,8 @@ import "./mode-vdm.js"
 import { parseVdM, deparseVdM } from "./parser.js"
 import "./token_tooltip.js"
 const token_tooltip = ace.require("ace/token_tooltip");
+const Autocomplete = ace.require("ace/autocomplete").Autocomplete;
+const langTools = ace.require("ace/ext/language_tools");
 
 
 const styling = css`
@@ -142,11 +144,14 @@ function removeLineNumbers(text) {
 function stripText(text) {
     const noNumbersText = removeLineNumbers(text);
     let topLines = [];
-    let state = "TOP_LINE";
+    let state = "TOP_LINES";
 
     const mainText = noNumbersText.split("\n").map(line => {
-        if (state == "TOP_LINE") {
-            topLines.push(line);
+        if (state == "TOP_LINES") {
+            if(line.startsWith("#") || line.startsWith("INITIALIZE_TRIM")){
+                // ignore invalid text in the top lines
+                topLines.push(line);
+            }
 
             if (line.startsWith("INITIALIZE_TRIM")) {
                 state = "MAIN";
@@ -194,6 +199,8 @@ export default class CodeEditor extends HTMLElement {
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
         this.tooltip = new token_tooltip.TokenTooltip(this.editor, value => commandHints[value]);
+
+        this.preventAutocompleteClosing();
 
         this.setUpTopLine();
         this.setupEditor();
@@ -304,8 +311,6 @@ export default class CodeEditor extends HTMLElement {
         // @ts-ignore
         this.editor.session.gutterRenderer = VDMNumberRenderer;
 
-        var langTools = ace.require("ace/ext/language_tools");
-
         var testCompleter = {
             identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/],
             getCompletions: (editor, session, pos, prefix, callback) => 
@@ -313,6 +318,21 @@ export default class CodeEditor extends HTMLElement {
         }
         langTools.setCompleters([testCompleter]);
         this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
+    }
+
+    preventAutocompleteClosing() {
+        // @ts-ignore
+        this.editor.commands.on("afterExec", event => {
+            // @ts-ignore
+            const hadCompleter = this.editor.completer !== undefined;
+            if(event.command.name == "insertstring"){
+                setTimeout(() => {
+                    if(hadCompleter){
+                        Autocomplete.for(this.editor).showPopup(this.editor);
+                    }
+                }, 0)
+            }
+        })
     }
 
     /**
@@ -326,24 +346,39 @@ export default class CodeEditor extends HTMLElement {
      */
     getAutocompletions(editor, _session, pos, prefix, callback){
         const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
-        const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
+        const others = ['SECONDS_WAIT', 'START_FIT', 'MESSAGE'];
+        const noArgCommand = ['END_FIT']
         const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
         const arg2 = ['BEAM1', 'BEAM2'];
         const arg3 = ['CROSSING', 'SEPARATION'];
-        const arg4 = ['0'];
+        const arg4 = ['0.0'];
         const arg5 = ['SIGMA', 'MM'];
         const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
 
         // Syntax of a suggestion
-        function syntaxify(arr, score, meta) {
-            return arr.map(x => ({ value: prefix == " " ? ' ' + x : x, score: score, meta: meta, docText: 'some text goes here' }))
+        function syntaxify(arr, score, meta, addSpaceAfter=true) {
+            return arr.map(x => {
+                if(prefix == " "){
+                    x = ' ' + x;
+                }
+
+                if(addSpaceAfter){
+                    x += ' ';
+                }
+
+                return { value: x, score: score, meta: meta }
+            })
         }
 
         const words = editor.session
             .getLine(pos.row)
             .slice(0, pos.column)
             .split(/ +/);
-        if (words.length < 2) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
+        if (words.length < 2) {
+            callback(null, syntaxify(trim.concat(others), 10, 'command').concat(
+                syntaxify(noArgCommand, 10, 'command', false)));
+            return;
+        }
 
         let suggestions = [];
         const firstWord = words[0];
@@ -359,17 +394,17 @@ export default class CodeEditor extends HTMLElement {
             } else if (arg3.includes(prevWord)) {
                 suggestions = syntaxify(arg4, 10, 'plane')
             } else if (isFinite(Number(prevWord))) {
-                suggestions = syntaxify(arg5, 10, 'unit')
+                suggestions = syntaxify(arg5, 10, 'unit', false)
             }
             // Check START_FIT command context
         } else if (firstWord == 'START_FIT') {
             if (prevWord == 'START_FIT') {
                 suggestions = syntaxify(arg3, 10, 'plane')
             } else if (arg3.includes(prevWord)) {
-                suggestions = syntaxify(fitTypes)
+                suggestions = syntaxify(fitTypes, 10, 'fit type', false)
             }
         } else if (firstWord == 'SECONDS_WAIT' && prevWord == 'SECONDS_WAIT') {
-            suggestions = syntaxify(arg4, 10, 'plane')
+            suggestions = syntaxify(arg4, 10, 'plane', false)
         }
 
         // State autocompletion suggestions
@@ -455,8 +490,10 @@ export default class CodeEditor extends HTMLElement {
         const editorValue = this.rawValue;
 
         try {
-            // Add the headers (we don't know if this.lastHeader is stale)
-            return deparseVdM(parseVdM(addLineNumbers(editorValue), true));
+            const commentsAboveHeader = this.topLineEditor.getValue().split("\n").slice(0, this.topLineHeaderPosition).join("\n");
+
+            // Add the headers (we don't know if this.lastHeader is stale
+            return commentsAboveHeader + '\n' + deparseVdM(parseVdM(addLineNumbers(editorValue), true));
         }
         catch (error) {
             if (Array.isArray(error)) {
@@ -472,7 +509,7 @@ export default class CodeEditor extends HTMLElement {
         const [topLine, mainText] = stripText(newValue);
 
         if (topLine == "") {
-            this.setNewTopLine(DEFAULT_HEADER)
+            this.setNewTopLine(DEFAULT_HEADER);
         }
         else {
             this.setNewTopLine(topLine);
