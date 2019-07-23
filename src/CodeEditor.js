@@ -130,9 +130,9 @@ function removeLineNumbers(text) {
 }
 
 /**
- * Converts a VDM file into a portion including INITIALIZE_TRIM and comments above
+ * Converts a VDM file into a portion including INITIALIZE_TRIM and comments above it
  * and the main body of the VDM file, excluding END_SEQUENCE. All of this text has line
- * numbers removed
+ * numbers removed.
  * 
  * @param {string} text
  * @returns {[string, string]} [The top lines, The main text]
@@ -188,7 +188,7 @@ export default class CodeEditor extends HTMLElement {
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
-        CodeEditor.errorWebWorker.onmessage = message => this.webWorkerMessage(message);
+        CodeEditor.errorWebWorker.onmessage = message => this.onWebWorkerMessage(message);
         this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
@@ -307,61 +307,75 @@ export default class CodeEditor extends HTMLElement {
 
         var testCompleter = {
             identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/],
-            getCompletions: function (editor, _session, pos, prefix, callback) {
-                const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
-                const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
-                const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
-                const arg2 = ['BEAM1', 'BEAM2'];
-                const arg3 = ['CROSSING', 'SEPARATION'];
-                const arg4 = ['0'];
-                const arg5 = ['SIGMA', 'MM'];
-                const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
-
-                // Syntax of a suggestion
-                function syntaxify(arr, score, meta) {
-                    return arr.map(x => ({ value: prefix == " " ? ' ' + x : x, score: score, meta: meta, docText: 'some text goes here' }))
-                }
-
-                const words = editor.session
-                    .getLine(pos.row)
-                    .slice(0, pos.column)
-                    .split(/ +/);
-                if (words.length < 2) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
-
-                let suggestions = [];
-                const firstWord = words[0];
-                const prevWord = words.slice(-2, -1)[0];
-                // Check _TRIM command context
-                if (trim.includes(firstWord)) {
-                    if (trim.includes(prevWord)) {
-                        suggestions = syntaxify(arg1, 10, 'IP')
-                    } else if (arg1.includes(prevWord)) {
-                        suggestions = syntaxify(arg2, 10, 'beam')
-                    } else if (arg2.includes(prevWord)) {
-                        suggestions = syntaxify(arg3, 10, 'plane')
-                    } else if (arg3.includes(prevWord)) {
-                        suggestions = [];
-                    } else if (isFinite(Number(prevWord))) {
-                        suggestions = syntaxify(arg5, 10, 'unit')
-                    }
-                    // Check START_FIT command context
-                } else if (firstWord == 'START_FIT') {
-                    if (prevWord == 'START_FIT') {
-                        suggestions = syntaxify(arg3, 10, 'plane')
-                    } else if (arg3.includes(prevWord)) {
-                        suggestions = syntaxify(fitTypes)
-                    }
-                }
-
-                // State autocompletion suggestions
-                callback(null, suggestions); return
-            }
+            getCompletions: (editor, session, pos, prefix, callback) => 
+                this.getAutocompletions(editor, session, pos, prefix, callback)
         }
         langTools.setCompleters([testCompleter]);
         this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
     }
 
     /**
+     * Function to be used by ace to get the completions.
+     * 
+     * @param {AceAjax.Editor} editor
+     * @param {any} _session
+     * @param {{ row: any; column: any; }} pos
+     * @param {string} prefix
+     * @param {(err: any, completions: object) => any} callback
+     */
+    getAutocompletions(editor, _session, pos, prefix, callback){
+        const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
+        const others = ['SECONDS_WAIT', 'START_FIT', 'END_FIT', 'MESSAGE'];
+        const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
+        const arg2 = ['BEAM1', 'BEAM2'];
+        const arg3 = ['CROSSING', 'SEPARATION'];
+        const arg4 = ['0'];
+        const arg5 = ['SIGMA', 'MM'];
+        const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
+
+        // Syntax of a suggestion
+        function syntaxify(arr, score, meta) {
+            return arr.map(x => ({ value: prefix == " " ? ' ' + x : x, score: score, meta: meta, docText: 'some text goes here' }))
+        }
+
+        const words = editor.session
+            .getLine(pos.row)
+            .slice(0, pos.column)
+            .split(/ +/);
+        if (words.length < 2) { callback(null, syntaxify(trim.concat(others), 10, 'command')); return }
+
+        let suggestions = [];
+        const firstWord = words[0];
+        const prevWord = words.slice(-2, -1)[0];
+        // Check _TRIM command context
+        if (trim.includes(firstWord)) {
+            if (trim.includes(prevWord)) {
+                suggestions = syntaxify(arg1, 10, 'IP')
+            } else if (arg1.includes(prevWord)) {
+                suggestions = syntaxify(arg2, 10, 'beam')
+            } else if (arg2.includes(prevWord)) {
+                suggestions = syntaxify(arg3, 10, 'plane')
+            } else if (arg3.includes(prevWord)) {
+                suggestions = [];
+            } else if (isFinite(Number(prevWord))) {
+                suggestions = syntaxify(arg5, 10, 'unit')
+            }
+            // Check START_FIT command context
+        } else if (firstWord == 'START_FIT') {
+            if (prevWord == 'START_FIT') {
+                suggestions = syntaxify(arg3, 10, 'plane')
+            } else if (arg3.includes(prevWord)) {
+                suggestions = syntaxify(fitTypes)
+            }
+        }
+
+        // State autocompletion suggestions
+        callback(null, suggestions); return
+    }
+
+    /**
+     * Sets the new header (note: this is just one line, not any comments before it).
+     * 
      * @param {string} newHeader
      */
     setNewHeader(newHeader) {
@@ -374,9 +388,11 @@ export default class CodeEditor extends HTMLElement {
     }
 
     /**
+     * This function gets called when the web worker gives us a message.
+     * 
      * @param {MessageEvent} message
      */
-    webWorkerMessage(message) {
+    onWebWorkerMessage(message) {
         if (message.data.type == "lint") {
             this.editor.getSession().setAnnotations(message.data.errors);
 
@@ -386,7 +402,10 @@ export default class CodeEditor extends HTMLElement {
         }
     }
 
-    postWebWorkerMessage() {
+    /**
+     * Post a message to tell the web to parse the current editor text.
+     */
+    makeWebWorkerParse() {
         CodeEditor.errorWebWorker.postMessage({
             type: "text_change",
             // NOTE: the web worker works on the assumption that the header is the top line, 
@@ -395,12 +414,15 @@ export default class CodeEditor extends HTMLElement {
         })
     }
 
+    /**
+     * This function gets called on a change in the editor
+     */
     editorChange() {
         const TIMEOUT = 1000;
         clearTimeout(this.lastEditorChangeTimeout);
         this.lastEditorChangeTimeout = setTimeout(() => {
             if (Date.now() - this.lastEditorChange >= TIMEOUT) {
-                this.postWebWorkerMessage();
+                this.makeWebWorkerParse();
             }
         }, TIMEOUT + 100);
 
@@ -420,7 +442,7 @@ export default class CodeEditor extends HTMLElement {
     }
 
     /**
-     * Gets the value, without a need for parsing the document (so uses the latest header)
+     * Gets the value, without a need for parsing the document (so uses the latest header).
      */
     get noParseValue() {
         return addLineNumbers(this.topLineEditor.getValue() + "\n" + this.rawValue + "\n" + "END_SEQUENCE", 0);
@@ -454,7 +476,7 @@ export default class CodeEditor extends HTMLElement {
         }
 
         this.editor.setValue(mainText, -1); // use -1 move the cursor to the start of the file
-        this.postWebWorkerMessage();
+        this.makeWebWorkerParse();
     }
 
     template() {

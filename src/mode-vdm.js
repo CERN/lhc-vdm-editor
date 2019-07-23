@@ -61,7 +61,6 @@ ace.define("ace/mode/vdm", ["require", "exports", "module", "ace/lib/oop", "ace/
     var oop = require("../lib/oop");
     var TextMode = require("./text").Mode;
     var vdmHighlightRules = require("./vdm_highlight_rules").vdmHighlightRules;
-    var WorkerClient = require("../worker/worker_client").WorkerClient;
 
     var Mode = function () {
         this.HighlightRules = vdmHighlightRules;
