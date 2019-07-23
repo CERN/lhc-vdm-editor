@@ -446,9 +446,7 @@ export default class CodeEditor extends HTMLElement {
     makeWebWorkerParse() {
         CodeEditor.errorWebWorker.postMessage({
             type: "text_change",
-            // NOTE: the web worker works on the assumption that the header is the top line, 
-            // - here we ensure that this is the case
-            text: addLineNumbers(this.rawValue.split("\n").slice(this.topLineHeaderPosition).join("\n"))
+            text: addLineNumbers(this.rawValue)
         })
     }
 
