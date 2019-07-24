@@ -190,7 +190,7 @@ export default class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.appendChild(this.template());
+        this.root.innerHTML = this.template();
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;

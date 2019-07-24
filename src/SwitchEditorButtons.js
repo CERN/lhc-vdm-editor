@@ -33,7 +33,7 @@ export default class SwitchEditorButtons extends HTMLElement {
     constructor(){
         super();
         this.root = this.attachShadow({mode: "open"});
-        this.root.appendChild(this.template());
+        this.root.innerHTML = this.template();
         /** @access private */
         this.activeButtonIndex = 0;
         this.DOMbuttons = Array.from(this.root.querySelectorAll("button"));

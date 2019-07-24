@@ -34,7 +34,7 @@ export default class CommitElement extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.appendChild(this.template());
+        this.root.innerHTML = this.template();
         this.root.querySelector("form").addEventListener("submit", () => {
             // @ts-ignore
             let message = this.root.querySelector("input[type=text]").value;

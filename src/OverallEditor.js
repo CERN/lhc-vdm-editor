@@ -9,7 +9,6 @@ import { parseVdM, deparseVdM } from "./parser.js"
 
 const styling = css`
 #editor-container {
-    height: inherit;
     position: relative;
     height: calc(100% - 45px);
 }
@@ -33,6 +32,12 @@ commit-element {
     padding: 7px;
     font: 16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
+#editor {
+    height: 100%;
+}
+raw-editor{
+    height: 100%
+}
 `
 
 const EDITOR_TAG_NAMES = [
@@ -49,7 +54,7 @@ export default class OverallEditor extends HTMLElement {
     constructor(gitlab, filePath, initContent = '') {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.appendChild(this.template())
+        this.root.innerHTML = this.template()
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
             this.switchToEditor(ev.detail)
         });
