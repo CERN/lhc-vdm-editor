@@ -4,34 +4,47 @@ import "./RawEditor.js"
 import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
+import "./FileBrowser.js"
 import GitLab from "./GitLab.js"
 import { parseVdM, deparseVdM } from "./parser.js"
 
 const styling = css`
 #editor-container {
-    height: inherit;
     position: relative;
     height: calc(100% - 45px);
+    width: calc(100% - 200px);
+    float: right
 }
+
 .header {
     margin-top: 5px;
     margin-bottom: 5px;
     text-align: right;
 }
+
 commit-element {
     display: inline-block;
 }
+
 .container {
     width: calc(100% - 30px);
     height: calc(100% - 8px);
     max-width: 1300px;
     margin: 0 auto;
 }
+
 #file-name {
     display: inline-block;
     float: left;
     padding: 7px;
     font: 16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+#file-browser-container {
+    width: 195px;
+    display: inline-block;
+    height: calc(100% - 45px);
+    margin-right: 5px;
 }
 `
 
@@ -136,6 +149,9 @@ export default class OverallEditor extends HTMLElement {
             <div class="header">
                 <div id="file-name"></div>
                 <commit-element></commit-element>
+            </div>
+            <div id="file-browser-container">
+                <file-browser></file-browser>
             </div>
             <div id="editor-container">
                 <div id="editor">
