@@ -12,6 +12,7 @@ $(async () => {
         const oa = new OAuth();
         if(window.location.hash.includes("access_token")){
             token = oa.getAccessToken();
+            window.location.hash = "#";
         }
         else{
             oa.getCredentials()

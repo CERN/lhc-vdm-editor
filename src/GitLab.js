@@ -7,15 +7,21 @@ export default class GitLab {
      * 
      * @param {string} token 
      */
-    constructor(token, branch = "master", authorEmail = "lhcvdm@cern.ch", authorUsername = "lhcvdm") {
+    constructor(token, branch="master", oauth=false) {
+        if(oauth){
+            this.authHeader = {
+                "Authorization": `Bearer ${token}`
+            }
+        }
+        else{
+            this.authHeader = {
+                'Private-Token': this.token
+            }
+        }
         /** @private */
         this.token = token;
         /** @private */
         this.branch = branch;
-        /** @private */
-        this.authorEmail = authorEmail;
-        /** @private */
-        this.authorUsername = authorUsername;
     }
 
     /**
@@ -30,7 +36,7 @@ export default class GitLab {
                 `${URL_START}/repository/files/${
                     encodeURIComponent(filePath)
                 }/raw?ref=${this.branch}`, 
-                {headers: new Headers({'Private-Token': this.token})}
+                {headers: new Headers(this.authHeader)}
             )
         ).text();
     };
@@ -46,15 +52,13 @@ export default class GitLab {
             `${URL_START}/repository/commits`,
             {
                 headers: new Headers({
-                    'Private-Token': this.token,
+                    ...this.authHeader,
                     'Content-Type': 'application/json'
                 }),
                 method: "POST",
                 body: JSON.stringify({
                     branch: this.branch,
                     commit_message: commitMessage,
-                    author_email: this.authorEmail,
-                    author_username: this.authorUsername,
                     actions: [{
                         action: "update",
                         file_path: filePath,
@@ -75,15 +79,13 @@ export default class GitLab {
             `${URL_START}/repository/commits`,
             {
                 headers: new Headers({
-                    'Private-Token': this.token,
+                    ...this.authHeader,
                     'Content-Type': 'application/json'
                 }),
                 method: "POST",
                 body: JSON.stringify({
                     branch: this.branch,
                     commit_message: commitMessage,
-                    author_email: this.authorEmail,
-                    author_username: this.authorUsername,
                     actions: [{
                         action: "create",
                         file_path: filePath,
@@ -114,7 +116,7 @@ export default class GitLab {
         const page = await gFetch(
             `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${path}`,
             {
-                headers: new Headers({'Private-Token': this.token})
+                headers: new Headers(this.authHeader)
             }
         )
         let campainList = (await page.json()).map(x => x.name);
@@ -123,7 +125,7 @@ export default class GitLab {
             const page = await gFetch(
                 `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=${i}&path=${path}`,
                 {
-                    headers: new Headers({'Private-Token': this.token})
+                    headers: new Headers(this.authHeader)
                 }
             );
             campainList = campainList.concat((await page.json()).map(x => x.name));
