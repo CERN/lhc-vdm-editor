@@ -491,7 +491,8 @@ export default class CodeEditor extends HTMLElement {
             const commentsAboveHeader = this.topLineEditor.getValue().split("\n").slice(0, this.topLineHeaderPosition).join("\n");
 
             // Add the headers (we don't know if this.lastHeader is stale
-            return commentsAboveHeader + '\n' + deparseVdM(parseVdM(addLineNumbers(editorValue), true));
+            return (commentsAboveHeader == "" ? "" : (commentsAboveHeader + '\n'))
+                + deparseVdM(parseVdM(addLineNumbers(editorValue), true));
         }
         catch (error) {
             if (Array.isArray(error)) {
