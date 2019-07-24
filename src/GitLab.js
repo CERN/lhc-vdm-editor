@@ -15,7 +15,7 @@ export default class GitLab {
         }
         else{
             this.authHeader = {
-                'Private-Token': this.token
+                'Private-Token': token
             }
         }
         /** @private */

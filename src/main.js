@@ -8,6 +8,7 @@ import {OAuth} from "./OAuth.js"
 $(async () => {
     let token;
 
+    let usesOAuth = false;
     if(window.location.origin == "https://lhcvdm.web.cern.ch"){
         const oa = new OAuth();
         if(window.location.hash.includes("access_token")){
@@ -17,6 +18,7 @@ $(async () => {
         else{
             oa.getCredentials()
         }
+        usesOAuth = true;
     }
     else{
         token = (await getJSON("./secrets.json")).token;
@@ -24,7 +26,7 @@ $(async () => {
 
     const filePath = "201605_VdM/IP5/HobbitCrossing.txt";
 
-    const gl = new GitLab(token, "vdm-editor-test");
+    const gl = new GitLab(token, "vdm-editor-test", usesOAuth);
     let hobbitFile = await gl.readFile(
         filePath,
     );
