@@ -38,6 +38,9 @@ commit-element {
 raw-editor{
     height: 100%
 }
+.uncommitted {
+    color: orange;
+}
 `
 
 const EDITOR_TAG_NAMES = [
@@ -62,6 +65,7 @@ export default class OverallEditor extends HTMLElement {
         /** @type {any} */
         this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
+
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             try {
                 this.gitlabInterface.writeFile(
@@ -69,27 +73,36 @@ export default class OverallEditor extends HTMLElement {
                     ev.detail,
                     deparseVdM(parseVdM(this.value))
                 );
+
+                this.setCommittedStatus(true);
             } catch (errArr) {
                 if (Array.isArray(errArr)) {
                     alert('Commit failed! Following errors encountered:\n\n' + errArr.map(x => x.message).join('\n'))
                 } else throw errArr
             }
         })
-        // @ts-ignore
-        this.root.querySelector("#file-name").innerText = filePath;
+        this.filePath = filePath;
 
-        this.setUpAutoSave(initContent);
+        this.editorContainer.addEventListener('editor-content-change', ev => {
+            // @ts-ignore
+            localStorage.setItem('content', ev.detail);
+            this.setCommittedStatus(false);
+        })
+
+        const isLocallyStored = this.setUpAutoSave(initContent);
+        if(isLocallyStored){
+            this.setCommittedStatus(true);
+        }
+        else{
+            this.setCommittedStatus(false);
+        }
     }
 
     /**
      * @param {string} initContent
+     * @returns {boolean} - returns whether we have restored the value from local storage
      */
     setUpAutoSave(initContent) {
-        this.editorContainer.addEventListener('editor-content-change', ev => {
-            // @ts-ignore
-            localStorage.setItem('content', ev.detail);
-        })
-
         if (localStorage.getItem('open-tab') !== null) {
             const buttonIndex = parseInt(localStorage.getItem('open-tab'));
 
@@ -101,10 +114,29 @@ export default class OverallEditor extends HTMLElement {
 
         if (localStorage.getItem('content') !== null) {
             this.editor.value = localStorage.getItem('content')
-        } else {
-            this.editor.value = initContent
-        }
 
+            return true;
+        } else {
+            this.editor.value = initContent;
+
+            return false;
+        }
+    }
+
+    /**
+     * @param {boolean} isCommitted
+     */
+    setCommittedStatus(isCommitted){
+        if(isCommitted){
+             // @ts-ignore
+            this.root.querySelector("#file-name").innerText = "./" + this.filePath + " (committed)";
+            this.root.querySelector("#file-name").classList.remove("uncommitted");
+        }
+        else{
+             // @ts-ignore
+            this.root.querySelector("#file-name").innerText = "./" + this.filePath + " (uncommitted)";
+            this.root.querySelector("#file-name").classList.add("uncommitted");
+        }
     }
 
     get value() {

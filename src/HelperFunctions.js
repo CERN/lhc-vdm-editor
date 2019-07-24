@@ -45,6 +45,9 @@ export function handleFetchErrors(response) {
 }
 
 /** @type {typeof fetch} */
+// @ts-ignore
 export const gFetch = async (...args) => handleFetchErrors(await fetch(...args));
+// @ts-ignore
 export const getText = async (...args) => await (await gFetch(...args)).text();
+// @ts-ignore
 export const getJSON = async (...args) => await (await gFetch(...args)).json();
