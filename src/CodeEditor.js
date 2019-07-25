@@ -26,11 +26,11 @@ const styling = css`
     color: #C800A4;
 }
 
-#top-line-editor .ace_cursor {
+.ace-no-select .ace_cursor {
     display: none !important;
 }
 
-#top-line-editor .ace_selection {
+.ace-no-select .ace_selection {
     display: none !important;
 }
 
@@ -38,9 +38,8 @@ const styling = css`
     border-bottom: solid 2px #b9b9b9;
 }
 
-#last-line {
+#last-line-editor {
     border-top: solid 2px #b9b9b9;
-    font: 12px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
 .editor-number {
@@ -173,6 +172,14 @@ function stripText(text) {
     ];
 }
 
+function getDefaultFontSize(){
+    const ta = document.createElement("textarea");
+    ta.style.display = "none";
+    document.body.appendChild(ta);
+    // NOTE: parseInt strips charaters so "14px" etc. will be parsed to 14.
+    return Math.round(parseInt(getComputedStyle(ta, null).getPropertyValue("font-size")));
+}
+
 const commandHints = {
     "RELATIVE_TRIM": "(command) RELATIVE_TRIM <IP> <BEAM> <PLANE> <UNITS>",
     "ABSOLUTE_TRIM": "(command) ABSOLUTE_TRIM <IP> <BEAM> <PLANE> <UNITS>",
@@ -198,48 +205,67 @@ export default class CodeEditor extends HTMLElement {
         this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
+        this.defaultFontSize = getDefaultFontSize();
         this.tooltip = new token_tooltip.TokenTooltip(this.editor, value => commandHints[value]);
 
         this.preventAutocompleteClosing();
 
-        this.setUpTopLine();
+        this.topLineEditor = this.setUpReadonlyEditor(
+            this.root.getElementById("top-line-editor"),
+            row => {
+                if (row == this.topLineHeaderPosition) {
+                    return "0";
+                }
+                else {
+                    return "";
+                }
+            }
+        );
+        this.lastLineEditor = this.setUpReadonlyEditor(
+            this.root.getElementById("last-line-editor"),
+            // @ts-ignore
+            _ => calculateLineNumber(this.rawValue, -1) - 1
+        );
+        //this.lastLineEditor.setOption("maxLines", 1);
         this.setupEditor();
         // @ts-ignore
         window.editor = this.editor;
     }
 
-    setUpTopLine() {
-        this.topLineEditor = ace.edit(this.root.getElementById("top-line-editor"));
+    /**
+     * @param {HTMLElement} element
+     * @param {(rowNum: number) => string} [getLineNumbers]
+     */
+    setUpReadonlyEditor(element, getLineNumbers) {
+        const editor = ace.edit(element);
         // @ts-ignore
-        this.topLineEditor.renderer.attachToShadowRoot();
-        this.topLineEditor.setOptions({
+        editor.renderer.attachToShadowRoot();
+        editor.setOptions({
             firstLineNumber: 0,
             mode: "ace/mode/vdm",
             readOnly: true,
             highlightActiveLine: false,
             highlightGutterLine: false,
-            showPrintMargin: false
+            showPrintMargin: false,
+            maxLines: Infinity,
+            fontSize: this.defaultFontSize
         });
         let ConstWidthLineNum = {
-            getText: (_session, row) => {
-                if (row == this.topLineHeaderPosition) {
-                    return 0;
-                }
-                else {
-                    return "";
-                }
-            },
+            getText: (_session, row) => getLineNumbers(row),
             getWidth: (_session, _lastLineNumber, _config) => {
+                // @ts-ignore
                 return this.numberBarWidth;
             }
         };
 
         // @ts-ignore
-        this.topLineEditor.session.gutterRenderer = ConstWidthLineNum;
+        editor.session.gutterRenderer = ConstWidthLineNum;
         // @ts-ignore
         ace.config.set('basePath', './extern');
-        this.topLineEditor.setTheme("ace/theme/xcode");
-        this.topLineEditor.setReadOnly(true);
+        editor.setTheme("ace/theme/xcode");
+        editor.setReadOnly(true);
+
+        return editor;
     }
 
     /**
@@ -249,8 +275,6 @@ export default class CodeEditor extends HTMLElement {
         const topLineLines = newTopLine.split("\n").length;
 
         this.topLineEditor.setValue(newTopLine, -1);
-
-        this.topLineEditor.setOption("maxLines", topLineLines);
 
         this.topLineHeaderPosition = topLineLines - 1;
     }
@@ -279,7 +303,8 @@ export default class CodeEditor extends HTMLElement {
             minLines: 20,
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
-            showPrintMargin: false
+            showPrintMargin: false,
+            fontSize: this.defaultFontSize
         })
 
         this.editor.session.on("change", () => {
@@ -295,15 +320,14 @@ export default class CodeEditor extends HTMLElement {
                 // TODO: could make this correct
                 const lastRealLineNumber = calculateLineNumber(this.rawValue, -1);
                 const width = lastRealLineNumber.toString().length * config.characterWidth;
-                // @ts-ignore
-                Array.from(this.root.querySelectorAll(".editor-number")).map(x => x.style.width = `${width}px`);
-                // @ts-ignore
-                this.root.querySelector("#editor-number-end").innerText = parseInt(lastRealLineNumber) + 1;
 
                 // Set width for top line
                 this.numberBarWidth = width;
+                // Trigger the other editor line length updates
                 // @ts-ignore
                 this.topLineEditor.renderer.updateLines(0, 1); // Calculate the top row update
+                // @ts-ignore
+                this.lastLineEditor.renderer.updateLines(0, 1); // Calculate the top row update
                 return width;
             }
         };
@@ -434,7 +458,30 @@ export default class CodeEditor extends HTMLElement {
      */
     onWebWorkerMessage(message) {
         if (message.data.type == "lint") {
-            this.editor.getSession().setAnnotations(message.data.errors);
+            const maxRow = this.rawValue.split("\n").length;
+
+            if(message.data.errors !== undefined){
+                this.editor.getSession().setAnnotations(message.data.errors.filter(error => {
+                    if(error.row == maxRow){
+                        this.lastLineEditor.getSession().setAnnotations([{
+                            ...error,
+                            row: 0
+                        }])
+    
+                        return false;
+                    }
+                    else if(error.row == 0){
+                        this.topLineEditor.getSession().setAnnotations([{
+                            ...error,
+                            row: this.topLineHeaderPosition
+                        }])
+    
+                        return false;
+                    }
+
+                    return true;
+                }));
+            }
 
             if (message.data.header !== undefined) {
                 this.setNewHeader(removeLineNumbers(message.data.header));
@@ -490,7 +537,8 @@ export default class CodeEditor extends HTMLElement {
         const editorValue = this.rawValue;
 
         try {
-            const commentsAboveHeader = this.topLineEditor.getValue().split("\n").slice(0, this.topLineHeaderPosition).join("\n");
+            const commentsAboveHeader = this.topLineEditor.getValue().split("\n")
+                .slice(0, this.topLineHeaderPosition).join("\n");
 
             // Add the headers (we don't know if this.lastHeader is stale
             return (commentsAboveHeader == "" ? "" : (commentsAboveHeader + '\n'))
@@ -526,14 +574,9 @@ export default class CodeEditor extends HTMLElement {
                 ${styling}
             </style>
             <div id="editor-container">
-                <div>
-                    <div id="top-line-editor"></div>
-                    <!--<div style="width: 15px;" class="editor-number">0</div><div id="top-line-editor">INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()</div>-->
-                </div>
+                <div class="ace-no-select" id="top-line-editor"></div>
                 <div id="editor"></div>
-                <div id="last-line">
-                    <div style="width: 15px;" id="editor-number-end" class="editor-number">48</div><div class="fake-ace-line fake-ace-keyword">END_SEQUENCE</div>
-                </div>
+                <div class="ace-no-select" id="last-line-editor">END_SEQUENCE</div>
             </div>
         `
     }

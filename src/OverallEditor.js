@@ -11,19 +11,19 @@ import { parseVdM, deparseVdM } from "./parser.js"
 const styling = css`
 #editor-container {
     position: relative;
-    height: calc(100% - 45px);
+    height: calc(100% - 55px);
     width: calc(100% - 200px);
     float: right
 }
 
 .header {
     margin-top: 5px;
-    margin-bottom: 5px;
-    text-align: right;
+    margin-bottom: 10px;
 }
 
 commit-element {
     display: inline-block;
+    float: right;
 }
 
 .container {
@@ -37,7 +37,7 @@ commit-element {
     display: inline-block;
     float: left;
     padding: 7px;
-    font: 16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    font: 14px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 #editor {
     height: 100%;
@@ -54,6 +54,18 @@ raw-editor{
     height: calc(100% - 45px);
     margin-right: 5px;
 }
+
+/* Clearfix to make floats take up space */
+.cf:before,
+.cf:after {
+  content: " ";
+  display: table;
+}
+
+.cf:after {
+  clear: both;
+}
+
 `
 
 const EDITOR_TAG_NAMES = [
@@ -183,7 +195,7 @@ export default class OverallEditor extends HTMLElement {
             ${styling}
         </style>
         <div class="container">
-            <div class="header">
+            <div class="header cf">
                 <div id="file-name"></div>
                 <commit-element></commit-element>
             </div>
@@ -196,8 +208,7 @@ export default class OverallEditor extends HTMLElement {
                 </div>
                 <switch-editor-buttons></switch-editor-buttons>
             </div>
-        </div>
-        `
+        </div>`
     }
 
 
