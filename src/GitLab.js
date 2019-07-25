@@ -136,3 +136,5 @@ export default class GitLab {
         return fileList.filter(x => x != 'readme.md')
     }
 }
+
+window.GitLab = GitLab;

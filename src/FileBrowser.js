@@ -1,7 +1,11 @@
 // @ts-check
-import { css, html } from "./HelperFunctions.js"
+import { css, html } from "./HelperFunctions.js";
+import GitLab from "./GitLab.js";
 
 const styling = css`
+* {
+    font-family: sans-serif;
+}
 #file-browser {
     border-style: solid;
     border-width: 1px;
@@ -12,7 +16,6 @@ const styling = css`
 .item {
     background-color: #ededed;
     padding: 3px;
-    font-family: sans-serif;
     font-size: 14px;
     cursor: pointer;
 }
@@ -58,15 +61,27 @@ const styling = css`
     border-left: 1px solid grey;
 }
 
+.selection-box{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.selection-box select {
+    padding: 2px;
+}
+
+.selection-name {
+    padding-bottom: 3px;
+}
+
 * {
-    -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none; /* Safari */
-       -khtml-user-select: none; /* Konqueror HTML */
-         -moz-user-select: none; /* Firefox */
-          -ms-user-select: none; /* Internet Explorer/Edge */
-              user-select: none; /* Non-prefixed version, currently
-                                    supported by Chrome and Opera */
-  }
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 `
 
 export default class FileBrowser extends HTMLElement {
@@ -74,6 +89,8 @@ export default class FileBrowser extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+
+        this.gitlab = null;
 
         this.setStructure([{
             type: "file",
@@ -103,6 +120,18 @@ export default class FileBrowser extends HTMLElement {
                 }]
             }
         }])
+    }
+
+    /**
+     * @param {GitLab} gitlab
+     */
+    setGitLab(gitlab){
+        this.gitlab = gitlab;
+        (async () => {
+            this.root.getElementById("campain-select").innerHTML = (await this.gitlab.listCampains()).map(campainName => {
+                return html`<option value=${campainName}>${campainName}</option>`
+            }).join("\n")
+        })()
     }
 
     /**
@@ -178,6 +207,25 @@ export default class FileBrowser extends HTMLElement {
         <style>
             ${styling}
         </style>
+        <div class="selection-box">
+            <div class="selection-name">IP:</div>
+            <div>
+                <select id="ip-select">
+                    <option value="IP1">IP1</option>
+                    <option value="IP2">IP2</option>
+                    <option value="IP5">IP5</option>
+                    <option value="IP8">IP8</option>
+                </select>
+            </div>
+        </div>
+        <div class="selection-box">
+            <div class="selection-name">Campain:</div>
+            <div>
+                <select id="campain-select">
+                </select>
+            </div>
+        </div>
+        <hr />
         <div id="file-browser">
         </div>
         `

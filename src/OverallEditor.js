@@ -13,7 +13,7 @@ const styling = css`
 #editor-container {
     position: relative;
     height: calc(100% - 55px);
-    width: calc(100% - 200px);
+    width: calc(100% - 230px);
     float: right
 }
 
@@ -40,17 +40,21 @@ commit-element {
     padding: 7px;
     font: 14px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
+
 #editor {
     height: 100%;
 }
+
 raw-editor{
     height: 100%
 }
+
 .uncommitted {
     color: orange;
 }
+
 #file-browser-container {
-    width: 195px;
+    width: 220px;
     display: inline-block;
     height: calc(100% - 45px);
     margin-right: 5px;
@@ -92,6 +96,8 @@ export default class OverallEditor extends HTMLElement {
         /** @type {any} */
         this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
+        // @ts-ignore
+        this.root.querySelector("file-browser").setGitLab(gitlab);
 
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             try {
