@@ -148,7 +148,7 @@ function stripText(text) {
 
     const mainText = noNumbersText.split("\n").map(line => {
         if (state == "TOP_LINES") {
-            if(line.startsWith("#") || line.startsWith("INITIALIZE_TRIM")){
+            if (line.startsWith("#") || line.startsWith("INITIALIZE_TRIM")) {
                 // ignore invalid text in the top lines
                 topLines.push(line);
             }
@@ -312,8 +312,8 @@ export default class CodeEditor extends HTMLElement {
         this.editor.session.gutterRenderer = VDMNumberRenderer;
 
         var testCompleter = {
-            identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/],
-            getCompletions: (editor, session, pos, prefix, callback) => 
+            //--- LINE NOT NEEDED --- identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/]
+            getCompletions: (editor, session, pos, prefix, callback) =>
                 this.getAutocompletions(editor, session, pos, prefix, callback)
         }
         langTools.setCompleters([testCompleter]);
@@ -325,9 +325,9 @@ export default class CodeEditor extends HTMLElement {
         this.editor.commands.on("afterExec", event => {
             // @ts-ignore
             const hadCompleter = this.editor.completer !== undefined;
-            if(event.command.name == "insertstring"){
+            if (event.command.name == "insertstring" && event.args != 'GAUSSIAN') {
                 setTimeout(() => {
-                    if(hadCompleter){
+                    if (hadCompleter) {
                         Autocomplete.for(this.editor).showPopup(this.editor);
                     }
                 }, 0)
@@ -344,7 +344,7 @@ export default class CodeEditor extends HTMLElement {
      * @param {string} prefix
      * @param {(err: any, completions: object) => any} callback
      */
-    getAutocompletions(editor, _session, pos, prefix, callback){
+    getAutocompletions(editor, _session, pos, prefix, callback) {
         const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
         const others = ['SECONDS_WAIT', 'START_FIT', 'MESSAGE'];
         const noArgCommand = ['END_FIT']
@@ -356,16 +356,14 @@ export default class CodeEditor extends HTMLElement {
         const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
 
         // Syntax of a suggestion
-        function syntaxify(arr, score, meta, addSpaceAfter=true) {
+        function syntaxify(arr, score, meta, addSpaceAfter = true) {
             return arr.map(x => {
-                if(prefix == " "){
+                if (prefix == " ") {
                     x = ' ' + x;
                 }
-
-                if(addSpaceAfter){
+                if (addSpaceAfter) {
                     x += ' ';
                 }
-
                 return { value: x, score: score, meta: meta }
             })
         }
@@ -375,40 +373,44 @@ export default class CodeEditor extends HTMLElement {
             .slice(0, pos.column)
             .split(/ +/);
         if (words.length < 2) {
-            callback(null, syntaxify(trim.concat(others), 10, 'command').concat(
-                syntaxify(noArgCommand, 10, 'command', false)));
+            callback(null,
+                syntaxify(trim.concat(others), 10, 'command')
+                    .concat(syntaxify(noArgCommand, 10, 'command', false))
+            );
             return;
         }
 
         let suggestions = [];
         const firstWord = words[0];
-        const prevWord = words.slice(-2, -1)[0];
+        const prevWord = words[words.length - 2];
+        const insertSpace = Boolean(editor.session.getLine(pos.row)[pos.column] != ' ');
+
         // Check _TRIM command context
         if (trim.includes(firstWord)) {
-            if (trim.includes(prevWord)) {
-                suggestions = syntaxify(arg1, 10, 'IP')
+            if (trim.includes(prevWord) || arg5.includes(prevWord)) {
+                suggestions = syntaxify(arg1, 10, 'IP', insertSpace)
             } else if (arg1.includes(prevWord)) {
-                suggestions = syntaxify(arg2, 10, 'beam')
+                suggestions = syntaxify(arg2, 10, 'beam', insertSpace)
             } else if (arg2.includes(prevWord)) {
-                suggestions = syntaxify(arg3, 10, 'plane')
+                suggestions = syntaxify(arg3, 10, 'plane', insertSpace)
             } else if (arg3.includes(prevWord)) {
-                suggestions = syntaxify(arg4, 10, 'plane')
+                suggestions = syntaxify(arg4, 10, 'number', insertSpace)
             } else if (isFinite(Number(prevWord))) {
                 suggestions = syntaxify(arg5, 10, 'unit', false)
             }
             // Check START_FIT command context
         } else if (firstWord == 'START_FIT') {
             if (prevWord == 'START_FIT') {
-                suggestions = syntaxify(arg3, 10, 'plane')
+                suggestions = syntaxify(arg3, 10, 'plane', insertSpace)
             } else if (arg3.includes(prevWord)) {
                 suggestions = syntaxify(fitTypes, 10, 'fit type', false)
             }
         } else if (firstWord == 'SECONDS_WAIT' && prevWord == 'SECONDS_WAIT') {
-            suggestions = syntaxify(arg4, 10, 'plane', false)
+            suggestions = syntaxify(arg4, 10, 'number', false)
         }
 
         // State autocompletion suggestions
-        callback(null, suggestions); return
+        callback(null, suggestions);
     }
 
     /**
