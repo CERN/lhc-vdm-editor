@@ -25,6 +25,7 @@ $(async () => {
     }
 
     const filePath = "201605_VdM/IP5/HobbitCrossing.txt";
+    localStorage.setItem('open-file', filePath);
 
     const gl = new GitLab(token, "vdm-editor-test", usesOAuth);
     let hobbitFile = await gl.readFile(

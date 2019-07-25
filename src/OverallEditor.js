@@ -7,6 +7,7 @@ import "./CommitElement.js"
 import "./FileBrowser.js"
 import GitLab from "./GitLab.js"
 import { parseVdM, deparseVdM } from "./parser.js"
+import './RevertButton.js'
 
 const styling = css`
 #editor-container {
@@ -86,6 +87,8 @@ export default class OverallEditor extends HTMLElement {
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
             this.switchToEditor(ev.detail)
         });
+        this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.setGitLabFile(localStorage.getItem('open-file')))
+
         this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
         this.editor = this.root.querySelector("raw-editor");
@@ -192,6 +195,11 @@ export default class OverallEditor extends HTMLElement {
         localStorage.setItem('open-tab', index.toString());
     }
 
+    async setGitLabFile(filepath) {
+        this.value = await this.gitlabInterface.readFile(filepath);
+        localStorage.setItem('content', this.value);
+    }
+
     template() {
         return html`
         <style>
@@ -210,6 +218,7 @@ export default class OverallEditor extends HTMLElement {
                     <raw-editor></raw-editor>
                 </div>
                 <switch-editor-buttons></switch-editor-buttons>
+                <revert-button></revert-button>
             </div>
         </div>`
     }
