@@ -116,10 +116,10 @@ export default class OverallEditor extends HTMLElement {
 
         const isLocallyStored = this.setUpAutoSave(initContent);
         if(isLocallyStored){
-            this.setCommittedStatus(true);
+            this.setCommittedStatus(false);
         }
         else{
-            this.setCommittedStatus(false);
+            this.setCommittedStatus(true);
         }
     }
 
@@ -135,6 +135,9 @@ export default class OverallEditor extends HTMLElement {
             
             // @ts-ignore
             this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
+        }
+        else{
+            this.switchToEditor(1); // the default editor is the code editor
         }
 
         if (localStorage.getItem('content') !== null) {
