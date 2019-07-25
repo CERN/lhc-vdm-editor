@@ -349,7 +349,7 @@ export function parseVdM(data, genHeaders = false) {
 
     // Command termination tests + header generation
     if (state.isFitting) {
-        errArr.push(new MySyntaxError(objArr.length - 1, 'Missing command END_FIT'))
+        errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
     }
     if (genHeaders) {
         if (state.hasEnded) {
@@ -366,7 +366,7 @@ export function parseVdM(data, genHeaders = false) {
             }
         }
     } else if (!state.hasEnded) {
-        errArr.push(new MySyntaxError(objArr.length - 1, 'Missing command END_SEQUENCE'))
+        errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
     }
 
     // Return finished structure or throw error array
