@@ -66,7 +66,6 @@ raw-editor{
 .cf:after {
   clear: both;
 }
-
 `
 
 const EDITOR_TAG_NAMES = [

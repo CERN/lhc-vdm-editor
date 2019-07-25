@@ -190,10 +190,9 @@ const commandHints = {
 }
 
 const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
+let errorWebWorker = new Worker("./src/worker-vdm.js");
 
 export default class CodeEditor extends HTMLElement {
-    static errorWebWorker = new Worker("./src/worker-vdm.js");
-
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -201,7 +200,7 @@ export default class CodeEditor extends HTMLElement {
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
-        CodeEditor.errorWebWorker.onmessage = message => this.onWebWorkerMessage(message);
+        errorWebWorker.onmessage = message => this.onWebWorkerMessage(message);
         this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
@@ -498,7 +497,7 @@ export default class CodeEditor extends HTMLElement {
      * Post a message to tell the web to parse the current editor text.
      */
     makeWebWorkerParse() {
-        CodeEditor.errorWebWorker.postMessage({
+        errorWebWorker.postMessage({
             type: "text_change",
             text: addLineNumbers(this.rawValue)
         })
