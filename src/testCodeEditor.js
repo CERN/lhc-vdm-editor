@@ -4,7 +4,7 @@ const simpleFile = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION
 const simpleFileWithComments = '#start\n0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n#middle\n1 SECONDS_WAIT 1.0\n2 END_SEQUENCE';
 
 
-fdescribe("CodeEditor", () => {
+describe("CodeEditor", () => {
     describe("parsing and deparsing", () => {
         /** @type {CodeEditor}  */
         let ce;

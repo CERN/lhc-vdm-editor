@@ -1,4 +1,4 @@
-import {gFetch} from "./HelperFunctions.js"
+import { gFetch } from "./HelperFunctions.js"
 
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
 
@@ -7,13 +7,13 @@ export default class GitLab {
      * 
      * @param {string} token 
      */
-    constructor(token, branch="master", oauth=false) {
-        if(oauth){
+    constructor(token, branch = "master", oauth = false) {
+        if (oauth) {
             this.authHeader = {
                 "Authorization": `Bearer ${token}`
             }
         }
-        else{
+        else {
             this.authHeader = {
                 'Private-Token': token
             }
@@ -30,13 +30,13 @@ export default class GitLab {
      * @param {string} filePath
      */
 
-    async readFile(filePath){
+    async readFile(filePath) {
         return await (
             await gFetch(
                 `${URL_START}/repository/files/${
-                    encodeURIComponent(filePath)
-                }/raw?ref=${this.branch}`, 
-                {headers: new Headers(this.authHeader)}
+                encodeURIComponent(filePath)
+                }/raw?ref=${this.branch}`,
+                { headers: new Headers(this.authHeader) }
             )
         ).text();
     };
@@ -96,14 +96,14 @@ export default class GitLab {
         )
     }
 
-    async listCampains(){
+    async listCampains() {
         return await this.listFiles('/');
     }
 
     /**
      * @param {string} campain
      */
-    async listIPs(campain){
+    async listIPs(campain) {
         return await this.listFiles(campain);
     }
 
@@ -111,7 +111,7 @@ export default class GitLab {
      * 
      * @param {string} path 
      */
-    async listFiles(path){
+    async listFiles(path) {
         const perPage = 100;
         const page = await gFetch(
             `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${path}`,
@@ -119,20 +119,20 @@ export default class GitLab {
                 headers: new Headers(this.authHeader)
             }
         )
-        let campainList = (await page.json()).map(x => x.name);
-        let lastPage = Math.ceil(parseInt(page.headers.get('X-Total'))/perPage);
-        for(let i=2; i<=lastPage; i++){
+        let fileList = (await page.json()).map(x => x.name);
+        let lastPage = Math.ceil(parseInt(page.headers.get('X-Total')) / perPage);
+        for (let i = 2; i <= lastPage; i++) {
             const page = await gFetch(
                 `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=${i}&path=${path}`,
                 {
                     headers: new Headers(this.authHeader)
                 }
             );
-            campainList = campainList.concat((await page.json()).map(x => x.name));
+            fileList = fileList.concat((await page.json()).map(x => x.name));
         }
         /**
          * @param {string} x
          */
-        return campainList.filter(x => x != 'readme.md');
+        return fileList.filter(x => x != 'readme.md')
     }
 }

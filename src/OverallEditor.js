@@ -197,6 +197,7 @@ export default class OverallEditor extends HTMLElement {
 
     async setGitLabFile(filepath) {
         this.value = await this.gitlabInterface.readFile(filepath);
+        localStorage.setItem('open-file', filepath);
         localStorage.setItem('content', this.value);
     }
 
