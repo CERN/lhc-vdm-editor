@@ -32,10 +32,12 @@ function genInitTrimArgs(objArr) {
     ];
     for (let obj of objArr) {
         if (obj.type == 'command' && obj.command.match(/(?:TRIM)$/)) {
-            argArr[0].values.add(obj.args[0]);
-            argArr[1].values.add(obj.args[1]);
-            argArr[2].values.add(obj.args[2]);
-            argArr[3].values.add(obj.args[4]);
+            for (let i = 0; i < obj.args.length; i += 5) {
+                argArr[0].values.add(obj.args[i + 0]);
+                argArr[1].values.add(obj.args[i + 1]);
+                argArr[2].values.add(obj.args[i + 2]);
+                argArr[3].values.add(obj.args[i + 4]);
+            }
         }
     }
     for (let type of argArr) {
@@ -298,7 +300,7 @@ export function parseVdM(data, genHeaders = false) {
         try {
             // Deconstruct string into arguments by spaces
             const line = lineArr[i].split(/ +/);
-            // Check line syntax
+            // Check syntax line by line
             if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
                 // Line type is NOT a command line (not initialised with integer)
                 if (line[0] == '') {
@@ -312,6 +314,9 @@ export function parseVdM(data, genHeaders = false) {
             } else {
                 // Line type is a command line (initialised with integer)! Check syntax:
                 try {
+                    /* if (lineArr[i].match(/ {2,}/)) {
+                        throw new MySyntaxError(i, 'Sevaral spaces encountered after ' + lineArr[i].match(/\b\w+\b(?= {2,})/) + '. Use only single ')
+                    } */
                     if (state.hasEnded) {
                         throw new MySyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
                     }
@@ -344,7 +349,7 @@ export function parseVdM(data, genHeaders = false) {
 
     // Command termination tests + header generation
     if (state.isFitting) {
-        errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
+        errArr.push(new MySyntaxError(objArr.length - 1, 'Missing command END_FIT'))
     }
     if (genHeaders) {
         if (state.hasEnded) {
@@ -361,7 +366,7 @@ export function parseVdM(data, genHeaders = false) {
             }
         }
     } else if (!state.hasEnded) {
-        errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
+        errArr.push(new MySyntaxError(objArr.length - 1, 'Missing command END_SEQUENCE'))
     }
 
     // Return finished structure or throw error array
