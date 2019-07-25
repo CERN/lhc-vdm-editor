@@ -460,6 +460,11 @@ export default class CodeEditor extends HTMLElement {
         if (message.data.type == "lint") {
             const maxRow = this.rawValue.split("\n").length;
 
+            // Reset the annotations on everywhere (message.data.errors might be undefined)
+            this.lastLineEditor.getSession().setAnnotations([]);
+            this.topLineEditor.getSession().setAnnotations([]);
+            this.editor.getSession().setAnnotations([]);
+
             if(message.data.errors !== undefined){
                 this.editor.getSession().setAnnotations(message.data.errors.filter(error => {
                     if(error.row == maxRow){
@@ -470,7 +475,7 @@ export default class CodeEditor extends HTMLElement {
     
                         return false;
                     }
-                    else if(error.row == 0){
+                    if(error.row == 0){
                         this.topLineEditor.getSession().setAnnotations([{
                             ...error,
                             row: this.topLineHeaderPosition
