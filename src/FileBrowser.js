@@ -83,6 +83,31 @@ const styling = css`
     -ms-user-select: none;
     user-select: none;
 }
+
+.context-menu {
+    position: fixed;
+    background-color: #fbfbfb;
+    border: #c1c1c1 solid 2px;
+    z-index: 100000;
+}
+
+.context-menu-item {
+    padding: 8px;
+    padding-right: 11px;
+    border-top: #c1c1c1 solid 1px;
+}
+
+.context-menu-item:first-child {
+    border-top: none;
+}
+
+.context-menu-item:hover{
+    background-color: #e6e6e6;
+}
+
+.context-menu-item:active{
+    background-color: #cccccc;
+}
 `
 
 export default class FileBrowser extends HTMLElement {
@@ -100,7 +125,13 @@ export default class FileBrowser extends HTMLElement {
                 // @ts-ignore
                 this.root.querySelector("#campain-select").value,
             )
-        }))
+        }));
+
+        document.body.addEventListener("mouseup", /**@type MouseEvent*/event => {
+            if(this.contextMenu !== null && !(event.composedPath().includes(this.contextMenu))){
+                this.tryRemoveContextMenu();
+            }
+        })
     }
 
     /**
@@ -118,13 +149,41 @@ export default class FileBrowser extends HTMLElement {
         })();
     }
 
+    /** @type {HTMLDivElement} */
+    contextMenu = null;
+
+    tryRemoveContextMenu(){
+        if(this.contextMenu !== null){
+            this.root.removeChild(this.contextMenu);
+            this.contextMenu = null;
+        }
+    }
+
     /**
      * @param {Element} element
      * @param {string} filePath
      */
-    addContextMenuListener(element, filePath) {
-        element.addEventListener("contextmenu", event => {
-            console.log(filePath);
+    addContextMenuListener(element, filePath){
+        element.addEventListener("contextmenu", /** @param event {MouseEvent}*/event => {
+            const container = document.createElement("div");
+            container.innerHTML = html`<div style="top: ${event.clientY}px; left: ${event.clientX}px" class="context-menu">
+                <div id="delete-button" class="context-menu-item">Delete</div>
+                <div id="rename-button" class="context-menu-item">Rename</div>
+            </div>`;
+            this.root.appendChild(container);
+
+            container.querySelector("#delete-button").addEventListener("click", () => {
+                console.log(`deleting file ${filePath}`);
+                this.tryRemoveContextMenu();
+            })
+
+            container.querySelector("#rename-button").addEventListener("click", () => {
+                console.log(`renaming file ${filePath}`);
+                this.tryRemoveContextMenu();
+            })
+
+            this.contextMenu = container;
+
             event.preventDefault();
         })
     }
