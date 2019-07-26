@@ -97,7 +97,7 @@ export default class OverallEditor extends HTMLElement {
         this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
         // @ts-ignore
-        this.root.querySelector("file-browser").setGitLab(gitlab);
+        this.root.querySelector("file-browser").passInValues(gitlab);
 
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             try {

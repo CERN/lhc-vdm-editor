@@ -1,6 +1,6 @@
 // @ts-check
 import { css, html } from "./HelperFunctions.js";
-import GitLab from "./GitLab.js";
+import {NoPathExistsError, default as GitLab} from "./GitLab.js";
 
 const styling = css`
 * {
@@ -18,6 +18,7 @@ const styling = css`
     padding: 3px;
     font-size: 14px;
     cursor: pointer;
+    word-wrap: break-word;
 }
 
 .item:nth-child(2n) {
@@ -92,115 +93,105 @@ export default class FileBrowser extends HTMLElement {
 
         this.gitlab = null;
 
-        this.setStructure([{
-            type: "file",
-            name: "test_file.txt"
-        },
-        {
-            type: "file",
-            name: "test_file.txt"
-        },
-        {
-            type: "folder",
-            name: "test_folder",
-            getContent: () => {
-                return [{
-                    type: "file",
-                    name: "test_file.txt"
-                },
-                {
-                    type: "folder",
-                    name: "test_folder",
-                    getContent: () => {
-                        return [{
-                            type: "file",
-                            name: "test_file2.txt"
-                        }]
-                    }
-                }]
-            }
-        }])
+        Array.from(this.root.querySelectorAll("#ip-select, #campain-select")).map(x => x.addEventListener("change", async () => {
+            this.setFileUI(
+                // @ts-ignore
+                this.root.querySelector("#ip-select").value,
+                // @ts-ignore
+                this.root.querySelector("#campain-select").value,
+            )
+        }))
     }
 
     /**
      * @param {GitLab} gitlab
      */
-    setGitLab(gitlab){
+    passInValues(gitlab){
         this.gitlab = gitlab;
         (async () => {
-            this.root.getElementById("campain-select").innerHTML = (await this.gitlab.listCampains()).map(campainName => {
+            const campains = await this.gitlab.listCampains();
+            this.root.getElementById("campain-select").innerHTML = campains.map(campainName => {
                 return html`<option value=${campainName}>${campainName}</option>`
-            }).join("\n")
-        })()
+            }).join("\n");
+
+            this.setFileUI("IP1", campains[0]);
+        })();
     }
 
     /**
-     * @param {any} structure
+     * @param {string} ip
+     * @param {string} campain
      */
-    setStructure(structure){
+    async setFileUI(ip, campain){
+        /**
+         * @param {{ files: string[]; folders: Map<string, any> }} _structure
+         */
         function getElementFromStructure(_structure){
             const result = document.createDocumentFragment();
-            for(let item of _structure){
-                let container =  document.createElement("div");
-                if(item.type == "file"){
-                    container.innerHTML = html`<div class="item">${item.name}</div>`;
-                    container.querySelector("div").addEventListener("click", () => {
-                        // emit event
-                    });
+            let container =  document.createElement("div");
+            for(let fileName of _structure.files){
+                container.innerHTML = html`<div class="item">${fileName}</div>`;
+                container.querySelector("div").addEventListener("click", () => {
+                    // emit event
+                });
 
-                    result.appendChild(container.querySelector(".item"));
-                }
-                else if(item.type == "folder"){
-                    container.innerHTML = html`
-                        <div class="item">
-                            <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
-                            <span class="folder-name">${item.name}</span>
-                        </div>
-                        <div class="folder-content">
-                        </div>
-                    `;
+                result.appendChild(container.querySelector(".item"));
+            }
 
-                    const folderContentElement = container.querySelector(".folder-content");
-                    const triangle = container.querySelector(".triangle");
+            for(let [folderName, folderContent] of _structure.folders.entries()){
+                container.innerHTML = html`
+                    <div class="item">
+                        <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
+                        <span class="folder-name">${folderName}</span>
+                    </div>
+                    <div class="folder-content">
+                    </div>
+                `;
 
-                    let isOpen = false;
-                    container.querySelector(".item").addEventListener("click", async () => {
-                        if(isOpen){
-                            triangle.classList.remove("triangle-open");
-                            triangle.classList.add("triangle-closed");
+                const folderContentElement = container.querySelector(".folder-content");
+                const triangle = container.querySelector(".triangle");
 
-                            folderContentElement.innerHTML = "";
-                            isOpen = false;
-                        }
-                        else{
-                            triangle.classList.remove("triangle-closed");
-                            triangle.classList.add("triangle-open");
+                let isOpen = false;
+                container.querySelector(".item").addEventListener("click", async () => {
+                    if(isOpen){
+                        triangle.classList.remove("triangle-open");
+                        triangle.classList.add("triangle-closed");
 
-                            folderContentElement.appendChild(getElementFromStructure(await item.getContent()));
-                            isOpen = true;
-                        }
-                    });
-
-                    for(let containerChild of Array.from(container.children)){
-                        result.appendChild(containerChild);
+                        folderContentElement.innerHTML = "";
+                        isOpen = false;
                     }
-                }
-                else{
-                    throw Error(`Unknown file structure type ${item.type}`);
+                    else{
+                        triangle.classList.remove("triangle-closed");
+                        triangle.classList.add("triangle-open");
+
+                        folderContentElement.appendChild(getElementFromStructure(folderContent));
+                        isOpen = true;
+                    }
+                });
+
+                for(let containerChild of Array.from(container.children)){
+                    result.appendChild(containerChild);
                 }
             }
             return result;
         }
-        this.root.querySelector("#file-browser").appendChild(getElementFromStructure(structure));
+
+        let fileStructure;
+        try{
+            fileStructure = await this.gitlab.listFiles(`${campain}/${ip}`);
+        }
+        catch(error){
+            if(error instanceof NoPathExistsError){
+                fileStructure = {files: ["--- NO FILES ---"], folders: new Map()};
+            }
+            else{
+                throw error;
+            }
+        }
+
+        this.root.querySelector("#file-browser").innerHTML = "";
+        this.root.querySelector("#file-browser").appendChild(getElementFromStructure(fileStructure));
     }
-    /**
-     *             <div class="item">
-                <div class="triangle-container"><span class="triangle">&nbsp;</span></div>
-                <span class="folder-name">folder</span>
-            </div>
-            <div class="item">FileB.txt</div>
-            <div class="item">FileC.txt</div>
-     */
 
     template() {
         return html`

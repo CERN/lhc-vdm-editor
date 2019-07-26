@@ -28,6 +28,24 @@ export function getFragmentOfChildNodes(node){
     return fragment;
 }
 
+/**
+ * @param {string} absPath
+ * @param {string} prefix
+ */
+export function getRelativePath(absPath, prefix){
+    return absPath.split("/").filter(x => x != "").slice(
+        prefix.split("/").filter(x => x != "").length).join("/")
+}
+
+/**
+ * @param {Map} map1
+ * @param {Map} map2
+ */
+export function mergeMaps(map1, map2){
+    return new Map(Array.from(map1.entries()).concat(
+        Array.from(map2.entries())))
+}
+
 /** @type {(x: TemplateStringsArray, ...xs: string[]) => string} */
 export const css = interpolate;
 // /** @type {(x: TemplateStringsArray, ...xs: string[]) => string} */
