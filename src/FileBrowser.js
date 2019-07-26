@@ -1,6 +1,6 @@
 // @ts-check
 import { css, html } from "./HelperFunctions.js";
-import {NoPathExistsError, default as GitLab} from "./GitLab.js";
+import { NoPathExistsError, default as GitLab } from "./GitLab.js";
 
 const styling = css`
 * {
@@ -106,7 +106,7 @@ export default class FileBrowser extends HTMLElement {
     /**
      * @param {GitLab} gitlab
      */
-    passInValues(gitlab){
+    passInValues(gitlab) {
         this.gitlab = gitlab;
         (async () => {
             const campains = await this.gitlab.listCampains();
@@ -122,7 +122,7 @@ export default class FileBrowser extends HTMLElement {
      * @param {Element} element
      * @param {string} filePath
      */
-    addContextMenuListener(element, filePath){
+    addContextMenuListener(element, filePath) {
         element.addEventListener("contextmenu", event => {
             console.log(filePath);
             event.preventDefault();
@@ -133,25 +133,27 @@ export default class FileBrowser extends HTMLElement {
      * @param {string} ip
      * @param {string} campain
      */
-    async setFileUI(ip, campain){
+    async setFileUI(ip, campain) {
         /**
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
-        const getElementFromStructure = (_structure, prefix="") => {
+        const getElementFromStructure = (_structure, prefix = "") => {
             const result = document.createDocumentFragment();
-            let container =  document.createElement("div");
-            for(let fileName of _structure.files){
+            let container = document.createElement("div");
+            for (let fileName of _structure.files) {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
-                itemEl.addEventListener("click", () => {
-                    // emit event
+                itemEl.addEventListener("dblclick", () => {
+                    this.dispatchEvent(new CustomEvent('open-new-file', {
+                        detail: prefix + fileName,
+                    }))
                 });
                 this.addContextMenuListener(itemEl, prefix + fileName);
 
                 result.appendChild(itemEl);
             }
 
-            for(let [folderName, folderContent] of _structure.folders.entries()){
+            for (let [folderName, folderContent] of _structure.folders.entries()) {
                 container.innerHTML = html`
                     <div class="item">
                         <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
@@ -169,14 +171,14 @@ export default class FileBrowser extends HTMLElement {
 
                 let isOpen = false;
                 itemEl.addEventListener("click", async () => {
-                    if(isOpen){
+                    if (isOpen) {
                         triangle.classList.remove("triangle-open");
                         triangle.classList.add("triangle-closed");
 
                         folderContentElement.innerHTML = "";
                         isOpen = false;
                     }
-                    else{
+                    else {
                         triangle.classList.remove("triangle-closed");
                         triangle.classList.add("triangle-open");
 
@@ -185,7 +187,7 @@ export default class FileBrowser extends HTMLElement {
                     }
                 });
 
-                for(let containerChild of Array.from(container.children)){
+                for (let containerChild of Array.from(container.children)) {
                     result.appendChild(containerChild);
                 }
             }
@@ -193,20 +195,20 @@ export default class FileBrowser extends HTMLElement {
         }
 
         let fileStructure;
-        try{
+        try {
             fileStructure = await this.gitlab.listFiles(`${campain}/${ip}`);
         }
-        catch(error){
-            if(error instanceof NoPathExistsError){
-                fileStructure = {files: ["--- NO FILES ---"], folders: new Map()};
+        catch (error) {
+            if (error instanceof NoPathExistsError) {
+                fileStructure = { files: ["--- NO FILES ---"], folders: new Map() };
             }
-            else{
+            else {
                 throw error;
             }
         }
 
         this.root.querySelector("#file-browser").innerHTML = "";
-        this.root.querySelector("#file-browser").appendChild(getElementFromStructure(fileStructure));
+        this.root.querySelector("#file-browser").appendChild(getElementFromStructure(fileStructure, campain + '/' + ip + '/'));
     }
 
     template() {

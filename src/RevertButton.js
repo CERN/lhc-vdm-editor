@@ -32,9 +32,7 @@ export default class RevertButton extends HTMLElement {
         this.root.innerHTML = this.template();
         this.button = this.root.querySelector("button");
         this.button.addEventListener('click', () => {
-            if (confirm('Are you sure you want to revert to HEAD? All changes will be discarded.')){
-                this.dispatchEvent(new Event('revert-changes'))
-            }
+            this.dispatchEvent(new Event('revert-changes'))
         })
     }
 

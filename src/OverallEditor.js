@@ -85,12 +85,30 @@ export default class OverallEditor extends HTMLElement {
      */
     constructor(gitlab, filePath, initContent = '') {
         super();
+        this.isCommitted = true;
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template()
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
             this.switchToEditor(ev.detail)
         });
-        this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.setGitLabFile(localStorage.getItem('open-file')))
+        this.root.querySelector('revert-button').addEventListener('revert-changes', () => {
+            if (!this.isCommitted) {
+                if (confirm('Changes not committed. Are you sure you want to revert to HEAD? All current changes will be discarded.')) {
+                    this.setGitLabFile(localStorage.getItem('open-file'))
+                }
+            } else {
+                this.setGitLabFile(localStorage.getItem('open-file'))
+            }
+        })
+        this.root.querySelector("file-browser").addEventListener('open-new-file', /** @param {CustomEvent} event */(event) => {
+            if (!this.isCommitted) {
+                if (confirm(`Changes not committed. Are you sure you want to open ${event.detail}? All current changes will be discarded.`)) {
+                    this.setGitLabFile(event.detail)
+                }
+            } else {
+                this.setGitLabFile(event.detail)
+            }
+        })
 
         this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
@@ -123,10 +141,10 @@ export default class OverallEditor extends HTMLElement {
         })
 
         const isLocallyStored = this.setUpAutoSave(initContent);
-        if(isLocallyStored){
+        if (isLocallyStored) {
             this.setCommittedStatus(false);
         }
-        else{
+        else {
             this.setCommittedStatus(true);
         }
     }
@@ -140,11 +158,11 @@ export default class OverallEditor extends HTMLElement {
             const buttonIndex = parseInt(localStorage.getItem('open-tab'));
 
             this.switchToEditor(buttonIndex);
-            
+
             // @ts-ignore
             this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
         }
-        else{
+        else {
             this.switchToEditor(1); // the default editor is the code editor
         }
 
@@ -162,14 +180,15 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {boolean} isCommitted
      */
-    setCommittedStatus(isCommitted){
-        if(isCommitted){
-             // @ts-ignore
+    setCommittedStatus(isCommitted) {
+        this.isCommitted = isCommitted;
+        if (isCommitted) {
+            // @ts-ignore
             this.root.querySelector("#file-name").innerText = "./" + this.filePath + " (committed)";
             this.root.querySelector("#file-name").classList.remove("uncommitted");
         }
-        else{
-             // @ts-ignore
+        else {
+            // @ts-ignore
             this.root.querySelector("#file-name").innerText = "./" + this.filePath + " (uncommitted)";
             this.root.querySelector("#file-name").classList.add("uncommitted");
         }
@@ -186,9 +205,9 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {number} index
      */
-    switchToEditor(index, setValue=true) {
+    switchToEditor(index, setValue = true) {
         const editorElement = document.createElement(EDITOR_TAG_NAMES[index]);
-        if(setValue){
+        if (setValue) {
             // @ts-ignore
             editorElement.value = this.editor.value;
         }
