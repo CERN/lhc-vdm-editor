@@ -119,6 +119,17 @@ export default class FileBrowser extends HTMLElement {
     }
 
     /**
+     * @param {Element} element
+     * @param {string} filePath
+     */
+    addContextMenuListener(element, filePath){
+        element.addEventListener("contextmenu", event => {
+            console.log(filePath);
+            event.preventDefault();
+        })
+    }
+
+    /**
      * @param {string} ip
      * @param {string} campain
      */
@@ -126,16 +137,18 @@ export default class FileBrowser extends HTMLElement {
         /**
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
-        function getElementFromStructure(_structure){
+        const getElementFromStructure = (_structure, prefix="") => {
             const result = document.createDocumentFragment();
             let container =  document.createElement("div");
             for(let fileName of _structure.files){
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
-                container.querySelector("div").addEventListener("click", () => {
+                const itemEl = container.querySelector(".item");
+                itemEl.addEventListener("click", () => {
                     // emit event
                 });
+                this.addContextMenuListener(itemEl, prefix + fileName);
 
-                result.appendChild(container.querySelector(".item"));
+                result.appendChild(itemEl);
             }
 
             for(let [folderName, folderContent] of _structure.folders.entries()){
@@ -150,9 +163,12 @@ export default class FileBrowser extends HTMLElement {
 
                 const folderContentElement = container.querySelector(".folder-content");
                 const triangle = container.querySelector(".triangle");
+                const itemEl = container.querySelector(".item");
+
+                this.addContextMenuListener(itemEl, prefix + folderName);
 
                 let isOpen = false;
-                container.querySelector(".item").addEventListener("click", async () => {
+                itemEl.addEventListener("click", async () => {
                     if(isOpen){
                         triangle.classList.remove("triangle-open");
                         triangle.classList.add("triangle-closed");
@@ -164,7 +180,7 @@ export default class FileBrowser extends HTMLElement {
                         triangle.classList.remove("triangle-closed");
                         triangle.classList.add("triangle-open");
 
-                        folderContentElement.appendChild(getElementFromStructure(folderContent));
+                        folderContentElement.appendChild(getElementFromStructure(folderContent, prefix + folderName + "/"));
                         isOpen = true;
                     }
                 });
