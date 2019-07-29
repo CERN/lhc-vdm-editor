@@ -1,4 +1,5 @@
 import { css, html } from "./HelperFunctions.js"
+import "./IPCampainSelectors.js";
 
 const styling = css`
 .cover{
@@ -17,7 +18,7 @@ const styling = css`
     position: fixed;
     z-index: 10000;
     text-align: center;
-    top: 10%;
+    top: 15px;
 }
 
 .window {
@@ -28,6 +29,7 @@ const styling = css`
     font-family: sans-serif;
     border-radius: 2px;
     box-shadow: grey 0 0 8px 3px;
+    text-align: left;
 }
 
 button {
@@ -47,6 +49,15 @@ button:hover {
 
 button:active {
     background-color: #a2a2a2;
+}
+
+.buttons{
+    float: right;
+}
+
+.selection-boxes-container{
+    margin-left: 7px;
+    margin-top: 7px;
 }
 `
 
@@ -69,13 +80,33 @@ export default class CreateFileWindow extends HTMLElement {
         }
 
         this.onKeyUp = onKeyUp.bind(this);
-        document.addEventListener("keyup", this.onKeyUp)
+        this.root.addEventListener("keyup", this.onKeyUp);
+        this.root.querySelector("#cancel-button").addEventListener("click", () => {
+            this.cancel();
+        })
+        this.root.querySelector("#ok-button").addEventListener("click", () => {
+            const selectionBoxes = this.root.querySelector("selection-boxes");
+
+            this.dispatchEvent(new CustomEvent("submit", {
+                detail: {
+                    ip: "something",
+                    campain: "something else"
+                }
+            }));
+        })
+    }
+
+    disconnectedCallback(){
+        document.removeEventListener("keyup", this.onKeyUp);
     }
 
     cancel(){
-        document.removeEventListener("keyup", this.onKeyUp);
+        this.dispatchEvent(new CustomEvent("cancel"));
+    }
 
-        this.dispatchEvent(new CustomEvent("cancel-editor"));
+    passInValues(gitlab){
+        // @ts-ignore
+        this.root.querySelector("selection-boxes").passInValues(gitlab);
     }
 
     template() {
@@ -85,11 +116,14 @@ export default class CreateFileWindow extends HTMLElement {
         </style>
         <div class="window-container">
             <div class="window">
-                <ul>
-                <li>Do thing 1</li>
-                <li>Do thing 2</li>
-                </ul>
-                <button>OK</button><button>Cancel</button>
+                Copy items from:
+                <div class="selection-boxes-container">
+                    <selection-boxes></selection-boxes>
+                </div>
+                <br />
+                <div>
+                    <button id="ok-button">OK</button><button id="cancel-button">Cancel</button>
+                </div>
             </div>
         </div>
         <div class="cover">&nbsp;</div>

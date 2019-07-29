@@ -5,7 +5,6 @@ import "../extern/ace-searchbox.js"
 import "./mode-vdm.js"
 import { parseVdM, deparseVdM } from "./parser.js"
 import "./token_tooltip.js"
-import "./CreateFileWindow.js"
 const token_tooltip = ace.require("ace/token_tooltip");
 const Autocomplete = ace.require("ace/autocomplete").Autocomplete;
 const langTools = ace.require("ace/ext/language_tools");
@@ -583,7 +582,6 @@ export default class CodeEditor extends HTMLElement {
                 <div id="editor"></div>
                 <div class="ace-no-select" id="last-line-editor">END_SEQUENCE</div>
             </div>
-            <create-file-window></create-file-window>
         `
     }
 }

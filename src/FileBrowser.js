@@ -1,7 +1,8 @@
 // @ts-check
 import { css, html } from "./HelperFunctions.js";
 import { NoPathExistsError, default as GitLab } from "./GitLab.js";
-import './IPCampainSelectors.js'
+import './IPCampainSelectors.js';
+import "./CreateFileWindow.js";
 
 const styling = css`
 * {
@@ -133,6 +134,8 @@ export default class FileBrowser extends HTMLElement {
         })();
         // @ts-ignore
         this.root.querySelector('selection-boxes').passInValues(gitlab);
+        // @ts-ignore
+        this.root.querySelector("create-file-window").passInValues(gitlab);
     }
 
     reloadFileUI() {
@@ -315,6 +318,7 @@ export default class FileBrowser extends HTMLElement {
         <hr />
         <div id="file-browser">
         </div>
+        <create-file-window></create-file-window>
         `
     }
 }
