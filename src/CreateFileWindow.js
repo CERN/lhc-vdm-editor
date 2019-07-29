@@ -30,6 +30,12 @@ const styling = css`
     border-radius: 2px;
     box-shadow: grey 0 0 8px 3px;
     text-align: left;
+    position: relative;
+}
+
+#create-empty {
+    display: block;
+    margin-top: 6px;
 }
 
 button {
@@ -41,6 +47,21 @@ button {
     padding-right: 15px;
     border-radius: 3px;
     box-shadow: #c1c1c1 0px 0px 0px 1px;
+}
+
+
+#exit-button {
+    width: 34px;
+    height: 20px;
+    background-color: #ff8484;
+    text-align: center;
+    border-radius: 30px;
+    font-family: monospace;
+    font-size: 15px;
+    position: absolute;
+    right: -19px;
+    top: -13px;
+    color: white;
 }
 
 button:hover {
@@ -55,9 +76,15 @@ button:active {
     float: right;
 }
 
-.selection-boxes-container{
+.slightly-indented{
     margin-left: 7px;
     margin-top: 7px;
+}
+
+input[type=text]{
+    padding: 7px;
+    border-radius: 3px;
+    border: solid 1px grey;
 }
 `
 
@@ -81,16 +108,18 @@ export default class CreateFileWindow extends HTMLElement {
 
         this.onKeyUp = onKeyUp.bind(this);
         this.root.addEventListener("keyup", this.onKeyUp);
-        this.root.querySelector("#cancel-button").addEventListener("click", () => {
+        this.root.querySelector("#exit-button").addEventListener("click", () => {
             this.cancel();
         })
-        this.root.querySelector("#ok-button").addEventListener("click", () => {
+        this.root.querySelector("#copy-button").addEventListener("click", () => {
             const selectionBoxes = this.root.querySelector("selection-boxes");
 
             this.dispatchEvent(new CustomEvent("submit", {
                 detail: {
-                    ip: "something",
-                    campain: "something else"
+                    // @ts-ignore
+                    ip: selectionBoxes.ip,
+                    // @ts-ignore
+                    campain: selectionBoxes.campain
                 }
             }));
         })
@@ -116,13 +145,19 @@ export default class CreateFileWindow extends HTMLElement {
         </style>
         <div class="window-container">
             <div class="window">
-                Copy items from:
-                <div class="selection-boxes-container">
+                <div id="exit-button">x</div>
+                <div>Create empty file</div>
+                <div class="slightly-indented">
+                    <input type="text" placeholder="New File Name" />
+                </div>
+                <button id="create-empty">Create</button>
+                <hr>
+                Copy items from folder
+                <div class="slightly-indented">
                     <selection-boxes></selection-boxes>
                 </div>
-                <br />
                 <div>
-                    <button id="ok-button">OK</button><button id="cancel-button">Cancel</button>
+                    <button id="copy-button">Copy</button>
                 </div>
             </div>
         </div>

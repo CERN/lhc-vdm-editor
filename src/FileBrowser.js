@@ -1,5 +1,6 @@
 // @ts-check
 import { css, html } from "./HelperFunctions.js";
+// @ts-ignore
 import { NoPathExistsError, default as GitLab } from "./GitLab.js";
 import './IPCampainSelectors.js';
 import "./CreateFileWindow.js";
@@ -134,12 +135,12 @@ export default class FileBrowser extends HTMLElement {
         })();
         // @ts-ignore
         this.root.querySelector('selection-boxes').passInValues(gitlab);
-        // @ts-ignore
-        this.root.querySelector("create-file-window").passInValues(gitlab);
     }
 
     reloadFileUI() {
+        // @ts-ignore
         const ip = this.root.querySelector('selection-boxes').ip;
+        // @ts-ignore
         const campain = this.root.querySelector('selection-boxes').campain;
         this.setFileUI(ip, campain);
     }
@@ -275,8 +276,20 @@ export default class FileBrowser extends HTMLElement {
                     New file
                 </span>`;
 
-            item.addEventListener('click', async () => {
-                this.dispatchEvent(new CustomEvent('create-new-file', { detail: prefix }))
+            item.addEventListener('click', () => {
+                const createFileWindow = document.createElement("create-file-window");
+                // @ts-ignore
+                createFileWindow.passInValues(this.gitlab);
+                
+                createFileWindow.addEventListener("submit", async (event) => {
+                    // prefix
+                    // copy
+                })
+                createFileWindow.addEventListener("cancel", () => {
+                    this.root.removeChild(createFileWindow);
+                })
+
+                this.root.appendChild(createFileWindow);
             })
 
             result.appendChild(item);
@@ -318,7 +331,6 @@ export default class FileBrowser extends HTMLElement {
         <hr />
         <div id="file-browser">
         </div>
-        <create-file-window></create-file-window>
         `
     }
 }
