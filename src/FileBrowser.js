@@ -116,9 +116,7 @@ export default class FileBrowser extends HTMLElement {
         /** @type {HTMLDivElement} */
         this.myContextMenu = null;
 
-        Array.from(this.root.querySelectorAll("#ip-select, #campain-select")).map(x => x.addEventListener("change", async () => {
-            this.reloadFileUI();
-        }));
+        this.root.querySelector("selection-boxes").addEventListener("change", () => this.reloadFileUI());
 
         document.body.addEventListener("mouseup", /**@type MouseEvent*/event => {
             if (this.contextMenu !== null && !(event.composedPath().includes(this.contextMenu))) {
@@ -126,7 +124,7 @@ export default class FileBrowser extends HTMLElement {
             }
         })
     }
-    
+
     passInValues(gitlab) {
         this.gitlab = gitlab;
         (async () => {
@@ -138,12 +136,9 @@ export default class FileBrowser extends HTMLElement {
     }
 
     reloadFileUI() {
-        this.setFileUI(
-            // @ts-ignore
-            this.root.querySelector("#ip-select").value,
-            // @ts-ignore
-            this.root.querySelector("#campain-select").value,
-        )
+        const ip = this.root.querySelector('selection-boxes').ip;
+        const campain = this.root.querySelector('selection-boxes').campain;
+        this.setFileUI(ip, campain);
     }
 
     /** @type {HTMLDivElement} */

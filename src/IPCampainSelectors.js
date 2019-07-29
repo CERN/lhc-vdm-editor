@@ -19,6 +19,10 @@ export default class Selectors extends HTMLElement {
         super()
         this.root = this.attachShadow({ mode: 'open' });
         this.root.innerHTML = this.template();
+
+        Array.from(this.root.querySelectorAll("#ip-select, #campain-select")).map(x => x.addEventListener("change", () => {
+            this.dispatchEvent(new CustomEvent('change'))
+        }));
     }
 
     /**
@@ -31,6 +35,12 @@ export default class Selectors extends HTMLElement {
                 return html`<option value=${campainName}>${campainName}</option>`
             }).join("\n");
         })();
+    }
+    get ip() {
+        return this.root.getElementById("ip-select").value;
+    }
+    get campain() {
+        return this.root.getElementById("campain-select").value;
     }
 
     template() {
