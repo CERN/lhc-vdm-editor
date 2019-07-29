@@ -1,6 +1,7 @@
 // @ts-check
 import { css, html } from "./HelperFunctions.js";
 import { NoPathExistsError, default as GitLab } from "./GitLab.js";
+import './IPCampainSelectors.js'
 
 const styling = css`
 * {
@@ -70,19 +71,6 @@ const styling = css`
     border-left: 1px solid grey;
 }
 
-.selection-box{
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
-.selection-box select {
-    padding: 2px;
-}
-
-.selection-name {
-    padding-bottom: 3px;
-}
-
 * {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -123,7 +111,6 @@ export default class FileBrowser extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
-
         this.gitlab = null;
 
         /** @type {HTMLDivElement} */
@@ -139,29 +126,24 @@ export default class FileBrowser extends HTMLElement {
             }
         })
     }
+    
+    passInValues(gitlab) {
+        this.gitlab = gitlab;
+        (async () => {
+            const campains = await this.gitlab.listCampains();
+            this.setFileUI('IP1', campains[0]);
+        })();
+        // @ts-ignore
+        this.root.querySelector('selection-boxes').passInValues(gitlab);
+    }
 
-    reloadFileUI(){
+    reloadFileUI() {
         this.setFileUI(
             // @ts-ignore
             this.root.querySelector("#ip-select").value,
             // @ts-ignore
             this.root.querySelector("#campain-select").value,
         )
-    }
-
-    /**
-     * @param {GitLab} gitlab
-     */
-    passInValues(gitlab) {
-        this.gitlab = gitlab;
-        (async () => {
-            const campains = await this.gitlab.listCampains();
-            this.root.getElementById("campain-select").innerHTML = campains.map(campainName => {
-                return html`<option value=${campainName}>${campainName}</option>`
-            }).join("\n");
-
-            this.setFileUI("IP1", campains[0]);
-        })();
     }
 
     /** @type {HTMLDivElement} */
@@ -189,7 +171,7 @@ export default class FileBrowser extends HTMLElement {
 
             container.querySelector("#delete-button").addEventListener("click", () => {
                 (async () => {
-                    if(confirm(`Are you sure you want to delete the file ${filePath}?`)){
+                    if (confirm(`Are you sure you want to delete the file ${filePath}?`)) {
                         await this.gitlab.deleteFile(filePath);
                         this.reloadFileUI();
                     }
@@ -200,11 +182,11 @@ export default class FileBrowser extends HTMLElement {
 
             container.querySelector("#rename-button").addEventListener("click", () => {
                 const newName = prompt(`What do you want to rename ${filePath.split("/").slice(-1)[0]} to?`);
-                if(newName !== null){
-                    if(newName.includes(" ")){
+                if (newName !== null) {
+                    if (newName.includes(" ")) {
                         alert("Invalid name, file names cannot contain spaces");
                     }
-                    else{
+                    else {
                         (async () => {
                             await this.gitlab.renameFile(filePath, newName);
                             this.reloadFileUI();
@@ -287,7 +269,7 @@ export default class FileBrowser extends HTMLElement {
             let item = document.createElement('div');
             item.setAttribute('style', 'font-weight: bold');
             item.className = 'item';
-            item.innerHTML =   html`
+            item.innerHTML = html`
                 <span style="font-size: 20px; vertical-align: middle; padding: 0px 8px 0px 8px;">
                     +
                 </span>
@@ -296,9 +278,9 @@ export default class FileBrowser extends HTMLElement {
                 </span>`;
 
             item.addEventListener('click', async () => {
-                this.dispatchEvent(new CustomEvent('new-file', {detail: prefix}))
+                this.dispatchEvent(new CustomEvent('create-new-file', { detail: prefix }))
             })
-            
+
             result.appendChild(item);
 
             return result;
@@ -333,24 +315,8 @@ export default class FileBrowser extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <div class="selection-box">
-            <div class="selection-name">IP:</div>
-            <div>
-                <select id="ip-select">
-                    <option value="IP1">IP1</option>
-                    <option value="IP2">IP2</option>
-                    <option value="IP5">IP5</option>
-                    <option value="IP8">IP8</option>
-                </select>
-            </div>
-        </div>
-        <div class="selection-box">
-            <div class="selection-name">Campain:</div>
-            <div>
-                <select id="campain-select">
-                </select>
-            </div>
-        </div>
+        <selection-boxes>
+        </selection-boxes>
         <hr />
         <div id="file-browser">
         </div>

@@ -122,6 +122,10 @@ export default class OverallEditor extends HTMLElement {
                 this.setGitLabFile(event.detail)
             }
         })
+        this.root.querySelector("file-browser").addEventListener('create-new-file', /** @param {CustomEvent} event */(event) => {
+            const dir = event.detail;
+            
+        })
 
         this.filePath = null;
         this.editorContainer = this.root.getElementById("editor");
