@@ -118,6 +118,9 @@ export default class FileBrowser extends HTMLElement {
 
         this.gitlab = null;
 
+        /** @type {HTMLDivElement} */
+        this.myContextMenu = null;
+
         Array.from(this.root.querySelectorAll("#ip-select, #campain-select")).map(x => x.addEventListener("change", async () => {
             this.setFileUI(
                 // @ts-ignore
@@ -128,7 +131,7 @@ export default class FileBrowser extends HTMLElement {
         }));
 
         document.body.addEventListener("mouseup", /**@type MouseEvent*/event => {
-            if(this.contextMenu !== null && !(event.composedPath().includes(this.contextMenu))){
+            if(this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))){
                 this.tryRemoveContextMenu();
             }
         })
@@ -149,13 +152,10 @@ export default class FileBrowser extends HTMLElement {
         })();
     }
 
-    /** @type {HTMLDivElement} */
-    contextMenu = null;
-
     tryRemoveContextMenu(){
-        if(this.contextMenu !== null){
-            this.root.removeChild(this.contextMenu);
-            this.contextMenu = null;
+        if(this.myContextMenu !== null){
+            this.root.removeChild(this.myContextMenu);
+            this.myContextMenu = null;
         }
     }
 
@@ -182,7 +182,7 @@ export default class FileBrowser extends HTMLElement {
                 this.tryRemoveContextMenu();
             })
 
-            this.contextMenu = container;
+            this.myContextMenu = container;
 
             event.preventDefault();
         })
