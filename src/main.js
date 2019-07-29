@@ -24,18 +24,9 @@ $(async () => {
         token = (await getJSON("./secrets.json")).token;
     }
 
-    const filePath = "201605_VdM/IP5/HobbitCrossing.txt";
-    localStorage.setItem('open-file', filePath);
-
     const gl = new GitLab(token, "vdm-editor-test", usesOAuth);
-    let hobbitFile = await gl.readFile(
-        filePath,
-    );
-    if (hobbitFile.search("\r\n") != 0) {
-        hobbitFile = hobbitFile.replace(/\r\n/g, "\n");
-    }
 
-    const overallEditor = new OverallEditor(gl, filePath, hobbitFile);
+    const overallEditor = new OverallEditor(gl);
 
     document.body.appendChild(overallEditor);
 })
