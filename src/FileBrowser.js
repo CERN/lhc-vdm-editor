@@ -7,10 +7,13 @@ const styling = css`
     font-family: sans-serif;
 }
 #file-browser {
-    border-style: solid;
-    border-width: 1px;
+    border: 1px solid #a2a2a2;
     padding: 3px;
-    border-color: #dadada;
+    background-color: #d6d6d6;
+}
+#folder-name {
+    font-weight: bold;
+    padding: 3px;
 }
 
 .item {
@@ -21,8 +24,13 @@ const styling = css`
     word-wrap: break-word;
 }
 
-.item:nth-child(2n) {
-    background-color: #f7f7f7;
+#file-browser .item:nth-of-type(2n) {
+    background-color: white;
+}
+
+#new-file {
+    background-color: white;
+    padding: 3px;
 }
 
 .triangle {
@@ -126,7 +134,7 @@ export default class FileBrowser extends HTMLElement {
         }));
 
         document.body.addEventListener("mouseup", /**@type MouseEvent*/event => {
-            if(this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))){
+            if (this.contextMenu !== null && !(event.composedPath().includes(this.contextMenu))) {
                 this.tryRemoveContextMenu();
             }
         })
@@ -156,10 +164,13 @@ export default class FileBrowser extends HTMLElement {
         })();
     }
 
-    tryRemoveContextMenu(){
-        if(this.myContextMenu !== null){
-            this.root.removeChild(this.myContextMenu);
-            this.myContextMenu = null;
+    /** @type {HTMLDivElement} */
+    contextMenu = null;
+
+    tryRemoveContextMenu() {
+        if (this.contextMenu !== null) {
+            this.root.removeChild(this.contextMenu);
+            this.contextMenu = null;
         }
     }
 
@@ -167,7 +178,7 @@ export default class FileBrowser extends HTMLElement {
      * @param {Element} element
      * @param {string} filePath
      */
-    addContextMenuListener(element, filePath){
+    addContextMenuListener(element, filePath) {
         element.addEventListener("contextmenu", /** @param event {MouseEvent}*/event => {
             const container = document.createElement("div");
             container.innerHTML = html`<div style="top: ${event.clientY}px; left: ${event.clientX}px" class="context-menu">
@@ -218,7 +229,8 @@ export default class FileBrowser extends HTMLElement {
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
         const getElementFromStructure = (_structure, prefix = "") => {
-            const result = document.createDocumentFragment();
+            const result = document.createElement('div');
+
             let container = document.createElement("div");
             for (let fileName of _structure.files) {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
@@ -271,6 +283,24 @@ export default class FileBrowser extends HTMLElement {
                     result.appendChild(containerChild);
                 }
             }
+
+            let item = document.createElement('div');
+            item.setAttribute('style', 'font-weight: bold');
+            item.className = 'item';
+            item.innerHTML =   html`
+                <span style="font-size: 20px; vertical-align: middle; padding: 0px 8px 0px 8px;">
+                    +
+                </span>
+                <span>
+                    New file
+                </span>`;
+
+            item.addEventListener('click', async () => {
+                this.dispatchEvent(new CustomEvent('new-file', {detail: prefix}))
+            })
+            
+            result.appendChild(item);
+
             return result;
         }
 
@@ -287,8 +317,15 @@ export default class FileBrowser extends HTMLElement {
             }
         }
 
-        this.root.querySelector("#file-browser").innerHTML = "";
-        this.root.querySelector("#file-browser").appendChild(getElementFromStructure(fileStructure, campain + '/' + ip + '/'));
+        let browser = this.root.querySelector("#file-browser");
+        browser.innerHTML = "";
+
+        let header = document.createElement('div');
+        header.setAttribute('id', 'folder-name');
+        header.innerHTML = `${campain}/${ip}`;
+        browser.appendChild(header);
+
+        browser.appendChild(getElementFromStructure(fileStructure, `${campain}/${ip}/`));
     }
 
     template() {

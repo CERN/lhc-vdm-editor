@@ -13,7 +13,7 @@ const styling = css`
 #editor-container {
     position: relative;
     height: calc(100% - 55px);
-    width: calc(100% - 230px);
+    width: calc(100% - 270px);
     float: right
 }
 
@@ -54,7 +54,7 @@ raw-editor{
 }
 
 #file-browser-container {
-    width: 220px;
+    width: 260px;
     display: inline-block;
     height: calc(100% - 45px);
     margin-right: 5px;
