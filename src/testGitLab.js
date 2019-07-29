@@ -40,10 +40,15 @@ describe("GitLab", () => {
         expect(await gitlab.listIPs('201605_VdM')).toEqual(jasmine.any(Array))
     })
 
-    xit("can create something", async () => {
+    it("can create and delete something", async () => {
+        const fileName = `201605_VdM/IP5/${Math.random()}`;
+
         expect(await gitlab.createFile(
-            `201605_VdM/IP5/${Math.random()}`,
-            "Test create",
+            fileName
+        )).toBeUndefined()
+
+        expect(await gitlab.deleteFile(
+            fileName
         )).toBeUndefined()
     })
 })

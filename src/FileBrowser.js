@@ -122,12 +122,7 @@ export default class FileBrowser extends HTMLElement {
         this.myContextMenu = null;
 
         Array.from(this.root.querySelectorAll("#ip-select, #campain-select")).map(x => x.addEventListener("change", async () => {
-            this.setFileUI(
-                // @ts-ignore
-                this.root.querySelector("#ip-select").value,
-                // @ts-ignore
-                this.root.querySelector("#campain-select").value,
-            )
+            this.reloadFileUI();
         }));
 
         document.body.addEventListener("mouseup", /**@type MouseEvent*/event => {
@@ -135,6 +130,15 @@ export default class FileBrowser extends HTMLElement {
                 this.tryRemoveContextMenu();
             }
         })
+    }
+
+    reloadFileUI(){
+        this.setFileUI(
+            // @ts-ignore
+            this.root.querySelector("#ip-select").value,
+            // @ts-ignore
+            this.root.querySelector("#campain-select").value,
+        )
     }
 
     /**
@@ -173,12 +177,27 @@ export default class FileBrowser extends HTMLElement {
             this.root.appendChild(container);
 
             container.querySelector("#delete-button").addEventListener("click", () => {
-                console.log(`deleting file ${filePath}`);
+                (async () => {
+                    await this.gitlab.deleteFile(filePath);
+                    this.reloadFileUI();
+                })();
+
                 this.tryRemoveContextMenu();
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                console.log(`renaming file ${filePath}`);
+                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(-1)[0]} to?`);
+                if(newName !== null){
+                    if(newName.includes(" ")){
+                        alert("Invalid name, file names cannot contain spaces");
+                    }
+                    else{
+                        (async () => {
+                            await this.gitlab.renameFile(filePath, newName);
+                            this.reloadFileUI();
+                        })()
+                    }
+                }
                 this.tryRemoveContextMenu();
             })
 

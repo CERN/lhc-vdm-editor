@@ -74,9 +74,8 @@ export default class GitLab {
     /**
      * 
      * @param {string} filePath
-     * @param {string} commitMessage 
      */
-    async createFile(filePath, commitMessage) {
+    async createFile(filePath) {
         await gFetch(
             `${URL_START}/repository/commits`,
             {
@@ -87,7 +86,7 @@ export default class GitLab {
                 method: "POST",
                 body: JSON.stringify({
                     branch: this.branch,
-                    commit_message: commitMessage,
+                    commit_message: `Create file ${filePath}`,
                     actions: [{
                         action: "create",
                         file_path: filePath,
@@ -183,6 +182,59 @@ export default class GitLab {
         }
 
         return fileStructure;
+    }
+
+    /**
+     * @param {string} filePath
+     */
+    async deleteFile(filePath){
+        await gFetch(
+            `${URL_START}/repository/commits`,
+            {
+                headers: new Headers({
+                    ...this.authHeader,
+                    'Content-Type': 'application/json'
+                }),
+                method: "POST",
+                body: JSON.stringify({
+                    branch: this.branch,
+                    commit_message: `Delete file ${filePath}`,
+                    actions: [{
+                        action: "delete",
+                        file_path: filePath
+                    }]
+                })
+            }
+        )
+    }
+
+    /**
+     * @param {string} filePath
+     * @param {string} newName
+     */
+    async renameFile(filePath, newName){
+        const newFilePath = filePath.split("/").slice(0, -1).
+            concat([newName]).join("/");
+
+        await gFetch(
+            `${URL_START}/repository/commits`,
+            {
+                headers: new Headers({
+                    ...this.authHeader,
+                    'Content-Type': 'application/json'
+                }),
+                method: "POST",
+                body: JSON.stringify({
+                    branch: this.branch,
+                    commit_message: `Rename ${filePath} to ${newName}`,
+                    actions: [{
+                        action: "move",
+                        previous_path: filePath,
+                        file_path: newFilePath
+                    }]
+                })
+            }
+        )
     }
 }
 
