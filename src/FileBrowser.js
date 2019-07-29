@@ -178,8 +178,10 @@ export default class FileBrowser extends HTMLElement {
 
             container.querySelector("#delete-button").addEventListener("click", () => {
                 (async () => {
-                    await this.gitlab.deleteFile(filePath);
-                    this.reloadFileUI();
+                    if(confirm(`Are you sure you want to delete the file ${filePath}?`)){
+                        await this.gitlab.deleteFile(filePath);
+                        this.reloadFileUI();
+                    }
                 })();
 
                 this.tryRemoveContextMenu();
