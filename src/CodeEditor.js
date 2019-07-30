@@ -223,9 +223,8 @@ export default class CodeEditor extends HTMLElement {
         this.lastLineEditor = this.setUpReadonlyEditor(
             this.root.getElementById("last-line-editor"),
             // @ts-ignore
-            _ => calculateLineNumber(this.rawValue, -1) - 1
+            _ => calculateLineNumber(this.rawValue, -1) + 1
         );
-        //this.lastLineEditor.setOption("maxLines", 1);
         this.setupEditor();
         // @ts-ignore
         window.editor = this.editor;
