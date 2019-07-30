@@ -8,6 +8,7 @@ const styling = css`
 
     .selection-box select {
         padding: 2px;
+        width: 100%;
     }
 
     .selection-name {

@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html } from "./HelperFunctions.js";
+import { css, html, getFilenameFromPath } from "./HelperFunctions.js";
 // @ts-ignore
 import { NoPathExistsError, default as GitLab } from "./GitLab.js";
 import './IPCampaignSelectors.js';
@@ -13,6 +13,7 @@ const styling = css`
     border: 1px solid #a2a2a2;
     padding: 3px;
     background-color: #d6d6d6;
+    overflow: hidden;
 }
 #folder-name {
     font-weight: bold;
@@ -24,7 +25,7 @@ const styling = css`
     padding: 3px;
     font-size: 14px;
     cursor: pointer;
-    word-wrap: break-word;
+    overflow: hidden;
 }
 
 #file-browser .item:nth-of-type(2n) {
@@ -75,7 +76,6 @@ const styling = css`
 
 .folder-content{
     margin-left: 15px;
-    border-left: 1px solid grey;
 }
 
 * {
@@ -110,6 +110,10 @@ const styling = css`
 
 .context-menu-item:active{
     background-color: #cccccc;
+}
+
+.folder-content > div {
+    border-bottom: 1px solid grey;
 }
 `
 
@@ -239,8 +243,8 @@ export default class FileBrowser extends HTMLElement {
                         <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
                         <span class="folder-name">${folderName}</span>
                     </div>
-                    <div class="folder-content">
-                    </div>
+                    <span style="display:block" class="folder-content">
+                    </span>
                 `;
 
                 const folderContentElement = container.querySelector(".folder-content");
@@ -295,21 +299,32 @@ export default class FileBrowser extends HTMLElement {
                     // @ts-ignore
                     const ip = event.detail.ip;
 
-                    if(campaign + "/" + ip == prefix.slice(0, -1)){
-                        alert("Cannot copy from the same IP and Campaign as the destination");
+                    if(!confirm(`Are you sure you want to copy all the files from the campaign "${campaign}" and interaction point "${ip}"?`)){
+                        return;
                     }
 
+                    const fromFolder = campaign + "/" + ip;
+                    const toFolder = prefix.slice(0, -1);
+
                     try{
+                        const fromFolderContents = await this.gitlab.listFiles(fromFolder, true, false);
+                        const toFolderContents = new Set(await this.gitlab.listFiles(toFolder, true, false));
+
+                        const commonFileNames = fromFolderContents.filter(x => toFolderContents.has(x));
+                        if(commonFileNames.length != 0){
+                            alert(`Note:\n"${commonFileNames.map(getFilenameFromPath).join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)
+                        }
+
                         await this.gitlab.copyFilesFromFolder(
                             // @ts-ignore
-                            campaign + "/" + ip,
-                            prefix.slice(0, -1), // remove the end slash from the folder name
+                            fromFolder,
+                            toFolder // remove the end slash from the folder name
                         )
                     }
                     catch(error){
                         if(error instanceof NoPathExistsError){
                             // @ts-ignore
-                            alert(`The Campaign "${campaign}" and Interaction Point "${ip}" do not have any files.`);
+                            alert(`The campaign "${campaign}" and interaction point "${ip}" has no files.`);
 
                             return;
                         }
@@ -317,6 +332,8 @@ export default class FileBrowser extends HTMLElement {
                             throw error;
                         }
                     }
+
+                    this.reloadFileUI();
 
                     // Succeeded, so remove the root
                     this.root.removeChild(createFileWindow);

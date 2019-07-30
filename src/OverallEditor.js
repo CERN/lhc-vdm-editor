@@ -13,8 +13,7 @@ const styling = css`
 #editor-container {
     position: relative;
     height: calc(100% - 55px);
-    width: calc(100% - 270px);
-    float: right
+    flex-grow: 1;
 }
 
 .header {
@@ -54,10 +53,8 @@ raw-editor{
 }
 
 #file-browser-container {
-    width: 260px;
-    display: inline-block;
+    width: 218px;
     height: calc(100% - 45px);
-    margin-right: 5px;
 }
 
 /* Clearfix to make floats take up space */
@@ -77,6 +74,26 @@ raw-editor{
     font-size: xx-large;
     font-family: sans-serif;
     color: #b5b5b5;
+}
+
+.resize{
+    width: 5px;
+    vertical-align: top;
+    background-color: gainsboro;
+    margin: 0 10px 0 10px;
+    cursor: col-resize;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+}
+
+.body{
+    display: flex;
 }
 `
 
@@ -160,6 +177,30 @@ export default class OverallEditor extends HTMLElement {
         })
 
         this.setEditorContent();
+        this.setupResize();
+    }
+
+    setupResize(){
+        /**
+         * @param {MouseEvent} event
+         */
+        function _onMouseMove(event){
+            const fileBrowser = this.root.querySelector("#file-browser-container");
+            const fileBrowserLeft = fileBrowser.getBoundingClientRect().left;
+
+            const newWidth = event.screenX - fileBrowserLeft - 12;
+            // @ts-ignore
+            fileBrowser.style.width = newWidth + "px";
+        }
+        const onMouseMove = _onMouseMove.bind(this);
+
+        this.root.querySelector(".resize").addEventListener("mousedown", () => {
+            document.addEventListener("mousemove", onMouseMove);
+        });
+
+        this.root.querySelector(".resize").addEventListener("mouseup", () => {
+            document.removeEventListener("mousemove", onMouseMove);
+        })
     }
 
     setEditorContent() {
@@ -275,16 +316,19 @@ export default class OverallEditor extends HTMLElement {
                 <div id="file-name"></div>
                 <commit-element></commit-element>
             </div>
-            <div id="file-browser-container">
-                <file-browser></file-browser>
-            </div>
-            <div id="editor-container">
-                <div id="editor">
-                    <raw-editor></raw-editor>
+            <div class="body">
+                <div id="file-browser-container">
+                    <file-browser></file-browser>
                 </div>
-                <switch-editor-buttons></switch-editor-buttons>
-                <revert-button></revert-button>
-            </div>
+                <div class="resize">&nbsp;</div>
+                <div id="editor-container">
+                    <div id="editor">
+                        <raw-editor></raw-editor>
+                    </div>
+                    <switch-editor-buttons></switch-editor-buttons>
+                    <revert-button></revert-button>
+                </div>
+            <div>
         </div>`
     }
 

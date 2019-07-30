@@ -38,6 +38,14 @@ export function getRelativePath(absPath, prefix){
 }
 
 /**
+ * @param {string} filePath
+ */
+export function getFilenameFromPath(filePath){
+    return filePath.split("/").pop();
+}
+
+
+/**
  * @param {Map} map1
  * @param {Map} map2
  */

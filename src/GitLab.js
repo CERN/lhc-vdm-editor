@@ -193,15 +193,17 @@ export default class GitLab {
      * @param {string} toFolder
      */
     async copyFilesFromFolder(fromFolder, toFolder){
-        const fromFolderContents = await this.listFiles(fromFolder, true, false)
+        const fromFolderContents = await this.listFiles(fromFolder, true, false);
         const toFolderContents = new Set(await this.listFiles(toFolder, true, false));
 
-        const neededFiles = fromFolderContents.filter(x => !toFolderContents.has(x));
-        const actions = await awaitArray(neededFiles.map(async filePath => ({
-            action: "create",
-            file_path: toFolder + "/" + getRelativePath(filePath, fromFolder),
-            content: await this.readFile(filePath)
-        })));
+        const actions = (await awaitArray(fromFolderContents.filter(x => !toFolderContents.has(x))
+            .map(async filePath => ({
+                action: "create",
+                file_path: toFolder + "/" + getRelativePath(filePath, fromFolder),
+                content: await this.readFile(filePath)
+            })
+        )))
+
 
         await gFetch(
             `${URL_START}/repository/commits`,
