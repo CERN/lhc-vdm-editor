@@ -51,6 +51,7 @@ button {
 
 
 #exit-button {
+    box-sizing: border-box;
     width: 34px;
     height: 20px;
     background-color: #ff8484;
@@ -62,6 +63,10 @@ button {
     right: -19px;
     top: -13px;
     color: white;
+}
+#exit-button:hover {
+    border: 1px solid #ff8484;
+    background-color: #f1a7a7;
 }
 
 button:hover {
