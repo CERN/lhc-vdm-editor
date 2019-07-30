@@ -115,7 +115,8 @@ export default class CreateFileWindow extends HTMLElement {
         this.root.addEventListener("keyup", this.onKeyUp);
         this.root.querySelector("#exit-button").addEventListener("click", () => {
             this.cancel();
-        })
+        });
+
         this.root.querySelector("#copy-button").addEventListener("click", () => {
             const selectionBoxes = this.root.querySelector("selection-boxes");
 
@@ -127,7 +128,24 @@ export default class CreateFileWindow extends HTMLElement {
                     campaign: selectionBoxes.campaign
                 }
             }));
-        })
+        });
+
+        function _onEmptySubmit(){
+            const fileName = (/**@type HTMLInputElement*/(this.root.querySelector("#file-name"))).value;
+
+            this.dispatchEvent(new CustomEvent("create-empty", {
+                detail: fileName
+            }));
+        }
+        const onEmptySubmit = _onEmptySubmit.bind(this);
+
+
+        this.root.querySelector("#create-empty").addEventListener("click", onEmptySubmit);
+        this.root.querySelector("#file-name").addEventListener("keydown", /**@param {KeyboardEvent} event */event => {
+            if(event.key == "Enter"){
+                onEmptySubmit();
+            }
+        });
     }
 
     disconnectedCallback(){
@@ -153,7 +171,7 @@ export default class CreateFileWindow extends HTMLElement {
                 <div id="exit-button">x</div>
                 <div>Create an empty file</div>
                 <div class="slightly-indented">
-                    <input type="text" placeholder="New File Name" />
+                    <input id="file-name" type="text" placeholder="New File Name" />
                 </div>
                 <button id="create-empty">Create</button>
                 <hr>

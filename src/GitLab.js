@@ -2,7 +2,16 @@ import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunction
 
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
 
-export class NoPathExistsError extends Error {}
+export class NoPathExistsError extends Error {
+    constructor(){
+        super("No Path exists");
+    }
+}
+export class FileAlreadyExistsError extends Error {
+    constructor(){
+        super("File already exists");
+    }
+}
 
 export default class GitLab {
     /**
@@ -76,25 +85,35 @@ export default class GitLab {
      * @param {string} filePath
      */
     async createFile(filePath) {
-        await gFetch(
-            `${URL_START}/repository/commits`,
-            {
-                headers: new Headers({
-                    ...this.authHeader,
-                    'Content-Type': 'application/json'
-                }),
-                method: "POST",
-                body: JSON.stringify({
-                    branch: this.branch,
-                    commit_message: `Create file ${filePath}`,
-                    actions: [{
-                        action: "create",
-                        file_path: filePath,
-                        content: ''
-                    }]
-                })
+        try{
+            await gFetch(
+                `${URL_START}/repository/commits`,
+                {
+                    headers: new Headers({
+                        ...this.authHeader,
+                        'Content-Type': 'application/json'
+                    }),
+                    method: "POST",
+                    body: JSON.stringify({
+                        branch: this.branch,
+                        commit_message: `Create file ${filePath}`,
+                        actions: [{
+                            action: "create",
+                            file_path: filePath,
+                            content: ''
+                        }]
+                    })
+                }
+            )
+        }
+        catch(error){
+            if(error instanceof Response && (await error.json()).message == "A file with this name already exists"){
+                throw new FileAlreadyExistsError();
             }
-        )
+            else{
+                throw error;
+            }
+        }
     }
 
     async listCampaigns() {
