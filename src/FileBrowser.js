@@ -113,6 +113,7 @@ export default class FileBrowser extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+        /** @type GitLab */
         this.gitlab = null;
 
         /** @type {HTMLDivElement} */
@@ -120,8 +121,9 @@ export default class FileBrowser extends HTMLElement {
 
         this.root.querySelector("selection-boxes").addEventListener("change", () => this.reloadFileUI());
 
-        document.body.addEventListener("mouseup", /**@type MouseEvent*/event => {
-            if (this.contextMenu !== null && !(event.composedPath().includes(this.contextMenu))) {
+        document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
+            if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
+                console.log("removing")
                 this.tryRemoveContextMenu();
             }
         })
@@ -146,12 +148,12 @@ export default class FileBrowser extends HTMLElement {
     }
 
     /** @type {HTMLDivElement} */
-    contextMenu = null;
+    myContextMenu = null;
 
     tryRemoveContextMenu() {
-        if (this.contextMenu !== null) {
-            this.root.removeChild(this.contextMenu);
-            this.contextMenu = null;
+        if (this.myContextMenu !== null) {
+            this.root.removeChild(this.myContextMenu);
+            this.myContextMenu = null;
         }
     }
 
@@ -267,13 +269,14 @@ export default class FileBrowser extends HTMLElement {
 
             let item = document.createElement('div');
             item.setAttribute('style', 'font-weight: bold');
+            item.style["padding-top"] = "6px";
             item.className = 'item';
             item.innerHTML = html`
                 <span style="font-size: 20px; vertical-align: middle; padding: 0px 8px 0px 8px;">
                     +
                 </span>
                 <span>
-                    New file
+                    New file(s)
                 </span>`;
 
             item.addEventListener('click', () => {
@@ -282,8 +285,36 @@ export default class FileBrowser extends HTMLElement {
                 createFileWindow.passInValues(this.gitlab);
                 
                 createFileWindow.addEventListener("submit", async (event) => {
-                    // prefix
-                    // copy
+                    // @ts-ignore
+                    const campain = event.detail.campain;
+                    // @ts-ignore
+                    const ip = event.detail.ip;
+
+                    if(campain + "/" + ip == prefix.slice(0, -1)){
+                        alert("Cannot copy from the same IP and Campain as the destination");
+                    }
+
+                    try{
+                        await this.gitlab.copyFilesFromFolder(
+                            // @ts-ignore
+                            campain + "/" + ip,
+                            prefix.slice(0, -1), // remove the end slash from the folder name
+                        )
+                    }
+                    catch(error){
+                        if(error instanceof NoPathExistsError){
+                            // @ts-ignore
+                            alert(`The Campain "${campain}" and Interaction Point "${ip}" do not have any files.`);
+
+                            return;
+                        }
+                        else{
+                            throw error;
+                        }
+                    }
+
+                    // Succeeded, so remove the root
+                    this.root.removeChild(createFileWindow);
                 })
                 createFileWindow.addEventListener("cancel", () => {
                     this.root.removeChild(createFileWindow);

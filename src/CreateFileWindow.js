@@ -146,7 +146,7 @@ export default class CreateFileWindow extends HTMLElement {
         <div class="window-container">
             <div class="window">
                 <div id="exit-button">x</div>
-                <div>Create empty file</div>
+                <div>Create an empty file</div>
                 <div class="slightly-indented">
                     <input type="text" placeholder="New File Name" />
                 </div>
