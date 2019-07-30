@@ -63,13 +63,15 @@ button {
     right: -19px;
     top: -13px;
     color: white;
+    cursor: pointer;
 }
 #exit-button:hover {
-    background-color: #f1a7a7;
+    background-color: #ca5151;
 }
 
 button:hover {
     background-color: #d6d6d6;
+    cursor: pointer;
 }
 
 button:active {

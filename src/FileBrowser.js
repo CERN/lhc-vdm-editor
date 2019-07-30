@@ -315,10 +315,9 @@ export default class FileBrowser extends HTMLElement {
 
             let item = document.createElement('div');
             item.setAttribute('style', 'font-weight: bold');
-            item.style["padding-top"] = "6px";
             item.className = 'item';
             item.innerHTML = html`
-                <span style="font-size: 20px; vertical-align: middle; padding: 0px 8px 0px 8px;">
+                <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
                     +
                 </span>
                 <span>

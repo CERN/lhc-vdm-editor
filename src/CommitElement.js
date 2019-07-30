@@ -15,6 +15,7 @@ const styling = css`
     outline: none;
     border-style: solid;
     border-width: 2px;
+    cursor: pointer;
 }
 .commit-button:hover {
     background-color: #bfbfbf;

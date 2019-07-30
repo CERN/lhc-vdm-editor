@@ -19,6 +19,7 @@ button {
     margin: 1px;
     font-weight: bold;
     outline: none;
+    cursor: pointer;
 }
 button:hover {
     background-color: #bfbfbf;

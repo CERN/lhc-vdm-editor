@@ -17,8 +17,7 @@ const styling = css`
 }
 
 .header {
-    margin-top: 5px;
-    margin-bottom: 10px;
+    margin: 20px 0 20px 0;
 }
 
 commit-element {
