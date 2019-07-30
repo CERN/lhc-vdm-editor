@@ -20,7 +20,7 @@ export default class Selectors extends HTMLElement {
         this.root = this.attachShadow({ mode: 'open' });
         this.root.innerHTML = this.template();
 
-        Array.from(this.root.querySelectorAll("#ip-select, #campain-select")).map(x => x.addEventListener("change", () => {
+        Array.from(this.root.querySelectorAll("#ip-select, #Campaign-select")).map(x => x.addEventListener("change", () => {
             this.dispatchEvent(new CustomEvent('change'))
         }));
     }
@@ -30,17 +30,17 @@ export default class Selectors extends HTMLElement {
      */
     passInValues(gitlab) {
         (async () => {
-            const campains = await gitlab.listCampains();
-            this.root.getElementById("campain-select").innerHTML = campains.map(campainName => {
-                return html`<option value=${campainName}>${campainName}</option>`
+            const Campaigns = await gitlab.listCampaigns();
+            this.root.getElementById("Campaign-select").innerHTML = Campaigns.map(CampaignName => {
+                return html`<option value=${CampaignName}>${CampaignName}</option>`
             }).join("\n");
         })();
     }
     get ip() {
         return this.root.getElementById("ip-select").value;
     }
-    get campain() {
-        return this.root.getElementById("campain-select").value;
+    get Campaign() {
+        return this.root.getElementById("Campaign-select").value;
     }
 
     template() {
@@ -60,9 +60,9 @@ export default class Selectors extends HTMLElement {
         </div>
     </div>
     <div class="selection-box">
-        <div class="selection-name">Campain:</div>
+        <div class="selection-name">Campaign:</div>
         <div>
-            <select id="campain-select">
+            <select id="Campaign-select">
             </select>
         </div>
     </div>

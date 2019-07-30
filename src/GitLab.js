@@ -97,15 +97,15 @@ export default class GitLab {
         )
     }
 
-    async listCampains() {
+    async listCampaigns() {
         return Array.from((await this.listFiles('/', false)).folders.keys());
     }
 
     /**
-     * @param {string} campain
+     * @param {string} Campaign
      */
-    async listIPs(campain) {
-        return Array.from((await this.listFiles(campain, false)).folders.keys());
+    async listIPs(Campaign) {
+        return Array.from((await this.listFiles(Campaign, false)).folders.keys());
     }
 
     /**

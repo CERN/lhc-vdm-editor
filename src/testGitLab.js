@@ -32,8 +32,8 @@ describe("GitLab", () => {
         )).toBeUndefined()
     })
 
-    it('listing campains', async () => {
-        expect(await gitlab.listCampains()).toEqual(jasmine.any(Array))
+    it('listing Campaigns', async () => {
+        expect(await gitlab.listCampaigns()).toEqual(jasmine.any(Array))
     })
 
     it("listing IPs", async () => {

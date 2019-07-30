@@ -2,7 +2,7 @@
 import { css, html } from "./HelperFunctions.js";
 // @ts-ignore
 import { NoPathExistsError, default as GitLab } from "./GitLab.js";
-import './IPCampainSelectors.js';
+import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
 
 const styling = css`
@@ -132,8 +132,8 @@ export default class FileBrowser extends HTMLElement {
     passInValues(gitlab) {
         this.gitlab = gitlab;
         (async () => {
-            const campains = await this.gitlab.listCampains();
-            this.setFileUI('IP1', campains[0]);
+            const Campaigns = await this.gitlab.listCampaigns();
+            this.setFileUI('IP1', Campaigns[0]);
         })();
         // @ts-ignore
         this.root.querySelector('selection-boxes').passInValues(gitlab);
@@ -143,8 +143,8 @@ export default class FileBrowser extends HTMLElement {
         // @ts-ignore
         const ip = this.root.querySelector('selection-boxes').ip;
         // @ts-ignore
-        const campain = this.root.querySelector('selection-boxes').campain;
-        this.setFileUI(ip, campain);
+        const Campaign = this.root.querySelector('selection-boxes').Campaign;
+        this.setFileUI(ip, Campaign);
     }
 
     /** @type {HTMLDivElement} */
@@ -205,9 +205,9 @@ export default class FileBrowser extends HTMLElement {
 
     /**
      * @param {string} ip
-     * @param {string} campain
+     * @param {string} Campaign
      */
-    async setFileUI(ip, campain) {
+    async setFileUI(ip, Campaign) {
         /**
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
@@ -286,25 +286,25 @@ export default class FileBrowser extends HTMLElement {
                 
                 createFileWindow.addEventListener("submit", async (event) => {
                     // @ts-ignore
-                    const campain = event.detail.campain;
+                    const Campaign = event.detail.Campaign;
                     // @ts-ignore
                     const ip = event.detail.ip;
 
-                    if(campain + "/" + ip == prefix.slice(0, -1)){
-                        alert("Cannot copy from the same IP and Campain as the destination");
+                    if(Campaign + "/" + ip == prefix.slice(0, -1)){
+                        alert("Cannot copy from the same IP and Campaign as the destination");
                     }
 
                     try{
                         await this.gitlab.copyFilesFromFolder(
                             // @ts-ignore
-                            campain + "/" + ip,
+                            Campaign + "/" + ip,
                             prefix.slice(0, -1), // remove the end slash from the folder name
                         )
                     }
                     catch(error){
                         if(error instanceof NoPathExistsError){
                             // @ts-ignore
-                            alert(`The Campain "${campain}" and Interaction Point "${ip}" do not have any files.`);
+                            alert(`The Campaign "${Campaign}" and Interaction Point "${ip}" do not have any files.`);
 
                             return;
                         }
@@ -330,7 +330,7 @@ export default class FileBrowser extends HTMLElement {
 
         let fileStructure;
         try {
-            fileStructure = await this.gitlab.listFiles(`${campain}/${ip}`);
+            fileStructure = await this.gitlab.listFiles(`${Campaign}/${ip}`);
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
@@ -346,10 +346,10 @@ export default class FileBrowser extends HTMLElement {
 
         let header = document.createElement('div');
         header.setAttribute('id', 'folder-name');
-        header.innerHTML = `${campain}/${ip}`;
+        header.innerHTML = `${Campaign}/${ip}`;
         browser.appendChild(header);
 
-        browser.appendChild(getElementFromStructure(fileStructure, `${campain}/${ip}/`));
+        browser.appendChild(getElementFromStructure(fileStructure, `${Campaign}/${ip}/`));
     }
 
     template() {

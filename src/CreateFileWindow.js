@@ -1,5 +1,5 @@
 import { css, html } from "./HelperFunctions.js"
-import "./IPCampainSelectors.js";
+import "./IPCampaignSelectors.js";
 
 const styling = css`
 .cover{
@@ -119,7 +119,7 @@ export default class CreateFileWindow extends HTMLElement {
                     // @ts-ignore
                     ip: selectionBoxes.ip,
                     // @ts-ignore
-                    campain: selectionBoxes.campain
+                    Campaign: selectionBoxes.Campaign
                 }
             }));
         })
