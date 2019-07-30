@@ -31,6 +31,11 @@ const styling = css`
     background-color: white;
 }
 
+/* this will be better when implememnted by browsers
+#file-browser .item:nth-match(2n) {
+    background-color: white;
+} */
+
 #new-file {
     background-color: white;
     padding: 3px;
