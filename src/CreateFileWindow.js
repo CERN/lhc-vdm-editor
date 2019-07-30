@@ -49,7 +49,6 @@ button {
     box-shadow: #c1c1c1 0px 0px 0px 1px;
 }
 
-
 #exit-button {
     width: 34px;
     height: 20px;
@@ -78,10 +77,6 @@ button:active {
     background-color: #a2a2a2;
 }
 
-.buttons{
-    float: right;
-}
-
 .slightly-indented{
     margin-left: 7px;
     margin-top: 7px;
@@ -91,6 +86,40 @@ input[type=text]{
     padding: 7px;
     border-radius: 3px;
     border: solid 1px grey;
+}
+
+.triangle {
+    width: 0px;
+    height: 0px;
+    position: relative;
+    display: inline-block;
+}
+
+.triangle-closed {
+    border-left: 8px solid grey;
+    border-bottom: 5px solid transparent;
+    border-top: 5px solid transparent;
+    top: 1px;
+    left: -10px;
+}
+
+.triangle-open {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid grey;
+    top: 0px;
+    left: -10px;
+}
+
+.triangle-container {
+    height: 0px;
+    width: 0px;
+}
+
+#file-list-button {
+    font-size: 8pt;
+    border: 1px solid black;
+    padding: 0 5px 0 13px;
 }
 `
 
@@ -102,12 +131,13 @@ export default class CreateFileWindow extends HTMLElement {
         this.root.querySelector(".cover").addEventListener("click", () => {
             this.cancel();
         })
+        this.gitlab = null;
 
         /**
          * @param event {KeyboardEvent}
          */
-        function onKeyUp(event){
-            if(event.keyCode == 27/*esc*/){
+        function onKeyUp(event) {
+            if (event.keyCode == 27/*esc*/) {
                 this.cancel();
             }
         }
@@ -131,7 +161,7 @@ export default class CreateFileWindow extends HTMLElement {
             }));
         });
 
-        function _onEmptySubmit(){
+        function _onEmptySubmit() {
             const fileName = (/**@type HTMLInputElement*/(this.root.querySelector("#file-name"))).value;
 
             this.dispatchEvent(new CustomEvent("create-empty", {
@@ -143,23 +173,64 @@ export default class CreateFileWindow extends HTMLElement {
 
         this.root.querySelector("#create-empty").addEventListener("click", onEmptySubmit);
         this.root.querySelector("#file-name").addEventListener("keydown", /**@param {KeyboardEvent} event */event => {
-            if(event.key == "Enter"){
+            if (event.key == "Enter") {
                 onEmptySubmit();
             }
         });
+
+
+        const triangle = this.root.querySelector('.triangle')
+        let isOpen = false;
+        this.root.querySelector('#file-list-button').addEventListener('click', () => {
+            if (isOpen) {
+                triangle.classList.remove("triangle-open");
+                triangle.classList.add("triangle-closed");
+
+                this.root.querySelector('#file-list-content').innerHTML = "";
+                isOpen = false;
+            }
+            else {
+                triangle.classList.remove("triangle-closed");
+                triangle.classList.add("triangle-open");
+                isOpen = true;
+
+                (async () => {
+                    const selectionBoxes = this.root.querySelector("selection-boxes")
+                    // @ts-ignore
+                    const path = `${selectionBoxes.campaign}/${selectionBoxes.ip}`;
+                    const files = await this.gitlab.listFiles(path, true, false)
+                    this.setFileUI(files);
+                })();
+            }
+        })
     }
 
-    disconnectedCallback(){
+    setFileUI(files) {
+        let list = document.createDocumentFragment();
+        for (let file of files) {
+            let line = document.createElement('div');
+            line.innerHTML = html`
+                <input type='checkbox' checked>
+                ${file}
+            `;
+            list.appendChild(line);
+        }
+
+        this.root.querySelector('#file-list-content').appendChild(list);
+    }
+
+    disconnectedCallback() {
         document.removeEventListener("keyup", this.onKeyUp);
     }
 
-    cancel(){
+    cancel() {
         this.dispatchEvent(new CustomEvent("cancel"));
     }
 
-    passInValues(gitlab){
+    passInValues(gitlab) {
+        this.gitlab = gitlab;
         // @ts-ignore
-        this.root.querySelector("selection-boxes").passInValues(gitlab);
+        this.root.querySelector("selection-boxes").passInValues(this.gitlab);
     }
 
     template() {
@@ -181,7 +252,14 @@ export default class CreateFileWindow extends HTMLElement {
                     <selection-boxes></selection-boxes>
                 </div>
                 <div>
-                    <button id="copy-button">Copy</button>
+                    <button id="copy-button">Copy files</button>
+                </div>
+                <div id='file-list'>
+                    <div id='file-list-button'>
+                        <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
+                        <div>choose files</div>
+                    </div>
+                    <div id='file-list-content'></div>
                 </div>
             </div>
         </div>
