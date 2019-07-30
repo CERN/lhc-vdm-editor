@@ -69,3 +69,27 @@ export const gFetch = async (...args) => handleFetchErrors(await fetch(...args))
 export const getText = async (...args) => await (await gFetch(...args)).text();
 // @ts-ignore
 export const getJSON = async (...args) => await (await gFetch(...args)).json();
+
+/**
+ * @type <T>(array: T[], func: (item: T, index: number, array: T[]) => Promise<T>) => Promise<T[]>
+ */
+export async function asyncMap(array, func){
+    let newArray = new Array(array.length);
+    for(let [i, item] of array.entries()){
+        newArray[i] = await func(item, i, array);
+    }
+
+    return newArray;
+}
+
+/**
+ * @type <T>(array: (Promise<T>)[]) => Promise<T[]>
+ */
+export async function awaitArray(array){
+    let newArray = new Array(array.length);
+    for(let [i, item] of array.entries()){
+        newArray[i] = await item;
+    }
+
+    return newArray;
+}

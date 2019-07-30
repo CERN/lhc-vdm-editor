@@ -1,4 +1,4 @@
-import { gFetch, getRelativePath, mergeMaps } from "./HelperFunctions.js"
+import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunctions.js"
 
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
 
@@ -111,9 +111,11 @@ export default class GitLab {
     /**
      * @param {string} path
      * @param {boolean} recursive
-     * @returns {Promise<{files: string[], folders: Map<string, any>}>}
+     * @param {boolean} returnStructure whether to return a structure of type 
+     *  {files: string[], folders: Map<string, Structure>}. Note, if this is false,
+     *  only file paths are returned, not folders
      */
-    async listFiles(path, recursive=true) {
+    async listFiles(path, recursive=true, returnStructure=true) {
         const perPage = 100;
         const page = await gFetch(
             `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${
@@ -137,7 +139,7 @@ export default class GitLab {
         /**
          * @param {object[]} fileList
          */
-        function addFilesFromGitLab(fileList){
+        function getGitLabFileStructure(fileList){
             let structure = { files: [], folders: new Map() };
 
             for(let item of fileList){
@@ -157,7 +159,12 @@ export default class GitLab {
             return structure;
         }
 
-        let fileStructure = addFilesFromGitLab(await page.json());
+        let fileList = await page.json();
+
+        if(fileList.length == 0){
+            throw new NoPathExistsError(`Invalid path ${path} (GitLab request returned no information)`)
+        }
+
         let lastPage = Math.ceil(parseInt(page.headers.get('X-Total')) / perPage);
 
         for (let i = 2; i <= lastPage; i++) {
@@ -169,19 +176,48 @@ export default class GitLab {
                 }
             );
 
-            const newFS = addFilesFromGitLab(await page.json());
+            fileList = fileList.concat(await page.json())
+        }
 
-            fileStructure = {
-                files: fileStructure.files.concat(newFS.files),
-                folders: mergeMaps(fileStructure.folders, newFS.folders)
+        if(returnStructure){
+            return getGitLabFileStructure(fileList);
+        }
+        else{
+            return fileList.filter(x => x.type == "blob")
+                .map(x => x.path);
+        }
+    }
+
+    /**
+     * @param {string} fromFolder
+     * @param {string} toFolder
+     */
+    async copyFilesFromFolder(fromFolder, toFolder){
+        const fromFolderContents = await this.listFiles(fromFolder, true, false)
+        const toFolderContents = new Set(await this.listFiles(toFolder, true, false));
+
+        const neededFiles = fromFolderContents.filter(x => !toFolderContents.has(x));
+        const actions = await awaitArray(neededFiles.map(async filePath => ({
+            action: "create",
+            file_path: toFolder + "/" + getRelativePath(filePath, fromFolder),
+            content: await this.readFile(filePath)
+        })));
+
+        await gFetch(
+            `${URL_START}/repository/commits`,
+            {
+                headers: new Headers({
+                    ...this.authHeader,
+                    'Content-Type': 'application/json'
+                }),
+                method: "POST",
+                body: JSON.stringify({
+                    branch: this.branch,
+                    commit_message: `Copy files from ${fromFolder} to ${toFolder}`,
+                    actions: actions
+                })
             }
-        }
-
-        if(fileStructure.files.length == 0 && Array.from(fileStructure.folders.entries()).length == 0){
-            throw new NoPathExistsError(`Invalid path ${path} (GitLab request returned no information)`)
-        }
-
-        return fileStructure;
+        )
     }
 
     /**
