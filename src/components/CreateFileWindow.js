@@ -158,11 +158,13 @@ export default class CreateFileWindow extends HTMLElement {
             const triangle = this.root.querySelector('folder-triangle')
             if (isOpen) {
                 isOpen = false;
+                // @ts-ignore
                 triangle.isOpen = isOpen;
                 this.root.querySelector('#file-list-content').innerHTML = "";
             }
             else {
                 isOpen = true;
+                // @ts-ignore
                 triangle.isOpen = isOpen;
                 // @ts-ignore
                 this.setFilesFromPath(this.selectionBoxes.path);

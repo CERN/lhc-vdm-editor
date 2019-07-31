@@ -262,11 +262,13 @@ export default class FileBrowser extends HTMLElement {
                 itemEl.addEventListener("click", async () => {
                     if (isOpen) {
                         isOpen = false;
+                        // @ts-ignore
                         triangle.isOpen = isOpen;
                         folderContentElement.innerHTML = "";
                     }
                     else {
                         isOpen = true;
+                        // @ts-ignore
                         triangle.isOpen = isOpen;
                         folderContentElement.appendChild(getElementFromStructure(folderContent, prefix + folderName + "/"));
                     }
