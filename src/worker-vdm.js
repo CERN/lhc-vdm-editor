@@ -40,7 +40,7 @@ async function getParser(){
                 }
             }
 
-            postMessage(messageToSend, "*");
+            postMessage(messageToSend);
         }
     })
 })()
