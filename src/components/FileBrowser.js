@@ -1,6 +1,5 @@
 // @ts-check
 import { css, html, getFilenameFromPath } from "../HelperFunctions.js";
-// @ts-ignore
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
@@ -145,14 +144,11 @@ export default class FileBrowser extends HTMLElement {
             const campaigns = await this.gitlab.listCampaigns();
             this.setFileUI('IP1', campaigns[0]);
         })();
-        // @ts-ignore
         this.root.querySelector('selection-boxes').passInValues(gitlab);
     }
 
     reloadFileUI() {
-        // @ts-ignore
         const ip = this.root.querySelector('selection-boxes').ip;
-        // @ts-ignore
         const campaign = this.root.querySelector('selection-boxes').campaign;
         this.setFileUI(ip, campaign);
     }
@@ -231,14 +227,12 @@ export default class FileBrowser extends HTMLElement {
             }
 
             await this.gitlab.copyFilesFromFolder(
-                // @ts-ignore
                 fromFolder,
                 toFolder // remove the end slash from the folder name
             )
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
-                // @ts-ignore
                 alert(`The campaign "${campaign}" and interaction point "${ip}" has no files.`);
 
                 return;
@@ -326,11 +320,9 @@ export default class FileBrowser extends HTMLElement {
 
             item.addEventListener('click', () => {
                 const createFileWindow = document.createElement("create-file-window");
-                // @ts-ignore
                 createFileWindow.passInValues(this.gitlab);
 
                 createFileWindow.addEventListener("submit", async (event) => {
-                    // @ts-ignore
                     await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign);
                     this.reloadFileUI();
 
@@ -344,12 +336,10 @@ export default class FileBrowser extends HTMLElement {
 
                 createFileWindow.addEventListener("create-empty", async event => {
                     try{
-                        // @ts-ignore
                         await this.gitlab.createFile(prefix + event.detail);
                     }
                     catch(error){
                         if(error instanceof FileAlreadyExistsError){
-                            // @ts-ignore
                             alert(`Cannot create the empty file ${event.detail}, it already exists`);
                             return;
                         }

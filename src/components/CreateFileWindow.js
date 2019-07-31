@@ -154,9 +154,7 @@ export default class CreateFileWindow extends HTMLElement {
         this.root.querySelector("#copy-button").addEventListener("click", () => {
             this.dispatchEvent(new CustomEvent("submit", {
                 detail: {
-                    // @ts-ignore
                     ip: this.selectionBoxes.ip,
-                    // @ts-ignore
                     campaign: this.selectionBoxes.campaign
                 }
             }));
@@ -195,13 +193,11 @@ export default class CreateFileWindow extends HTMLElement {
                 triangle.classList.add("triangle-open");
                 isOpen = true;
 
-                // @ts-ignore
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
         })
         this.selectionBoxes.addEventListener('change', () => {
             if (isOpen) {
-                // @ts-ignore
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
         })
@@ -249,7 +245,6 @@ export default class CreateFileWindow extends HTMLElement {
 
     passInValues(gitlab) {
         this.gitlab = gitlab;
-        // @ts-ignore
         this.root.querySelector("selection-boxes").passInValues(this.gitlab);
     }
 

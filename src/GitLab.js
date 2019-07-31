@@ -3,13 +3,13 @@ import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunction
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
 
 export class NoPathExistsError extends Error {
-    constructor(){
-        super("No Path exists");
+    constructor(message="No Path exists"){
+        super(message);
     }
 }
 export class FileAlreadyExistsError extends Error {
-    constructor(){
-        super("File already exists");
+    constructor(message="File already exists"){
+        super(message);
     }
 }
 
