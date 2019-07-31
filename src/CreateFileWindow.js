@@ -1,6 +1,6 @@
 import { css, html } from "./HelperFunctions.js";
 import "./IPCampaignSelectors.js";
-import {NoPathExistsError} from "./GitLab.js";
+import { NoPathExistsError } from "./GitLab.js";
 
 const styling = css`
 .cover{
@@ -179,10 +179,7 @@ export default class CreateFileWindow extends HTMLElement {
             }
         });
 
-        this.selectionBoxes.addEventListener('change', () => {
-            // @ts-ignore
-            this.setFilesFromPath(this.selectionBoxes.path);
-        })
+
         let isOpen = false;
         this.root.querySelector('#file-list-button').addEventListener('click', () => {
             const triangle = this.root.querySelector('.triangle')
@@ -198,6 +195,12 @@ export default class CreateFileWindow extends HTMLElement {
                 triangle.classList.add("triangle-open");
                 isOpen = true;
 
+                // @ts-ignore
+                this.setFilesFromPath(this.selectionBoxes.path);
+            }
+        })
+        this.selectionBoxes.addEventListener('change', () => {
+            if (isOpen) {
                 // @ts-ignore
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
