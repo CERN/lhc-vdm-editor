@@ -27,7 +27,7 @@ const styling = css`
 }
 `
 
-export default class CreateFileWindow extends HTMLElement {
+export default class Triangle extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -54,3 +54,4 @@ export default class CreateFileWindow extends HTMLElement {
     `
     }
 }
+customElements.define('Triangle', Triangle);
