@@ -1,6 +1,7 @@
 import { css, html } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
+import './Triangle.js';
 
 const styling = css`
 .cover{
@@ -89,34 +90,6 @@ input[type=text]{
     border: solid 1px grey;
 }
 
-.triangle {
-    width: 0px;
-    height: 0px;
-    position: relative;
-    display: inline-block;
-}
-
-.triangle-closed {
-    border-left: 8px solid grey;
-    border-bottom: 5px solid transparent;
-    border-top: 5px solid transparent;
-    top: 1px;
-    left: -10px;
-}
-
-.triangle-open {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 8px solid grey;
-    top: 0px;
-    left: -10px;
-}
-
-.triangle-container {
-    height: 0px;
-    width: 0px;
-}
-
 #file-list-button {
     font-size: 8pt;
     border: 1px solid black;
@@ -180,19 +153,15 @@ export default class CreateFileWindow extends HTMLElement {
 
         let isOpen = false;
         this.root.querySelector('#file-list-button').addEventListener('click', () => {
-            const triangle = this.root.querySelector('.triangle')
+            const triangle = this.root.querySelector('folder-triangle')
             if (isOpen) {
-                triangle.classList.remove("triangle-open");
-                triangle.classList.add("triangle-closed");
-
-                this.root.querySelector('#file-list-content').innerHTML = "";
                 isOpen = false;
+                triangle.isOpen = isOpen;
+                this.root.querySelector('#file-list-content').innerHTML = "";
             }
             else {
-                triangle.classList.remove("triangle-closed");
-                triangle.classList.add("triangle-open");
                 isOpen = true;
-
+                triangle.isOpen = isOpen;
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
         })
@@ -271,7 +240,7 @@ export default class CreateFileWindow extends HTMLElement {
                 </div>
                 <div id='file-list'>
                     <div id='file-list-button'>
-                        <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
+                        <folder-triangle></folder-triangle>
                         <div>choose files</div>
                     </div>
                     <div id='file-list-content'></div>

@@ -54,4 +54,35 @@ export default class Triangle extends HTMLElement {
     `
     }
 }
-customElements.define('Triangle', Triangle);
+customElements.define('folder-triangle', Triangle);
+
+
+
+
+/* .triangle {
+    width: 0px;
+    height: 0px;
+    position: relative;
+    display: inline-block;
+}
+
+.triangle-closed {
+    border-left: 8px solid grey;
+    border-bottom: 5px solid transparent;
+    border-top: 5px solid transparent;
+    top: 0px;
+    left: 0px;
+}
+
+.triangle-open {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid grey;
+    top: -1px;
+    left: 0px;
+}
+
+.triangle-container {
+    height: 0px;
+    width: 0px;
+} */
