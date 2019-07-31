@@ -4,6 +4,7 @@ import { css, html, getFilenameFromPath } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
+import './Triangle.js';
 
 const styling = css`
 * {
@@ -33,42 +34,9 @@ const styling = css`
     background-color: white;
 }
 
-/* this will be better when implememnted by browsers
-#file-browser .item:nth-match(2n) {
-    background-color: white;
-} */
-
 #new-file {
     background-color: white;
     padding: 3px;
-}
-
-.triangle {
-    width: 0px;
-    height: 0px;
-    position: relative;
-    display: inline-block;
-}
-
-.triangle-closed {
-    border-left: 8px solid grey;
-    border-bottom: 5px solid transparent;
-    border-top: 5px solid transparent;
-    top: 0px;
-    left: 0px;
-}
-
-.triangle-open {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 8px solid grey;
-    top: -1px;
-    left: 0px;
-}
-
-.triangle-container {
-    height: 0px;
-    width: 0px;
 }
 
 .folder-name {
@@ -277,7 +245,7 @@ export default class FileBrowser extends HTMLElement {
             for (let [folderName, folderContent] of _structure.folders.entries()) {
                 container.innerHTML = html`
                     <div class="item">
-                        <div class="triangle-container"><span class="triangle triangle-closed"></span></div>
+                        <folder-triangle></folder-triangle>
                         <span class="folder-name">${folderName}</span>
                     </div>
                     <span style="display:block" class="folder-content">
@@ -285,7 +253,7 @@ export default class FileBrowser extends HTMLElement {
                 `;
 
                 const folderContentElement = container.querySelector(".folder-content");
-                const triangle = container.querySelector(".triangle");
+                const triangle = container.querySelector("folder-triangle");
                 const itemEl = container.querySelector(".item");
 
                 this.addContextMenuListener(itemEl, prefix + folderName);
@@ -293,18 +261,14 @@ export default class FileBrowser extends HTMLElement {
                 let isOpen = false;
                 itemEl.addEventListener("click", async () => {
                     if (isOpen) {
-                        triangle.classList.remove("triangle-open");
-                        triangle.classList.add("triangle-closed");
-
-                        folderContentElement.innerHTML = "";
                         isOpen = false;
+                        triangle.isOpen = isOpen;
+                        folderContentElement.innerHTML = "";
                     }
                     else {
-                        triangle.classList.remove("triangle-closed");
-                        triangle.classList.add("triangle-open");
-
-                        folderContentElement.appendChild(getElementFromStructure(folderContent, prefix + folderName + "/"));
                         isOpen = true;
+                        triangle.isOpen = isOpen;
+                        folderContentElement.appendChild(getElementFromStructure(folderContent, prefix + folderName + "/"));
                     }
                 });
 
