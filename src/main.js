@@ -2,7 +2,6 @@
 import GitLab from "./GitLab.js"
 import { getJSON } from "./HelperFunctions.js"
 import OverallEditor from "./OverallEditor.js"
-import "../extern/ace.js"
 import {OAuth} from "./OAuth.js"
 
 $(async () => {
@@ -16,7 +15,7 @@ $(async () => {
             window.location.hash = "#";
         }
         else{
-            oa.getCredentials()
+            oa.getCredentials();
         }
         usesOAuth = true;
     }

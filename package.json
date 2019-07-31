@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Test by running test-server and browsing to 127.0.0.1:8080/SpecRunner.html\" && exit 1",
     "test-server": "http-server -a 127.0.0.1 -c-1"
   },
   "repository": {

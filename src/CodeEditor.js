@@ -1,7 +1,4 @@
 import { html, css } from "./HelperFunctions.js"
-import "../extern/ace.js"
-import "../extern/ace-lang-tools.js"
-import "../extern/ace-searchbox.js"
 import "./mode-vdm.js"
 import { parseVdM, deparseVdM } from "./parser.js"
 import "./token_tooltip.js"
@@ -258,8 +255,6 @@ export default class CodeEditor extends HTMLElement {
 
         // @ts-ignore
         editor.session.gutterRenderer = ConstWidthLineNum;
-        // @ts-ignore
-        ace.config.set('basePath', './extern');
         editor.setTheme("ace/theme/xcode");
         editor.setReadOnly(true);
 
