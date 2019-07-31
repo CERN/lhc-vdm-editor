@@ -1,4 +1,4 @@
-import { css, html } from "./HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js"
 import "./SwitchEditorButtons.js"
 
 const styling = css`

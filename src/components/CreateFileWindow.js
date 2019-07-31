@@ -1,6 +1,6 @@
-import { css, html } from "./HelperFunctions.js";
+import { css, html } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
-import { NoPathExistsError } from "./GitLab.js";
+import { NoPathExistsError } from "../GitLab.js";
 
 const styling = css`
 .cover{

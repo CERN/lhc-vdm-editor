@@ -1,12 +1,12 @@
 // @ts-check
-import { css, html } from "./HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js"
 import "./RawEditor.js"
 import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
 import "./FileBrowser.js"
-import GitLab from "./GitLab.js"
-import { parseVdM, deparseVdM } from "./parser.js"
+import GitLab from "../GitLab.js"
+import { parseVdM, deparseVdM } from "../parser.js"
 import './RevertButton.js'
 
 const styling = css`

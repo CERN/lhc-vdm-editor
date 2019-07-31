@@ -1,7 +1,7 @@
 
 import GitLab from "./GitLab.js"
 import { getJSON } from "./HelperFunctions.js"
-import OverallEditor from "./OverallEditor.js"
+import OverallEditor from "./components/OverallEditor.js"
 import {OAuth} from "./OAuth.js"
 
 $(async () => {

@@ -1,7 +1,7 @@
 // @ts-check
-import { css, html, getFilenameFromPath } from "./HelperFunctions.js";
+import { css, html, getFilenameFromPath } from "../HelperFunctions.js";
 // @ts-ignore
-import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "./GitLab.js";
+import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
 

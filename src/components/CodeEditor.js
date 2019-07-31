@@ -1,7 +1,7 @@
-import { html, css } from "./HelperFunctions.js"
-import "./mode-vdm.js"
-import { parseVdM, deparseVdM } from "./parser.js"
-import "./token_tooltip.js"
+import { html, css } from "../HelperFunctions.js"
+import "../mode-vdm.js"
+import { parseVdM, deparseVdM } from "../parser.js"
+import "../token_tooltip.js"
 const token_tooltip = ace.require("ace/token_tooltip");
 const Autocomplete = ace.require("ace/autocomplete").Autocomplete;
 const langTools = ace.require("ace/ext/language_tools");
