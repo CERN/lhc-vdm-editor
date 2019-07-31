@@ -43,6 +43,9 @@ export default class Selectors extends HTMLElement {
     get campaign() {
         return this.root.getElementById("campaign-select").value;
     }
+    get path() {
+        return this.campaign + '/' + this.ip
+    }
 
     template() {
         return html`
