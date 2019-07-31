@@ -14,10 +14,8 @@
         window.addEventListener("error", function (error) {
             alert(error.filename + ":" + error.lineno + "\n" + error.message)
         })
-        window.addEventListener('unhandledrejection', function (event) {
-            console.log(event.promise)
-            console.log(event.reason)
-            alert(event.promise + '\n' + event.reason);
+        window.addEventListener('unhandledrejection', function (err) {
+            alert('There has been an error. Please check the console.')
         });
     </script>
     <script type="text/javascript" src="./extern/jQuery-3.4.1.js"></script>

@@ -1,5 +1,6 @@
-import { css, html } from "./HelperFunctions.js"
+import { css, html } from "./HelperFunctions.js";
 import "./IPCampaignSelectors.js";
+import {NoPathExistsError} from "./GitLab.js";
 
 const styling = css`
 .cover{
@@ -120,6 +121,7 @@ input[type=text]{
     font-size: 8pt;
     border: 1px solid black;
     padding: 0 5px 0 13px;
+    margin: 5px 0 5px 0;
 }
 `
 
@@ -132,6 +134,7 @@ export default class CreateFileWindow extends HTMLElement {
             this.cancel();
         })
         this.gitlab = null;
+        this.selectionBoxes = this.root.querySelector("selection-boxes");
 
         /**
          * @param event {KeyboardEvent}
@@ -149,14 +152,12 @@ export default class CreateFileWindow extends HTMLElement {
         });
 
         this.root.querySelector("#copy-button").addEventListener("click", () => {
-            const selectionBoxes = this.root.querySelector("selection-boxes");
-
             this.dispatchEvent(new CustomEvent("submit", {
                 detail: {
                     // @ts-ignore
-                    ip: selectionBoxes.ip,
+                    ip: this.selectionBoxes.ip,
                     // @ts-ignore
-                    campaign: selectionBoxes.campaign
+                    campaign: this.selectionBoxes.campaign
                 }
             }));
         });
@@ -178,10 +179,13 @@ export default class CreateFileWindow extends HTMLElement {
             }
         });
 
-
-        const triangle = this.root.querySelector('.triangle')
+        this.selectionBoxes.addEventListener('change', () => {
+            // @ts-ignore
+            this.setFilesFromPath(this.selectionBoxes.path);
+        })
         let isOpen = false;
         this.root.querySelector('#file-list-button').addEventListener('click', () => {
+            const triangle = this.root.querySelector('.triangle')
             if (isOpen) {
                 triangle.classList.remove("triangle-open");
                 triangle.classList.add("triangle-closed");
@@ -194,15 +198,27 @@ export default class CreateFileWindow extends HTMLElement {
                 triangle.classList.add("triangle-open");
                 isOpen = true;
 
-                (async () => {
-                    const selectionBoxes = this.root.querySelector("selection-boxes")
-                    // @ts-ignore
-                    const path = `${selectionBoxes.campaign}/${selectionBoxes.ip}`;
-                    const files = await this.gitlab.listFiles(path, true, false)
-                    this.setFileUI(files);
-                })();
+                // @ts-ignore
+                this.setFilesFromPath(this.selectionBoxes.path);
             }
         })
+    }
+
+    async setFilesFromPath(path) {
+        let files = ["--- NO FILES ---"];
+        try {
+            files = await this.gitlab.listFiles(path, true, false)
+        }
+        catch (error) {
+            if (error instanceof NoPathExistsError) {
+
+            } else {
+                throw error;
+            }
+        }
+        finally {
+            this.setFileUI(files);
+        }
     }
 
     setFileUI(files) {
@@ -216,6 +232,7 @@ export default class CreateFileWindow extends HTMLElement {
             list.appendChild(line);
         }
 
+        this.root.querySelector('#file-list-content').innerHTML = '';
         this.root.querySelector('#file-list-content').appendChild(list);
     }
 
