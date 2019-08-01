@@ -7,20 +7,23 @@ const styling = css`
     position: relative;
     display: inline-block;
 }
+
 .triangle-closed {
     border-left: 8px solid grey;
     border-bottom: 5px solid transparent;
     border-top: 5px solid transparent;
-    top: 1px;
-    left: -10px;
+    top: 0px;
+    left: 0px;
 }
+
 .triangle-open {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 8px solid grey;
-    top: 0px;
-    left: -10px;
+    top: -1px;
+    left: 0px;
 }
+
 .triangle-container {
     height: 0px;
     width: 0px;
@@ -32,15 +35,16 @@ export default class Triangle extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+        this.triangle = this.root.querySelector('.triangle');
     }
-    set isOpen(isOpen){
-        if (isOpen) {
-            this.classList.remove("triangle-open");
-            this.classList.add("triangle-closed");
+    set isOpen(newState){
+        if (newState) {
+            this.triangle.classList.remove("triangle-closed");
+            this.triangle.classList.add("triangle-open");
         }
         else {
-            this.classList.remove("triangle-closed");
-            this.classList.add("triangle-open");
+            this.triangle.classList.remove("triangle-open");
+            this.triangle.classList.add("triangle-closed");
         }
     }
     template() {

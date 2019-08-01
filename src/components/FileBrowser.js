@@ -145,7 +145,7 @@ export default class FileBrowser extends HTMLElement {
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(-1)[0]} to?`);
+                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to?`);
                 if (newName !== null) {
                     if (newName.includes(" ")) {
                         alert("Invalid name, file names cannot contain spaces");
@@ -253,14 +253,12 @@ export default class FileBrowser extends HTMLElement {
                 itemEl.addEventListener("click", async () => {
                     if (isOpen) {
                         isOpen = false;
-                        // @ts-ignore
                         triangle.isOpen = isOpen;
                         folderContentElement.innerHTML = "";
                     }
                     else {
                         isOpen = true;
-                        // @ts-ignore
-                        triangle.isOpen = isOpen;
+                        triangle.isOpen = true;
                         folderContentElement.appendChild(getElementFromStructure(folderContent, prefix + folderName + "/"));
                     }
                 });

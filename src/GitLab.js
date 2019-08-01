@@ -270,7 +270,7 @@ export default class GitLab {
      * @param {string} newName
      */
     async renameFile(filePath, newName){
-        const newFilePath = filePath.split("/").slice(0, -1).
+        const newFilePath = filePath.split("/").slice(0, 2).
             concat([newName]).join("/");
 
         await gFetch(

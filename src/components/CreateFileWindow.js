@@ -43,7 +43,7 @@ const styling = css`
 button {
     background-color: #f1f1f1;
     border: solid #656565 2px;
-    margin: 3px;
+    margin: 5px 3px 5px 3px;
     padding: 6px;
     padding-left: 15px;
     padding-right: 15px;
@@ -80,8 +80,7 @@ button:active {
 }
 
 .slightly-indented{
-    margin-left: 7px;
-    margin-top: 7px;
+    margin-left: 10px;
 }
 
 input[type=text]{
@@ -93,7 +92,7 @@ input[type=text]{
 #file-list-button {
     font-size: 8pt;
     border: 1px solid black;
-    padding: 0 5px 0 13px;
+    padding: 0 5px 0 5px;
     margin: 5px 0 5px 0;
 }
 `
@@ -241,7 +240,7 @@ export default class CreateFileWindow extends HTMLElement {
                 <div id='file-list'>
                     <div id='file-list-button'>
                         <folder-triangle></folder-triangle>
-                        <div>choose files</div>
+                        <div class="slightly-indented">choose files</div>
                     </div>
                     <div id='file-list-content'></div>
                 </div>
