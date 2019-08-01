@@ -194,6 +194,7 @@ export default class CodeEditor extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+        /** @public */
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
@@ -219,11 +220,10 @@ export default class CodeEditor extends HTMLElement {
         );
         this.lastLineEditor = this.setUpReadonlyEditor(
             this.root.getElementById("last-line-editor"),
-            // @ts-ignore
+            // @ts-ignore - putting -1 will always return a number
             _ => calculateLineNumber(this.rawValue, -1) + 1
         );
         this.setupEditor();
-        // @ts-ignore
         window.editor = this.editor;
     }
 
@@ -233,7 +233,6 @@ export default class CodeEditor extends HTMLElement {
      */
     setUpReadonlyEditor(element, getLineNumbers) {
         const editor = ace.edit(element);
-        // @ts-ignore
         editor.renderer.attachToShadowRoot();
         editor.setOptions({
             firstLineNumber: 0,
@@ -248,12 +247,10 @@ export default class CodeEditor extends HTMLElement {
         let ConstWidthLineNum = {
             getText: (_session, row) => getLineNumbers(row),
             getWidth: (_session, _lastLineNumber, _config) => {
-                // @ts-ignore
                 return this.numberBarWidth;
             }
         };
 
-        // @ts-ignore
         editor.session.gutterRenderer = ConstWidthLineNum;
         editor.setTheme("ace/theme/xcode");
         editor.setReadOnly(true);
@@ -273,7 +270,6 @@ export default class CodeEditor extends HTMLElement {
     }
 
     connectedCallback() {
-        // @ts-ignore
         this.editor.renderer.once("afterRender", () => {
             this.editor.setOptions({
                 maxLines: Math.floor(this.root.querySelector("#editor-container").getBoundingClientRect()
@@ -283,14 +279,11 @@ export default class CodeEditor extends HTMLElement {
     }
 
     setupEditor() {
-        // @ts-ignore
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
         this.editor.session.setMode("ace/mode/vdm");
-        // @ts-ignore
         ace.config.set('basePath', './extern');
         this.editor.setTheme("ace/theme/xcode");
-        // @ts-ignore
         ace.config.set('basePath', './src');
         this.editor.setOptions({
             minLines: 20,
@@ -317,15 +310,12 @@ export default class CodeEditor extends HTMLElement {
                 // Set width for top line
                 this.numberBarWidth = width;
                 // Trigger the other editor line length updates
-                // @ts-ignore
                 this.topLineEditor.renderer.updateLines(0, 1); // Calculate the top row update
-                // @ts-ignore
                 this.lastLineEditor.renderer.updateLines(0, 1); // Calculate the top row update
                 return width;
             }
         };
 
-        // @ts-ignore
         this.editor.session.gutterRenderer = VDMNumberRenderer;
 
         var testCompleter = {
@@ -338,9 +328,8 @@ export default class CodeEditor extends HTMLElement {
     }
 
     preventAutocompleteClosing() {
-        // @ts-ignore
         this.editor.commands.on("afterExec", event => {
-            // @ts-ignore
+            console.log(event);
             const hadCompleter = this.editor.completer !== undefined;
             if (event.command.name == "insertstring" && event.args != 'GAUSSIAN') {
                 setTimeout(() => {
@@ -437,7 +426,6 @@ export default class CodeEditor extends HTMLElement {
      */
     setNewHeader(newHeader) {
         this.lastHeader = newHeader;
-        // @ts-ignore
         this.topLineEditor.session.replace({
             start: { row: this.topLineHeaderPosition, column: 0 },
             end: { row: this.topLineHeaderPosition, column: Number.MAX_VALUE }

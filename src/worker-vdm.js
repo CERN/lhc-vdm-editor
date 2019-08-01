@@ -28,7 +28,6 @@ async function getParser(){
             }
             catch(errors){
                 if(Array.isArray(errors)){
-                    // @ts-ignore
                     messageToSend.errors = errors.map(error => ({
                         row: error.line,
                         column: 0,
@@ -41,7 +40,6 @@ async function getParser(){
                 }
             }
 
-            // @ts-ignore
             postMessage(messageToSend);
         }
     })

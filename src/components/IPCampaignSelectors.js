@@ -1,4 +1,5 @@
 import { css, html } from "../HelperFunctions.js";
+import GitLab from "../GitLab.js"
 
 const styling = css`
     .selection-box{

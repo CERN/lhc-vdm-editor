@@ -170,7 +170,6 @@ export default class OverallEditor extends HTMLElement {
         })
 
         this.editorContainer.addEventListener('editor-content-change', ev => {
-            // @ts-ignore
             localStorage.setItem('content', ev.detail);
             this.updateFileNameUI(false, this.filePath);
         })
@@ -188,7 +187,6 @@ export default class OverallEditor extends HTMLElement {
             const fileBrowserLeft = fileBrowser.getBoundingClientRect().left;
 
             const newWidth = event.screenX - fileBrowserLeft - 12;
-            // @ts-ignore
             fileBrowser.style.width = newWidth + "px";
         }
         const onMouseMove = _onMouseMove.bind(this);
@@ -229,7 +227,6 @@ export default class OverallEditor extends HTMLElement {
 
             this.switchToEditor(buttonIndex);
 
-            // @ts-ignore
             this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
         }
         else {
@@ -242,8 +239,7 @@ export default class OverallEditor extends HTMLElement {
      * @param {string | null} fileName NOTE: if this is null, the isCommitted attribute is ignored
      */
     updateFileNameUI(isCommitted, fileName) {
-        if (fileName == null) {
-            // @ts-ignore
+        if(fileName == null){
             this.root.querySelector("#file-name").innerText = "-- NO FILE LOADED --";
             this.root.querySelector("#file-name").classList.add("uncommitted");
             this.isCommitted = true;
@@ -254,12 +250,10 @@ export default class OverallEditor extends HTMLElement {
         localStorage.setItem("isCommitted", isCommitted.toString());
         this.isCommitted = isCommitted;
         if (isCommitted) {
-            // @ts-ignore
             this.root.querySelector("#file-name").innerText = "./" + fileName + " (committed)";
             this.root.querySelector("#file-name").classList.remove("uncommitted");
         }
         else {
-            // @ts-ignore
             this.root.querySelector("#file-name").innerText = "./" + fileName + " (uncommitted)";
             this.root.querySelector("#file-name").classList.add("uncommitted");
         }
@@ -279,7 +273,6 @@ export default class OverallEditor extends HTMLElement {
     switchToEditor(index, setValue = true) {
         const editorElement = document.createElement(EDITOR_TAG_NAMES[index]);
         if (setValue) {
-            // @ts-ignore
             editorElement.value = this.editor.value;
         }
 

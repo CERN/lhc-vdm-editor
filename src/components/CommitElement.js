@@ -37,14 +37,12 @@ export default class CommitElement extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
         this.root.querySelector("form").addEventListener("submit", () => {
-            // @ts-ignore
             let message = this.root.querySelector("input[type=text]").value;
             if (message) {
                 if (confirm("Are you sure you want to commit?")) {
                     this.dispatchEvent(new CustomEvent("commit-button-press", {
                         detail: message
                     }));
-                    // @ts-ignore
                     this.root.querySelector(".commit-message").value = "";
                 }
             } else { alert("Error! No commit message.") }
