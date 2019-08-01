@@ -83,8 +83,8 @@ export default class FileBrowser extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+        this.openFile = '';
         /** @type GitLab */
-        this.openFile = null;
         this.gitlab = null;
 
         /** @type {HTMLDivElement} */
