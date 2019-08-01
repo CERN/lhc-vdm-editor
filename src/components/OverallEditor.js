@@ -121,7 +121,7 @@ export default class OverallEditor extends HTMLElement {
             if(this.filePath === null) return;
 
             if (!this.isCommitted) {
-                if (confirm('Changes not committed. Are you sure you want to revert to HEAD? All current changes will be discarded.')) {
+                if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
                     this.setGitLabFile(this.filePath)
                 }
             } else {
@@ -302,6 +302,7 @@ export default class OverallEditor extends HTMLElement {
             <div class="header cf">
                 <div id="file-name"></div>
                 <commit-element></commit-element>
+                <revert-button></revert-button>
             </div>
             <div class="body">
                 <div id="file-browser-container">
@@ -313,7 +314,6 @@ export default class OverallEditor extends HTMLElement {
                         <raw-editor></raw-editor>
                     </div>
                     <switch-editor-buttons></switch-editor-buttons>
-                    <revert-button></revert-button>
                 </div>
             <div>
         </div>`

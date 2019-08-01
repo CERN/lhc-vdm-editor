@@ -7,21 +7,22 @@ const styling = css`
     top: 50px;
     right: 20px;
 }
-button {
+.button {
     background-color: #dcdcdc;
-    padding: 6px;
-    font-size: 16px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 3px;
+    font-size: 15px;
+    padding-left: 7px;
+    padding-right: 7px;
     border: none;
     color: #6f6f6f;
     border-radius: 4px;
-    margin: 1px;
     font-weight: bold;
     outline: none;
+    border-style: solid;
+    border-width: 2px;
     cursor: pointer;
 }
-button:hover {
+.button:hover {
     background-color: #bfbfbf;
 }
 `
