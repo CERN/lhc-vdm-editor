@@ -2,12 +2,7 @@
 import {css, html} from "../HelperFunctions.js"
 
 const styling = css`
-.container {
-    position: absolute;
-    top: 50px;
-    right: 20px;
-}
-.button {
+button {
     background-color: #dcdcdc;
     padding: 3px;
     font-size: 15px;
@@ -22,7 +17,7 @@ const styling = css`
     border-width: 2px;
     cursor: pointer;
 }
-.button:hover {
+button:hover {
     background-color: #bfbfbf;
 }
 `

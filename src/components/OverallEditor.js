@@ -22,6 +22,12 @@ const styling = css`
 
 commit-element {
     display: inline-block;
+}
+revert-button {
+    display: inline-block;
+}
+#header-buttons{
+    display: inline-block;
     float: right;
 }
 
@@ -309,8 +315,10 @@ export default class OverallEditor extends HTMLElement {
         <div class="container">
             <div class="header cf">
                 <div id="file-name"></div>
-                <commit-element></commit-element>
-                <revert-button></revert-button>
+                <div id='header-buttons'>
+                    <commit-element></commit-element>
+                    <revert-button></revert-button>
+                </div>
             </div>
             <div class="body">
                 <div id="file-browser-container">
