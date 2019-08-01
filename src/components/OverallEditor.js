@@ -173,7 +173,7 @@ export default class OverallEditor extends HTMLElement {
             localStorage.setItem('content', ev.detail);
             this.updateFileNameUI(false, this.filePath);
         })
-
+        debugger
         this.setEditorContent();
         this.setupResize();
     }
@@ -201,6 +201,9 @@ export default class OverallEditor extends HTMLElement {
     }
 
     setEditorContent() {
+        this.filePath = localStorage.getItem("open-file");
+        this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);
+
         if (localStorage.getItem('content') !== null) {
             this.editor.value = localStorage.getItem('content');
         }
@@ -218,9 +221,7 @@ export default class OverallEditor extends HTMLElement {
             return;
         }
 
-        this.filePath = localStorage.getItem("open-file");
         this.updateFileNameUI(Boolean(localStorage.getItem("isCommitted") || true), this.filePath);
-        this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);
 
         if (localStorage.getItem('open-tab') !== null) {
             const buttonIndex = parseInt(localStorage.getItem('open-tab'));
