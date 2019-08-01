@@ -1,19 +1,19 @@
 // NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
-
+const maxBeamPos = 100;
 /**
  * @param {any[]} arr1
  * @param {any[]} arr2
  */
-export function isSubsetOf(arr1, arr2) {
+function isSubsetOf(arr1, arr2) {
     // returns true iff arr1 is a subset of arr2
     return arr1.every(x => arr2.includes(x))
 }
-export function trimTime(dist) {
+function trimTime(dist) {
     const trimRate = 0.1; // mm/s
     return Math.abs(dist) * trimRate;
 }
-export function sigmaToMM(amount) {
-    const factor = 0;
+function sigmaToMM(amount) {
+    const factor = 1;
     return amount * factor;
 }
 

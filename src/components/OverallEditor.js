@@ -119,12 +119,12 @@ export default class OverallEditor extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template()
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
-            if(this.filePath === null) return;
+            if (this.filePath === null) return;
 
             this.switchToEditor(ev.detail)
         });
         this.root.querySelector('revert-button').addEventListener('revert-changes', () => {
-            if(this.filePath === null) return;
+            if (this.filePath === null) return;
 
             if (!this.isCommitted) {
                 if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
@@ -150,11 +150,9 @@ export default class OverallEditor extends HTMLElement {
         /** @type {any} */
         this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
-        // @ts-ignore
-        this.root.querySelector("file-browser").passInValues(gitlab);
 
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
-            if(this.filePath === null) return;
+            if (this.filePath === null) return;
 
             try {
                 this.gitlabInterface.writeFile(
@@ -181,11 +179,11 @@ export default class OverallEditor extends HTMLElement {
         this.setupResize();
     }
 
-    setupResize(){
+    setupResize() {
         /**
          * @param {MouseEvent} event
          */
-        function _onMouseMove(event){
+        function _onMouseMove(event) {
             const fileBrowser = this.root.querySelector("#file-browser-container");
             const fileBrowserLeft = fileBrowser.getBoundingClientRect().left;
 
@@ -207,25 +205,24 @@ export default class OverallEditor extends HTMLElement {
     setEditorContent() {
         if (localStorage.getItem('content') !== null) {
             this.editor.value = localStorage.getItem('content');
-            this.filePath = localStorage.getItem("open-file");
-            this.updateFileNameUI(Boolean(localStorage.getItem("isCommitted") || true), this.filePath);
         }
-        else if(localStorage.getItem("open-file") !== null){
+        else if (localStorage.getItem("open-file") !== null) {
             // NOTE: we don't have to wait for this to happen
             (async () => {
                 this.editor.value = await this.gitlabInterface.readFile(localStorage.getItem("open-file"));
             })()
-
-            this.filePath = localStorage.getItem("open-file");
-            this.updateFileNameUI(Boolean(localStorage.getItem("isCommitted") || true), this.filePath);
         }
-        else{
+        else {
             this.updateFileNameUI(true, null);
             this.filePath = null;
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
 
             return;
         }
+
+        this.filePath = localStorage.getItem("open-file");
+        this.updateFileNameUI(Boolean(localStorage.getItem("isCommitted") || true), this.filePath);
+        this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);
 
         if (localStorage.getItem('open-tab') !== null) {
             const buttonIndex = parseInt(localStorage.getItem('open-tab'));
@@ -245,7 +242,7 @@ export default class OverallEditor extends HTMLElement {
      * @param {string | null} fileName NOTE: if this is null, the isCommitted attribute is ignored
      */
     updateFileNameUI(isCommitted, fileName) {
-        if(fileName == null){
+        if (fileName == null) {
             // @ts-ignore
             this.root.querySelector("#file-name").innerText = "-- NO FILE LOADED --";
             this.root.querySelector("#file-name").classList.add("uncommitted");
@@ -294,7 +291,7 @@ export default class OverallEditor extends HTMLElement {
     }
 
     async setGitLabFile(filepath) {
-        if(this.filePath === null){
+        if (this.filePath === null) {
             this.switchToEditor(DEFAULT_EDITOR_INDEX);
         }
 

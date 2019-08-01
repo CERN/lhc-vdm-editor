@@ -30,7 +30,7 @@ const styling = css`
     white-space: nowrap;
 }
 .item-open {
-    text-weight: bold;
+    font-weight: bold;
 }
 
 #file-browser .item:nth-of-type(2n) {
@@ -105,11 +105,11 @@ export default class FileBrowser extends HTMLElement {
         })
     }
 
-    passInValues(gitlab) {
+    passInValues(gitlab, openFile) {
         this.gitlab = gitlab;
         (async () => {
             const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns[0]);
+            this.setFileUI('IP1', campaigns[0], openFile);
         })();
         // @ts-ignore
         this.root.querySelector('selection-boxes').passInValues(gitlab);
@@ -219,7 +219,7 @@ export default class FileBrowser extends HTMLElement {
      * @param {string} ip
      * @param {string} campaign
      */
-    async setFileUI(ip, campaign) {
+    async setFileUI(ip, campaign, openFile = '') {
         /**
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
@@ -230,12 +230,14 @@ export default class FileBrowser extends HTMLElement {
             for (let fileName of _structure.files) {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
+                if (`${campaign}/${ip}/${fileName}` == openFile) { itemEl.classList.add('item-open') };
+                
                 itemEl.addEventListener("click", () => {
                     this.dispatchEvent(new CustomEvent('open-new-file', {
                         detail: prefix + fileName,
                     }))
 
-                    this.root.querySelectorAll('.item-open').forEach( x => x.classList.remove('item-open'));
+                    this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
                     itemEl.classList.add('item-open');
                 });
                 this.addContextMenuListener(itemEl, prefix + fileName);
@@ -310,17 +312,17 @@ export default class FileBrowser extends HTMLElement {
                 });
 
                 createFileWindow.addEventListener("create-empty", async event => {
-                    try{
+                    try {
                         // @ts-ignore
                         await this.gitlab.createFile(prefix + event.detail);
                     }
-                    catch(error){
-                        if(error instanceof FileAlreadyExistsError){
+                    catch (error) {
+                        if (error instanceof FileAlreadyExistsError) {
                             // @ts-ignore
                             alert(`Cannot create the empty file ${event.detail}, it already exists`);
                             return;
                         }
-                        else{
+                        else {
                             throw error;
                         }
                     }
