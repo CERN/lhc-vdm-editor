@@ -3,8 +3,7 @@ import GitLab from "../GitLab.js"
 
 const styling = css`
     .selection-box{
-        padding-top: 5px;
-        padding-bottom: 5px;
+        margin: 10px 0 10px 0;
     }
 
     .selection-box select {

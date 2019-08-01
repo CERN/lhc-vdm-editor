@@ -4,7 +4,7 @@ const styling = css`
 .resize{
     width: 5px;
     vertical-align: top;
-    background-color: gainsboro;
+    background-color: #d8d8d8;
     margin: 0 10px 0 10px;
     cursor: col-resize;
     height: 100%;

@@ -3,7 +3,7 @@ import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
 import './Triangle.js';
 
-const styling = css`
+const styling = css`        
 .cover{
     position: fixed;
     top: 0;
@@ -26,7 +26,7 @@ const styling = css`
 .window {
     background-color: #f1f1f1;
     display: inline-block;
-    padding: 10px;
+    padding: 15px;
     border: solid 5px #444444;
     font-family: sans-serif;
     border-radius: 2px;
@@ -92,12 +92,13 @@ input[type=text]{
     padding: 7px;
     border-radius: 3px;
     border: solid 1px grey;
+    margin: 10px 0 10px 0;
 }
 
 #file-list-button {
     font-size: 8pt;
     border: 1px solid black;
-    padding: 0 5px 0 5px;
+    padding: 2px 5px 2px 5px;
     margin: 5px 0 5px 0;
 }
 `
@@ -259,8 +260,8 @@ export default class CreateFileWindow extends HTMLElement {
                     <div id='file-list-button'>
                         <folder-triangle></folder-triangle>
                         <div class="slightly-indented">choose files</div>
+                        <div id='file-list-content'></div>
                     </div>
-                    <div id='file-list-content'></div>
                 </div>
             </div>
         </div>
