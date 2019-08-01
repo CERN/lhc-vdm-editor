@@ -194,6 +194,7 @@ export default class CodeEditor extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+        /** @public */
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
@@ -328,6 +329,7 @@ export default class CodeEditor extends HTMLElement {
 
     preventAutocompleteClosing() {
         this.editor.commands.on("afterExec", event => {
+            console.log(event);
             const hadCompleter = this.editor.completer !== undefined;
             if (event.command.name == "insertstring" && event.args != 'GAUSSIAN') {
                 setTimeout(() => {
