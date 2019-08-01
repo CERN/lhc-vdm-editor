@@ -150,7 +150,7 @@ export default class FileBrowser extends HTMLElement {
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(-1)[0]} to?`);
+                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to?`);
                 if (newName !== null) {
                     if (newName.includes(" ")) {
                         alert("Invalid name, file names cannot contain spaces");
