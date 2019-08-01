@@ -5,6 +5,7 @@ import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
 import "./FileBrowser.js"
+import "./ResizeHandle.js"
 import GitLab from "../GitLab.js"
 import { parseVdM, deparseVdM } from "../parser.js"
 import './RevertButton.js'
@@ -79,22 +80,6 @@ raw-editor{
     font-size: xx-large;
     font-family: sans-serif;
     color: #b5b5b5;
-}
-
-.resize{
-    width: 5px;
-    vertical-align: top;
-    background-color: gainsboro;
-    margin: 0 10px 0 10px;
-    cursor: col-resize;
-
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    
 }
 
 .body{
@@ -173,30 +158,16 @@ export default class OverallEditor extends HTMLElement {
             localStorage.setItem('content', ev.detail);
             this.updateFileNameUI(false, this.filePath);
         })
-        this.setEditorContent();
-        this.setupResize();
-    }
 
-    setupResize() {
-        /**
-         * @param {MouseEvent} event
-         */
-        function _onMouseMove(event) {
+        this.root.querySelector("resize-handle").addEventListener("update-size", event => {
             const fileBrowser = this.root.querySelector("#file-browser-container");
             const fileBrowserLeft = fileBrowser.getBoundingClientRect().left;
 
-            const newWidth = event.clientX - fileBrowserLeft - 12;
+            const newWidth = event.detail - fileBrowserLeft - 12;
             fileBrowser.style.width = newWidth + "px";
-        }
-        const onMouseMove = _onMouseMove.bind(this);
-
-        this.root.querySelector(".resize").addEventListener("mousedown", () => {
-            document.addEventListener("mousemove", onMouseMove);
-        });
-
-        this.root.querySelector(".resize").addEventListener("mouseup", () => {
-            document.removeEventListener("mousemove", onMouseMove);
         })
+
+        this.setEditorContent();
     }
 
     setEditorContent() {
@@ -314,7 +285,7 @@ export default class OverallEditor extends HTMLElement {
                 <div id="file-browser-container">
                     <file-browser></file-browser>
                 </div>
-                <div class="resize">&nbsp;</div>
+                <resize-handle></resize-handle>
                 <div id="editor-container">
                     <div id="editor">
                         <raw-editor></raw-editor>

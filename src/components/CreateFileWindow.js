@@ -1,4 +1,4 @@
-import { css, html } from "../HelperFunctions.js";
+import { css, html, NO_FILES_TEXT } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
 import './Triangle.js';
@@ -172,7 +172,7 @@ export default class CreateFileWindow extends HTMLElement {
     }
 
     async setFilesFromPath(path) {
-        let files = ["--- NO FILES ---"];
+        let files = [NO_FILES_TEXT];
         try {
             files = await this.gitlab.listFiles(path, true, false)
         }
