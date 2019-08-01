@@ -5,11 +5,11 @@ const styling = css`
 textarea {
     resize: none;
     display: inline-block;
-    /*border-width: 0px;*/
-    height: 100%;
     width: 100%;
     padding: 5px;
+    min-height: 40px;
 }
+
 .container {
     width: inherit;
     height: inherit;
@@ -48,12 +48,27 @@ export default class RawEditor extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template()
         this.textarea = this.root.querySelector("textarea");
-        $(this.textarea).bind('input propertychange',
-            () => this.dispatchEvent(new CustomEvent("editor-content-change", {
-                bubbles: true,
-                detail: this.value
-            })),
-        )
+        this.textarea.addEventListener('input',
+            () => {
+                this.dispatchEvent(new CustomEvent("editor-content-change", {
+                    bubbles: true,
+                    detail: this.value
+                }));
+
+                this.resizeTextArea();
+            }
+        );
+    }
+
+    connectedCallback(){
+        // When we are attached to the DOM, we know the scroll height
+        this.resizeTextArea();
+    }
+
+    resizeTextArea(){
+        // Hack to make sure that the textarea always has the height of the content
+        this.textarea.style.height = "0px";
+        this.textarea.style.height = this.textarea.scrollHeight + 'px';
     }
 
     get rawValue(){
@@ -70,6 +85,8 @@ export default class RawEditor extends HTMLElement {
 
     set value(newValue) {
         this.textarea.value = newValue;
+
+        this.resizeTextArea();
     }
 
     template() {

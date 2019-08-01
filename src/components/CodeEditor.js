@@ -269,15 +269,6 @@ export default class CodeEditor extends HTMLElement {
         this.topLineHeaderPosition = topLineLines - 1;
     }
 
-    connectedCallback() {
-        this.editor.renderer.once("afterRender", () => {
-            this.editor.setOptions({
-                maxLines: Math.floor(this.root.querySelector("#editor-container").getBoundingClientRect()
-                    .height / this.editor.renderer.lineHeight) - this.topLineHeaderPosition - 2 /* - the start and end line*/
-            });
-        })
-    }
-
     setupEditor() {
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
@@ -287,6 +278,7 @@ export default class CodeEditor extends HTMLElement {
         ace.config.set('basePath', './src');
         this.editor.setOptions({
             minLines: 20,
+            maxLines: Infinity,
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
             showPrintMargin: false,
