@@ -1,5 +1,21 @@
 // NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
 
+/**
+ * @param {any[]} arr1
+ * @param {any[]} arr2
+ */
+export function isSubsetOf(arr1, arr2) {
+    // returns true iff arr1 is a subset of arr2
+    return arr1.every(x => arr2.includes(x))
+}
+export function trimTime(dist) {
+    const trimRate = 0.1; // mm/s
+    return Math.abs(dist) * trimRate;
+}
+export function sigmaToMM(amount) {
+    const factor = 0;
+    return amount * factor;
+}
 
 export class MySyntaxError extends Error {
     /**
@@ -11,14 +27,6 @@ export class MySyntaxError extends Error {
         this.line = line;
         this.message = message;
     }
-}
-/**
- * @param {any[]} arr1
- * @param {any[]} arr2
- */
-function isSubsetOf(arr1, arr2) {
-    // returns true iff arr1 is a subset of arr2
-    return arr1.every(x => arr2.includes(x))
 }
 /**
  * @param {object[]} objArr
@@ -141,7 +149,10 @@ let commandHandler = {
             if (obj.args.length != 1) {
                 throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
             }
-            if (!isFinite(Number(obj.args[0]))) {
+            if (isFinite(Number(obj.args[0]))) {
+                state.sequenceTime += Number(obj.args[0]);
+                state.realTime += Number(obj.args[0]);
+            } else {
                 throw 'Invalid SECONDS_WAIT command. Argument must be a finte number but got ' + obj.args
             }
         },
@@ -151,7 +162,23 @@ let commandHandler = {
          * @param {any} state
          */
         function (obj, state) {
+            // Check syntax
             checkTrim(obj, state)
+            // Update state simulation
+            for (let i = 0; i < obj.args.length; i += 5) {
+                try {
+                    const amount = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : sigmaToMM(Number(obj.args[i + 3]));
+                    state.pos[obj.args[i + 1]][obj.args[i + 2]] += amount;
+                    state.realTime += trimTime(amount);
+                    const pos = state.pos[obj.args[i + 1]][obj.args[i + 2]];
+                    if (Math.abs(pos) > maxBeamPos) {
+                        throw 'Beam position: ' + pos + 'mm exceeds the maximally allowed distance to zero of ' + maxBeamPos + 'mm'
+                    }
+                }
+                catch (err) {
+                    throw err
+                }
+            }
         },
     'ABSOLUTE_TRIM':
         /**
@@ -159,7 +186,22 @@ let commandHandler = {
          * @param {any} state
          */
         function (obj, state) {
+            // Check syntax
             checkTrim(obj, state)
+            // Update state simulation
+            for (let i = 0; i < obj.args.length; i += 5) {
+                try {
+                    const pos = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : sigmaToMM(Number(obj.args[i + 3]));
+                    const dist = state.pos[obj.args[i + 1]][obj.args[i + 2]] - pos;
+                    state.pos[obj.args[i + 1]][obj.args[i + 2]] = pos;
+                    state.realTime += trimTime(dist);
+                    if (Math.abs(pos) > maxBeamPos) {
+                        throw 'Beam position ' + pos + 'mm exceeds the maximally allowed distance to zero of ' + maxBeamPos + 'mm'
+                    }
+                } catch (err) {
+                    throw (err)
+                }
+            }
         },
     'START_FIT':
         /**
@@ -287,6 +329,19 @@ export function parseVdM(data, genHeaders = false) {
         'isFitting': false,
         'hasEnded': false,
         'currentLineNum': genHeaders ? 1 : 0,
+        // Variables used when simulating
+        'realTime': 0,
+        'sequenceTime': 0,
+        'pos': {
+            'BEAM1': {
+                'SEPARATION': 0,
+                'CROSSING': 0,
+            },
+            'BEAM2': {
+                'SEPARATION': 0,
+                'CROSSING': 0,
+            }
+        }
     }
 
     // Split data into array containing each line
@@ -331,8 +386,13 @@ export function parseVdM(data, genHeaders = false) {
                     obj.type = 'command';
                     obj.command = line[1];
                     obj.args = line.slice(2);
-                    try { validateArgs(obj, state) } catch (err) { throw new MySyntaxError(i, err) }
-
+                    try { validateArgs(obj, state) }
+                    catch (err) { throw new MySyntaxError(i, err) }
+                    finally {
+                        obj.realTime = state.realTime;
+                        obj.sequenceTime = state.sequenceTime;
+                        obj.pos = state.pos;
+                    }
                     // Check line numbering.
                     // Must be executed last for command terminations to be detected beforehand
                     if (parseInt(line[0]) != state.currentLineNum) {
