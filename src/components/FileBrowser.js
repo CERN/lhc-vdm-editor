@@ -98,7 +98,6 @@ export default class FileBrowser extends HTMLElement {
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
-                console.log("removing")
                 this.tryRemoveContextMenu();
             }
         })

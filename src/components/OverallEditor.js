@@ -173,7 +173,6 @@ export default class OverallEditor extends HTMLElement {
             localStorage.setItem('content', ev.detail);
             this.updateFileNameUI(false, this.filePath);
         })
-        debugger
         this.setEditorContent();
         this.setupResize();
     }

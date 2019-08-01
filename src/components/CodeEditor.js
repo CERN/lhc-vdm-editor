@@ -329,7 +329,6 @@ export default class CodeEditor extends HTMLElement {
 
     preventAutocompleteClosing() {
         this.editor.commands.on("afterExec", event => {
-            console.log(event);
             const hadCompleter = this.editor.completer !== undefined;
             if (event.command.name == "insertstring" && event.args != 'GAUSSIAN') {
                 setTimeout(() => {
