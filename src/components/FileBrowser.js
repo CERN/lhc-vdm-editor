@@ -37,11 +37,6 @@ const styling = css`
     background-color: white;
 }
 
-#new-file {
-    background-color: white;
-    padding: 3px;
-}
-
 .folder-name {
     padding-left: 14px;
 }
