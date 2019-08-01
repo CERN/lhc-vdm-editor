@@ -119,9 +119,6 @@ export default class FileBrowser extends HTMLElement {
         this.setFileUI(ip, campaign);
     }
 
-    /** @type {HTMLDivElement} */
-    myContextMenu = null;
-
     tryRemoveContextMenu() {
         if (this.myContextMenu !== null) {
             this.root.removeChild(this.myContextMenu);
