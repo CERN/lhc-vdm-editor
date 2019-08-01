@@ -29,6 +29,9 @@ const styling = css`
     overflow: hidden;
     white-space: nowrap;
 }
+.item-open {
+    text-weight: bold;
+}
 
 #file-browser .item:nth-of-type(2n) {
     background-color: white;
@@ -236,6 +239,9 @@ export default class FileBrowser extends HTMLElement {
                     this.dispatchEvent(new CustomEvent('open-new-file', {
                         detail: prefix + fileName,
                     }))
+
+                    this.root.querySelectorAll('.item-open').forEach( x => x.classList.remove('item-open'));
+                    itemEl.classList.add('item-open');
                 });
                 this.addContextMenuListener(itemEl, prefix + fileName);
 
