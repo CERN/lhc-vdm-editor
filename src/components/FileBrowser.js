@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html, getFilenameFromPath } from "../HelperFunctions.js";
+import { css, html, getFilenameFromPath, preventResizeCSS } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
@@ -45,12 +45,7 @@ const styling = css`
 }
 
 * {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    ${preventResizeCSS}
 }
 
 .context-menu {
