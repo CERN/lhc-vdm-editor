@@ -232,7 +232,7 @@ export default class FileBrowser extends HTMLElement {
             for (let fileName of _structure.files) {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
-                itemEl.addEventListener("dblclick", () => {
+                itemEl.addEventListener("click", () => {
                     this.dispatchEvent(new CustomEvent('open-new-file', {
                         detail: prefix + fileName,
                     }))
