@@ -140,8 +140,17 @@ export default class FileBrowser extends HTMLElement {
 
             container.querySelector("#delete-button").addEventListener("click", () => {
                 (async () => {
-                    if (confirm(`Are you sure you want to delete the file ${filePath}?`)) {
-                        await this.gitlab.deleteFile(filePath);
+                    if (confirm(`Are you sure you want to delete the path ${filePath}?`)) {
+                        
+                        if (element.classList.contains('folder')) {
+                            const paths = await this.gitlab.listFiles(filePath, true, false);
+                            for (let path of paths) {
+                                await this.gitlab.deleteFile(path);
+                            }
+                        } else {
+                            await this.gitlab.deleteFile(filePath);
+                        }
+                        
                         this.reloadFileUI();
                     }
                 })();
@@ -150,14 +159,21 @@ export default class FileBrowser extends HTMLElement {
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to?`);
+                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
                 if (newName !== null) {
                     if (newName.includes(" ")) {
-                        alert("Invalid name, file names cannot contain spaces");
+                        alert("Invalid name, paths cannot contain spaces");
                     }
                     else {
                         (async () => {
-                            await this.gitlab.renameFile(filePath, newName);
+                            if (element.classList.contains('folder')) {
+                                const paths = await this.gitlab.listFiles(filePath, true, false);
+                                for (let path of paths) {
+                                    await this.gitlab.renameFile(path, `${newName}/${path.split(filePath+'/').pop()}`);
+                                }
+                            } else {
+                                await this.gitlab.renameFile(filePath, newName);
+                            }
                             this.reloadFileUI();
                         })()
                     }
@@ -221,7 +237,7 @@ export default class FileBrowser extends HTMLElement {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
                 if (`${campaign}/${ip}/${fileName}` == openFile) { itemEl.classList.add('item-open') };
-                
+
                 itemEl.addEventListener("click", () => {
                     this.dispatchEvent(new CustomEvent('open-new-file', {
                         detail: prefix + fileName,
@@ -237,7 +253,7 @@ export default class FileBrowser extends HTMLElement {
 
             for (let [folderName, folderContent] of _structure.folders.entries()) {
                 container.innerHTML = html`
-                    <div class="item">
+                    <div class="item folder">
                         <folder-triangle></folder-triangle>
                         <span class="folder-name">${folderName}</span>
                     </div>
@@ -298,11 +314,11 @@ export default class FileBrowser extends HTMLElement {
                 });
 
                 createFileWindow.addEventListener("create-empty", async event => {
-                    try{
+                    try {
                         await this.gitlab.createFile(prefix + event.detail);
                     }
-                    catch(error){
-                        if(error instanceof FileAlreadyExistsError){
+                    catch (error) {
+                        if (error instanceof FileAlreadyExistsError) {
                             alert(`Cannot create the empty file ${event.detail}, it already exists`);
                             return;
                         }
