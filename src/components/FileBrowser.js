@@ -84,6 +84,7 @@ export default class FileBrowser extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
         /** @type GitLab */
+        this.openFile = null;
         this.gitlab = null;
 
         /** @type {HTMLDivElement} */
@@ -102,8 +103,9 @@ export default class FileBrowser extends HTMLElement {
         this.gitlab = gitlab;
         (async () => {
             const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns[0], openFile);
+            this.setFileUI('IP1', campaigns[0]);
         })();
+        this.openFile = openFile
         this.root.querySelector('selection-boxes').passInValues(gitlab);
     }
 
@@ -220,7 +222,7 @@ export default class FileBrowser extends HTMLElement {
      * @param {string} ip
      * @param {string} campaign
      */
-    async setFileUI(ip, campaign, openFile = '') {
+    async setFileUI(ip, campaign) {
         /**
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
@@ -231,7 +233,7 @@ export default class FileBrowser extends HTMLElement {
             for (let fileName of _structure.files) {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
-                if (`${campaign}/${ip}/${fileName}` == openFile) { itemEl.classList.add('item-open') };
+                if (`${campaign}/${ip}/${fileName}` == this.openFile) { itemEl.classList.add('item-open') };
                 
                 if(fileName !== NO_FILES_TEXT){
                     itemEl.addEventListener("click", () => {
@@ -241,6 +243,7 @@ export default class FileBrowser extends HTMLElement {
 
                         this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
                         itemEl.classList.add('item-open');
+                        this.openFile = itemEl.innerHTML;
                     });
 
                     this.addContextMenuListener(itemEl, prefix + fileName);
