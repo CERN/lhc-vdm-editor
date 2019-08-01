@@ -34,7 +34,7 @@ revert-button {
 .container {
     width: calc(100% - 30px);
     height: calc(100% - 8px);
-    max-width: 1300px;
+    max-width: 1600px;
     margin: 0 auto;
 }
 
@@ -58,7 +58,7 @@ raw-editor{
 }
 
 #file-browser-container {
-    width: 218px;
+    width: 20%;
     height: calc(100% - 45px);
 }
 
@@ -185,7 +185,7 @@ export default class OverallEditor extends HTMLElement {
             const fileBrowser = this.root.querySelector("#file-browser-container");
             const fileBrowserLeft = fileBrowser.getBoundingClientRect().left;
 
-            const newWidth = event.screenX - fileBrowserLeft - 12;
+            const newWidth = event.clientX - fileBrowserLeft - 12;
             fileBrowser.style.width = newWidth + "px";
         }
         const onMouseMove = _onMouseMove.bind(this);
