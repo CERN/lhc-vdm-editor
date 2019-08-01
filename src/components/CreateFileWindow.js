@@ -51,6 +51,11 @@ button {
     box-shadow: #c1c1c1 0px 0px 0px 1px;
 }
 
+button[disabled] {
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
 #exit-button {
     width: 34px;
     height: 20px;
@@ -70,12 +75,12 @@ button {
     background-color: #ca5151;
 }
 
-button:hover {
+button:hover:not(disabled) {
     background-color: #d6d6d6;
     cursor: pointer;
 }
 
-button:active {
+button:active:not(disabled) {
     background-color: #a2a2a2;
 }
 
@@ -123,7 +128,15 @@ export default class CreateFileWindow extends HTMLElement {
             this.cancel();
         });
 
-        this.root.querySelector("#copy-button").addEventListener("click", () => {
+        const copyButton = this.root.querySelector("#copy-button");
+        const createEmptyButton = this.root.querySelector("#create-empty");
+
+        copyButton.addEventListener("click", () => {
+            copyButton.innerText = "Copying...";
+
+            copyButton.disabled = true;
+            createEmptyButton.disabled = true;
+
             this.dispatchEvent(new CustomEvent("submit", {
                 detail: {
                     ip: this.selectionBoxes.ip,
@@ -133,6 +146,11 @@ export default class CreateFileWindow extends HTMLElement {
         });
 
         function _onEmptySubmit() {
+            createEmptyButton.innerText = "Creating...";
+
+            copyButton.disabled = true;
+            createEmptyButton.disabled = true;
+
             const fileName = (/**@type HTMLInputElement*/(this.root.querySelector("#file-name"))).value;
 
             this.dispatchEvent(new CustomEvent("create-empty", {
@@ -142,7 +160,7 @@ export default class CreateFileWindow extends HTMLElement {
         const onEmptySubmit = _onEmptySubmit.bind(this);
 
 
-        this.root.querySelector("#create-empty").addEventListener("click", onEmptySubmit);
+        createEmptyButton.addEventListener("click", onEmptySubmit);
         this.root.querySelector("#file-name").addEventListener("keydown", /**@param {KeyboardEvent} event */event => {
             if (event.key == "Enter") {
                 onEmptySubmit();

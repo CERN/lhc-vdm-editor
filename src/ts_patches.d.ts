@@ -1,10 +1,10 @@
 // Force all element fetching to have the type any, so avoid type errors
 
-interface GenericElement extends Node, HTMLElement, HTMLDivElement {
+interface GenericElement extends HTMLDivElement, HTMLInputElement {
     [other_property: string]: any
 }
 
-interface DocumentFragment extends Node, NonElementParentNode, ParentNode {
+interface DocumentFragment {
     getElementById(elementId: string): GenericElement;
     createElement(tagName: string, options?: ElementCreationOptions): GenericElement;
 }
@@ -32,13 +32,13 @@ declare function postMessage(message: any, targetOrigin?: string, transfer?: Tra
 // Add unadded ace definitions
 
 declare namespace AceAjax {
-    export interface VirtualRenderer extends OptionProvider {
+    export interface VirtualRenderer {
         on(arg0: string, arg1: (event: any) => void);
         once(event_name: string, func: (e: any) => any);
         attachToShadowRoot(): void;
     }
 
-    export interface IEditSession extends OptionProvider {
+    export interface IEditSession {
         gutterRenderer: {
             getText: (session: any, row: any) => string;
             getWidth: (session: any, lastLineNumber: any, config: any) => number;
@@ -56,7 +56,7 @@ declare namespace AceAjax {
         once(event_name: string, func: (e: any) => any);
     }
 
-    export interface Editor extends OptionProvider {
+    export interface Editor {
         completer: any;
     }
 
