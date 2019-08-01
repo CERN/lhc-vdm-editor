@@ -387,7 +387,10 @@ export function parseVdM(data, genHeaders = false) {
                     obj.command = line[1];
                     obj.args = line.slice(2);
                     try { validateArgs(obj, state) }
-                    catch (err) { throw new MySyntaxError(i, err) }
+                    catch (err) {
+                        if(typeof err == "string") throw new MySyntaxError(i, err)
+                        else throw err;
+                    }
                     finally {
                         obj.realTime = state.realTime;
                         obj.sequenceTime = state.sequenceTime;
