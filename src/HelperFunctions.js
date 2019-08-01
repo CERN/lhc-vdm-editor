@@ -110,3 +110,5 @@ export const preventResizeCSS = `
 -ms-user-select: none;
 user-select: none;
 `
+
+export const NO_FILES_TEXT = "--- NO FILES ---"

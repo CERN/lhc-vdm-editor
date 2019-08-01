@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html, getFilenameFromPath, preventResizeCSS } from "../HelperFunctions.js";
+import { css, html, getFilenameFromPath, preventResizeCSS, NO_FILES_TEXT } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
@@ -217,15 +217,18 @@ export default class FileBrowser extends HTMLElement {
                 const itemEl = container.querySelector(".item");
                 if (`${campaign}/${ip}/${fileName}` == openFile) { itemEl.classList.add('item-open') };
                 
-                itemEl.addEventListener("click", () => {
-                    this.dispatchEvent(new CustomEvent('open-new-file', {
-                        detail: prefix + fileName,
-                    }))
+                if(fileName !== NO_FILES_TEXT){
+                    itemEl.addEventListener("click", () => {
+                        this.dispatchEvent(new CustomEvent('open-new-file', {
+                            detail: prefix + fileName,
+                        }))
 
-                    this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
-                    itemEl.classList.add('item-open');
-                });
-                this.addContextMenuListener(itemEl, prefix + fileName);
+                        this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
+                        itemEl.classList.add('item-open');
+                    });
+
+                    this.addContextMenuListener(itemEl, prefix + fileName);
+                }
 
                 result.appendChild(itemEl);
             }
@@ -326,7 +329,7 @@ export default class FileBrowser extends HTMLElement {
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
-                fileStructure = { files: ["--- NO FILES ---"], folders: new Map() };
+                fileStructure = { files: [NO_FILES_TEXT], folders: new Map() };
             }
             else {
                 throw error;
