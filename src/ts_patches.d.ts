@@ -2,6 +2,12 @@
 
 interface GenericElement extends HTMLDivElement, HTMLInputElement {
     [other_property: string]: any
+
+    addEventListener(
+        type: string,
+        listener: (ev: Event & CustomEvent & MouseEvent & KeyboardEvent) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
 }
 
 interface DocumentFragment {
@@ -21,7 +27,7 @@ interface ParentNode {
 interface EventTarget {
     addEventListener(
         type: string,
-        listener: (ev: Event & CustomEvent & MouseEvent & KeyboardEvent) => void | EventListenerObject | null,
+        listener: (ev: Event & CustomEvent & MouseEvent & KeyboardEvent) => any,
         options?: boolean | AddEventListenerOptions
     ): void;
 }

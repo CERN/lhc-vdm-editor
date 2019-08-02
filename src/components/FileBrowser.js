@@ -94,6 +94,7 @@ export default class FileBrowser extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+        this.openFile = '';
         /** @type GitLab */
         this.gitlab = null;
 
@@ -113,8 +114,9 @@ export default class FileBrowser extends HTMLElement {
         this.gitlab = gitlab;
         (async () => {
             const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns[0], openFile);
+            this.setFileUI('IP1', campaigns[0]);
         })();
+        this.openFile = openFile
         this.root.querySelector('selection-boxes').passInValues(gitlab);
     }
 
@@ -155,7 +157,12 @@ export default class FileBrowser extends HTMLElement {
                         deleteButton.classList.add("disabled");
                         renameButton.classList.add("disabled");
 
-                        await this.gitlab.deleteFile(filePath);
+                        if (element.classList.contains('folder')) {
+                            await this.gitlab.deleteFolder(filePath);
+                        } else {
+                            await this.gitlab.deleteFile(filePath);
+                        }
+
                         this.reloadFileUI();
                     }
 
@@ -165,10 +172,10 @@ export default class FileBrowser extends HTMLElement {
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to?`);
+                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
                 if (newName !== null) {
                     if (newName.includes(" ")) {
-                        alert("Invalid name, file names cannot contain spaces");
+                        alert("Invalid name, paths cannot contain spaces");
                     }
                     else {
                         (async () => {
@@ -177,7 +184,11 @@ export default class FileBrowser extends HTMLElement {
                             deleteButton.classList.add("disabled");
                             renameButton.classList.add("disabled");
 
-                            await this.gitlab.renameFile(filePath, newName);
+                            if (element.classList.contains('folder')) {
+                                await this.gitlab.renameFolder(filePath, newName);
+                            } else {
+                                await this.gitlab.renameFile(filePath, newName);
+                            }
                             this.reloadFileUI();
 
                             this.tryRemoveContextMenu();
@@ -230,7 +241,7 @@ export default class FileBrowser extends HTMLElement {
      * @param {string} ip
      * @param {string} campaign
      */
-    async setFileUI(ip, campaign, openFile = '') {
+    async setFileUI(ip, campaign) {
         /**
          * @param {{ files: string[]; folders: Map<string, any> }} _structure
          */
@@ -241,9 +252,9 @@ export default class FileBrowser extends HTMLElement {
             for (let fileName of _structure.files) {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
-                if (`${campaign}/${ip}/${fileName}` == openFile) { itemEl.classList.add('item-open') };
-                
-                if(fileName !== NO_FILES_TEXT){
+                if (`${campaign}/${ip}/${fileName}` == this.openFile) { itemEl.classList.add('item-open') };
+
+                if (fileName !== NO_FILES_TEXT) {
                     itemEl.addEventListener("click", () => {
                         this.dispatchEvent(new CustomEvent('open-new-file', {
                             detail: prefix + fileName,
@@ -251,6 +262,7 @@ export default class FileBrowser extends HTMLElement {
 
                         this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
                         itemEl.classList.add('item-open');
+                        this.openFile = itemEl.innerHTML;
                     });
 
                     this.addContextMenuListener(itemEl, prefix + fileName);
@@ -264,7 +276,7 @@ export default class FileBrowser extends HTMLElement {
 
             for (let [folderName, folderContent] of _structure.folders.entries()) {
                 container.innerHTML = html`
-                    <div class="item">
+                    <div class="item folder">
                         <folder-triangle></folder-triangle>
                         <span class="folder-name">${folderName}</span>
                     </div>
@@ -311,6 +323,7 @@ export default class FileBrowser extends HTMLElement {
             item.addEventListener('click', () => {
                 const createFileWindow = document.createElement("create-file-window");
                 createFileWindow.passInValues(this.gitlab);
+                document.querySelector("hi").l = 7;
 
                 createFileWindow.addEventListener("submit", async (event) => {
                     await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign);
@@ -325,11 +338,11 @@ export default class FileBrowser extends HTMLElement {
                 });
 
                 createFileWindow.addEventListener("create-empty", async event => {
-                    try{
+                    try {
                         await this.gitlab.createFile(prefix + event.detail);
                     }
-                    catch(error){
-                        if(error instanceof FileAlreadyExistsError){
+                    catch (error) {
+                        if (error instanceof FileAlreadyExistsError) {
                             alert(`Cannot create the empty file ${event.detail}, it already exists`);
                             return;
                         }
