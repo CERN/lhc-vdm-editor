@@ -60,6 +60,12 @@ const styling = css`
     z-index: 100000;
 }
 
+.context-menu-item.disabled {
+    color: #949494;
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+}
+
 .context-menu-item {
     padding: 8px;
     padding-right: 11px;
@@ -138,15 +144,24 @@ export default class FileBrowser extends HTMLElement {
             </div>`;
             this.root.appendChild(container);
 
-            container.querySelector("#delete-button").addEventListener("click", () => {
+            const deleteButton = container.querySelector("#delete-button");
+            const renameButton = container.querySelector("#rename-button");
+
+            deleteButton.addEventListener("click", () => {
                 (async () => {
                     if (confirm(`Are you sure you want to delete the file ${filePath}?`)) {
+                        deleteButton.innerText = "Deleting...";
+
+                        deleteButton.classList.add("disabled");
+                        renameButton.classList.add("disabled");
+
                         await this.gitlab.deleteFile(filePath);
                         this.reloadFileUI();
                     }
+
+                    this.tryRemoveContextMenu();
                 })();
 
-                this.tryRemoveContextMenu();
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
@@ -157,12 +172,18 @@ export default class FileBrowser extends HTMLElement {
                     }
                     else {
                         (async () => {
+                            container.querySelector("#delete-button").innerText = "Renaming ...";
+
+                            deleteButton.classList.add("disabled");
+                            renameButton.classList.add("disabled");
+
                             await this.gitlab.renameFile(filePath, newName);
                             this.reloadFileUI();
+
+                            this.tryRemoveContextMenu();
                         })()
                     }
                 }
-                this.tryRemoveContextMenu();
             })
 
             this.myContextMenu = container;

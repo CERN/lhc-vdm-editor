@@ -1,3 +1,5 @@
+// TODO: refractor the context menu out to this
+
 import { css, html } from "../HelperFunctions.js";
 
 const styling = css`
