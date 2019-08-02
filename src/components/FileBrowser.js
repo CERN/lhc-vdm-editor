@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html, getFilenameFromPath, preventResizeCSS, NO_FILES_TEXT } from "../HelperFunctions.js";
+import { css, html, getFilenameFromPath, preventResizeCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
@@ -212,13 +212,13 @@ export default class FileBrowser extends HTMLElement {
         const toFolder = source;
 
         try {
-            /* const fromFolderContents = await this.gitlab.listFiles(fromFolder, true, false);
-            const toFolderContents = new Set(await this.gitlab.listFiles(toFolder, true, false));
+            const fromFolderContents = (await this.gitlab.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
+            const toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, fromFolder));
 
-            const commonFileNames = fromFolderContents.filter(x => toFolderContents.has(x));
+            const commonFileNames = fromFolderContents.filter(x => toFolderContents.includes(x));
             if (commonFileNames.length != 0) {
-                alert(`Note:\n"${commonFileNames.map(getFilenameFromPath).join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)
-            } */
+                alert(`Note:\n"${commonFileNames.join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)
+            }
             await this.gitlab.copyFilesFromFolder(
                 fromFolder,
                 toFolder, // remove the end slash from the folder name

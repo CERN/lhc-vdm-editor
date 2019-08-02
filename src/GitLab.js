@@ -213,23 +213,23 @@ export default class GitLab {
      * @param {string[]} fileArr
      */
     async copyFilesFromFolder(fromFolder, toFolder, fileArr = []) {
-        const fromFolderContents = fileArr.length > 0 ? fileArr : await this.listFiles(fromFolder, true, false);
+        const fromFolderContents = (fileArr.length > 0 ? fileArr : await this.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
         let toFolderContents;
-        try { toFolderContents = new Set(await this.listFiles(toFolder, true, false)) }
+        try { toFolderContents = (await this.listFiles(toFolder, true, false)).map(x => getRelativePath(x, toFolder)) }
         catch (error) {
             if (error instanceof NoPathExistsError) {
-                toFolderContents = new Set([]);
+                toFolderContents = [];
             }
             else {
                 throw error;
             }
         };
 
-        const actions = (await awaitArray(fromFolderContents.filter(x => !toFolderContents.has(x))
+        const actions = (await awaitArray(fromFolderContents.filter(x => !toFolderContents.includes(x))
             .map(async filePath => ({
                 action: "create",
-                file_path: toFolder + "/" + getRelativePath(filePath, fromFolder),
-                content: await this.readFile(filePath)
+                file_path: toFolder + "/" + filePath,
+                content: await this.readFile(fromFolder + '/' + filePath)
             }))
         ))
 
