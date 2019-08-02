@@ -14,7 +14,12 @@
             alert(error.filename + ":" + error.lineno + "\n" + error.message)
         })
         window.addEventListener('unhandledrejection', function (err) {
-            alert('There has been an error. Please check the console.')
+            if(err instanceof Response){
+                alert(`GitLab API error, ${err.status}: ${(await err.json()).message}`)
+            }
+            else{
+                alert('There has been an error. Please check the console.')
+            }
         });
     </script>
     <script type="text/javascript" src="./extern/jQuery-3.4.1.js"></script>
