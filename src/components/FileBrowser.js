@@ -203,8 +203,8 @@ export default class FileBrowser extends HTMLElement {
         })
     }
 
-    async tryCopyFolder(source, ip, campaign) {
-        if (!confirm(`Are you sure you want to copy all the files from the campaign "${campaign}" and interaction point "${ip}"?`)) {
+    async tryCopyFolder(source, ip, campaign, files=[]) {
+        if (!confirm(`Are you sure you want to copy files from the campaign "${campaign}" and interaction point "${ip}"?`)) {
             return;
         }
 
@@ -212,17 +212,17 @@ export default class FileBrowser extends HTMLElement {
         const toFolder = source;
 
         try {
-            const fromFolderContents = await this.gitlab.listFiles(fromFolder, true, false);
+            /* const fromFolderContents = await this.gitlab.listFiles(fromFolder, true, false);
             const toFolderContents = new Set(await this.gitlab.listFiles(toFolder, true, false));
 
             const commonFileNames = fromFolderContents.filter(x => toFolderContents.has(x));
             if (commonFileNames.length != 0) {
                 alert(`Note:\n"${commonFileNames.map(getFilenameFromPath).join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)
-            }
-
+            } */
             await this.gitlab.copyFilesFromFolder(
                 fromFolder,
-                toFolder // remove the end slash from the folder name
+                toFolder, // remove the end slash from the folder name
+                files
             )
         }
         catch (error) {
@@ -326,7 +326,7 @@ export default class FileBrowser extends HTMLElement {
                 document.querySelector("hi").l = 7;
 
                 createFileWindow.addEventListener("submit", async (event) => {
-                    await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign);
+                    await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign, event.detail.filePaths);
                     this.reloadFileUI();
 
                     // Succeeded, so remove the root

@@ -36,16 +36,22 @@ export default class Triangle extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
         this.triangle = this.root.querySelector('.triangle');
+        this.openState = false;
     }
     set isOpen(newState){
         if (newState) {
+            this.openState = newState;
             this.triangle.classList.remove("triangle-closed");
             this.triangle.classList.add("triangle-open");
         }
         else {
+            this.openState = newState;
             this.triangle.classList.remove("triangle-open");
             this.triangle.classList.add("triangle-closed");
         }
+    }
+    get isOpen(){
+        return this.openState
     }
     template() {
         return html`
