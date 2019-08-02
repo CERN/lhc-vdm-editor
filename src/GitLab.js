@@ -3,12 +3,12 @@ import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunction
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
 
 export class NoPathExistsError extends Error {
-    constructor(message="No Path exists"){
+    constructor(message = "No Path exists") {
         super(message);
     }
 }
 export class FileAlreadyExistsError extends Error {
-    constructor(message="File already exists"){
+    constructor(message = "File already exists") {
         super(message);
     }
 }
@@ -85,7 +85,7 @@ export default class GitLab {
      * @param {string} filePath
      */
     async createFile(filePath) {
-        try{
+        try {
             await gFetch(
                 `${URL_START}/repository/commits`,
                 {
@@ -106,11 +106,11 @@ export default class GitLab {
                 }
             )
         }
-        catch(error){
-            if(error instanceof Response && (await error.json()).message == "A file with this name already exists"){
+        catch (error) {
+            if (error instanceof Response && (await error.json()).message == "A file with this name already exists") {
                 throw new FileAlreadyExistsError();
             }
-            else{
+            else {
                 throw error;
             }
         }
@@ -134,21 +134,21 @@ export default class GitLab {
      *  {files: string[], folders: Map<string, Structure>}. Note, if this is false,
      *  only file paths are returned, not folders
      */
-    async listFiles(path, recursive=true, returnStructure=true) {
+    async listFiles(path, recursive = true, returnStructure = true) {
         const perPage = 100;
         const page = await gFetch(
             `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${
-                    path}&recursive=${recursive}`,
+            path}&recursive=${recursive}`,
             {
                 headers: new Headers(this.authHeader)
             }
         )
 
-        
-        function getStructureFolder(filePath, root){
+
+        function getStructureFolder(filePath, root) {
             let currentFolder = root;
 
-            for(let folder of filePath.split("/").filter(x => x != "").slice(0, -1)){
+            for (let folder of filePath.split("/").filter(x => x != "").slice(0, -1)) {
                 currentFolder = currentFolder.folders.get(folder);
             }
 
@@ -158,17 +158,17 @@ export default class GitLab {
         /**
          * @param {object[]} fileList
          */
-        function getGitLabFileStructure(fileList){
+        function getGitLabFileStructure(fileList) {
             let structure = { files: [], folders: new Map() };
 
-            for(let item of fileList){
+            for (let item of fileList) {
                 const relativeFilePath = getRelativePath(item.path, path);
-                
-                if(item.type == "blob"){
+
+                if (item.type == "blob") {
                     getStructureFolder(relativeFilePath, structure).files.push(item.name);
                 }
-                else if(item.type == "tree"){
-                    getStructureFolder(relativeFilePath, structure).folders.set(item.name, {files: [], folders: new Map()});
+                else if (item.type == "tree") {
+                    getStructureFolder(relativeFilePath, structure).folders.set(item.name, { files: [], folders: new Map() });
                 }
                 else {
                     throw Error(`Unknown type ${item.type}`)
@@ -180,7 +180,7 @@ export default class GitLab {
 
         let fileList = await page.json();
 
-        if(fileList.length == 0){
+        if (fileList.length == 0) {
             throw new NoPathExistsError(`Invalid path ${path} (GitLab request returned no information)`)
         }
 
@@ -189,7 +189,7 @@ export default class GitLab {
         for (let i = 2; i <= lastPage; i++) {
             const page = await gFetch(
                 `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=${i}&path=${
-                    path}&recursive=${recursive}`,
+                path}&recursive=${recursive}`,
                 {
                     headers: new Headers(this.authHeader)
                 }
@@ -198,10 +198,10 @@ export default class GitLab {
             fileList = fileList.concat(await page.json())
         }
 
-        if(returnStructure){
+        if (returnStructure) {
             return getGitLabFileStructure(fileList);
         }
-        else{
+        else {
             return fileList.filter(x => x.type == "blob")
                 .map(x => x.path);
         }
@@ -211,7 +211,7 @@ export default class GitLab {
      * @param {string} fromFolder
      * @param {string} toFolder
      */
-    async copyFilesFromFolder(fromFolder, toFolder){
+    async copyFilesFromFolder(fromFolder, toFolder) {
         const fromFolderContents = await this.listFiles(fromFolder, true, false);
         const toFolderContents = new Set(await this.listFiles(toFolder, true, false));
 
@@ -221,7 +221,7 @@ export default class GitLab {
                 file_path: toFolder + "/" + getRelativePath(filePath, fromFolder),
                 content: await this.readFile(filePath)
             })
-        )))
+            )))
 
 
         await gFetch(
@@ -244,7 +244,7 @@ export default class GitLab {
     /**
      * @param {string} filePath
      */
-    async deleteFile(filePath){
+    async deleteFile(filePath) {
         await gFetch(
             `${URL_START}/repository/commits`,
             {
@@ -265,11 +265,18 @@ export default class GitLab {
         )
     }
 
+    async deleteFolder(path) {
+        const filePaths = await this.listFiles(path, true, false);
+        for (let file of filePaths) {
+            await this.deleteFile(file);
+        }
+    }
+
     /**
      * @param {string} filePath
      * @param {string} newName
      */
-    async renameFile(filePath, newName){
+    async renameFile(filePath, newName) {
         const newFilePath = filePath.split("/").slice(0, 2).
             concat([newName]).join("/");
 
@@ -292,6 +299,13 @@ export default class GitLab {
                 })
             }
         )
+    }
+
+    async renameFolder(path, newName) {
+        const filePaths = await this.listFiles(path, true, false);
+        for (let file of filePaths) {
+            await this.renameFile(file, `${newName}/${file.split(path + '/').pop()}`);
+        }
     }
 }
 

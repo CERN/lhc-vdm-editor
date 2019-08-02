@@ -138,16 +138,13 @@ export default class FileBrowser extends HTMLElement {
             container.querySelector("#delete-button").addEventListener("click", () => {
                 (async () => {
                     if (confirm(`Are you sure you want to delete the path ${filePath}?`)) {
-                        
+
                         if (element.classList.contains('folder')) {
-                            const paths = await this.gitlab.listFiles(filePath, true, false);
-                            for (let path of paths) {
-                                await this.gitlab.deleteFile(path);
-                            }
+                            await this.gitlab.deleteFolder(filePath);
                         } else {
                             await this.gitlab.deleteFile(filePath);
                         }
-                        
+
                         this.reloadFileUI();
                     }
                 })();
@@ -164,10 +161,7 @@ export default class FileBrowser extends HTMLElement {
                     else {
                         (async () => {
                             if (element.classList.contains('folder')) {
-                                const paths = await this.gitlab.listFiles(filePath, true, false);
-                                for (let path of paths) {
-                                    await this.gitlab.renameFile(path, `${newName}/${path.split(filePath+'/').pop()}`);
-                                }
+                                await this.gitlab.renameFolder(filePath, newName);
                             } else {
                                 await this.gitlab.renameFile(filePath, newName);
                             }
@@ -234,8 +228,8 @@ export default class FileBrowser extends HTMLElement {
                 container.innerHTML = html`<div class="item">${fileName}</div>`;
                 const itemEl = container.querySelector(".item");
                 if (`${campaign}/${ip}/${fileName}` == this.openFile) { itemEl.classList.add('item-open') };
-                
-                if(fileName !== NO_FILES_TEXT){
+
+                if (fileName !== NO_FILES_TEXT) {
                     itemEl.addEventListener("click", () => {
                         this.dispatchEvent(new CustomEvent('open-new-file', {
                             detail: prefix + fileName,
