@@ -94,7 +94,7 @@ export default class FileBrowser extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
-        this.openFile = '';
+        this.openFile = null;
         /** @type GitLab */
         this.gitlab = null;
 
@@ -110,20 +110,41 @@ export default class FileBrowser extends HTMLElement {
         })
     }
 
+    /**
+     * @param {GitLab} gitlab
+     * @param {string} openFile The current open file, as path relative to the current explored folder
+     */
     passInValues(gitlab, openFile) {
         this.gitlab = gitlab;
         (async () => {
             const campaigns = await this.gitlab.listCampaigns();
             this.setFileUI('IP1', campaigns[0]);
         })();
-        this.openFile = openFile
+        
+        this.setOpenFile(openFile);
         this.root.querySelector('selection-boxes').passInValues(gitlab);
     }
 
+    /**
+     * @param {string} newOpenFile
+     */
+    setOpenFile(newOpenFile){
+        this.openFile = newOpenFile;
+
+        this.reloadFileUI();
+    }
+
+    get ip(){
+        return this.root.querySelector('selection-boxes').ip;
+    }
+
+    get campaign(){
+        return this.root.querySelector('selection-boxes').campaign;
+    }
+
+
     reloadFileUI() {
-        const ip = this.root.querySelector('selection-boxes').ip;
-        const campaign = this.root.querySelector('selection-boxes').campaign;
-        this.setFileUI(ip, campaign);
+        this.setFileUI(this.ip, this.campaign);
     }
 
     tryRemoveContextMenu() {
@@ -135,7 +156,7 @@ export default class FileBrowser extends HTMLElement {
 
     /**
      * @param {Element} element
-     * @param {string} filePath
+     * @param {string} filePath This is the full filepath to the file.
      */
     addContextMenuListener(element, filePath) {
         element.addEventListener("contextmenu", /** @param event {MouseEvent}*/event => {
@@ -163,6 +184,14 @@ export default class FileBrowser extends HTMLElement {
                             await this.gitlab.deleteFile(filePath);
                         }
 
+                        if(this.openFile == filePath){
+                            this.dispatchEvent(new CustomEvent("open-file", {
+                                detail: null
+                            }));
+
+                            this.openFile = null;
+                        }
+
                         this.reloadFileUI();
                     }
 
@@ -172,6 +201,13 @@ export default class FileBrowser extends HTMLElement {
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
+                // NOTE: local storage is nasty but works
+                // TODO: could refractor this so it's nicer
+                if(!localStorage.getItem("isCommitted")){
+                    alert("Cannot rename a file without committing the current changes");
+                    return;
+                }
+
                 const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
                 if (newName !== null) {
                     if (newName.includes(" ")) {
@@ -189,6 +225,17 @@ export default class FileBrowser extends HTMLElement {
                             } else {
                                 await this.gitlab.renameFile(filePath, newName);
                             }
+
+                            if(this.openFile == filePath){
+                                const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
+
+                                this.dispatchEvent(new CustomEvent("open-file", {
+                                    detail: fullNewName
+                                }));
+    
+                                this.openFile = fullNewName;
+                            }
+
                             this.reloadFileUI();
 
                             this.tryRemoveContextMenu();
@@ -255,17 +302,31 @@ export default class FileBrowser extends HTMLElement {
                 if (`${campaign}/${ip}/${fileName}` == this.openFile) { itemEl.classList.add('item-open') };
 
                 if (fileName !== NO_FILES_TEXT) {
+                    const fullFileName = prefix + fileName;
+
                     itemEl.addEventListener("click", () => {
-                        this.dispatchEvent(new CustomEvent('open-new-file', {
-                            detail: prefix + fileName,
-                        }))
+                        if (localStorage.getItem("isCommitted") === "0") {
+                            if (confirm(`Changes not committed. Are you sure you want to open ${fullFileName}? All current changes will be discarded.`)) {
+                                this.dispatchEvent(new CustomEvent('open-file', {
+                                    detail: fullFileName,
+                                }))
+                            }
+                            else{
+                                return;
+                            }
+                        }
+                        else {
+                            this.dispatchEvent(new CustomEvent('open-file', {
+                                detail: fullFileName,
+                            }))
+                        }
 
                         this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
                         itemEl.classList.add('item-open');
-                        this.openFile = itemEl.innerHTML;
+                        this.openFile = fullFileName;
                     });
 
-                    this.addContextMenuListener(itemEl, prefix + fileName);
+                    this.addContextMenuListener(itemEl, fullFileName);
                 }
                 else{
                     itemEl.classList.add("no-files-item")
@@ -323,7 +384,6 @@ export default class FileBrowser extends HTMLElement {
             item.addEventListener('click', () => {
                 const createFileWindow = document.createElement("create-file-window");
                 createFileWindow.passInValues(this.gitlab);
-                document.querySelector("hi").l = 7;
 
                 createFileWindow.addEventListener("submit", async (event) => {
                     await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign);

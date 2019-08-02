@@ -93,6 +93,8 @@ raw-editor{
 }
 `
 
+
+
 const BLANK_EDITOR_HTML = html`<div class="blank-editor">No File Selected</div>`;
 const EDITOR_TAG_NAMES = [
     "raw-editor",
@@ -109,32 +111,6 @@ export default class OverallEditor extends HTMLElement {
         this.isCommitted = true;
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template()
-        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
-            if (this.filePath === null) return;
-
-            this.switchToEditor(ev.detail)
-        });
-        this.root.querySelector('revert-button').addEventListener('revert-changes', () => {
-            if (this.filePath === null) return;
-
-            if (!this.isCommitted) {
-                if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
-                    this.setGitLabFile(this.filePath)
-                }
-            } else {
-                this.setGitLabFile(this.filePath)
-            }
-        })
-
-        this.root.querySelector("file-browser").addEventListener('open-new-file', /** @param {CustomEvent} event */(event) => {
-            if (!this.isCommitted) {
-                if (confirm(`Changes not committed. Are you sure you want to open ${event.detail}? All current changes will be discarded.`)) {
-                    this.setGitLabFile(event.detail)
-                }
-            } else {
-                this.setGitLabFile(event.detail)
-            }
-        })
 
         this.filePath = null;
         this.editorContainer = this.root.getElementById("editor");
@@ -142,6 +118,15 @@ export default class OverallEditor extends HTMLElement {
         this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
 
+        this.addListeners();
+        this.loadDataFromLocalStorage();
+    }
+
+    /**
+     * Adds event listeners for all the elements 
+     * @private
+     */
+    addListeners(){
         this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
             if (this.filePath === null) return;
 
@@ -173,42 +158,96 @@ export default class OverallEditor extends HTMLElement {
             fileBrowser.style.width = newWidth + "px";
         })
 
-        this.setEditorContent();
+        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
+            if (this.filePath === null) return;
+
+            this.switchToEditor(ev.detail)
+        });
+
+        this.root.querySelector('revert-button').addEventListener('revert-changes', () => {
+            if (this.filePath === null) return;
+
+            if (!this.isCommitted) {
+                if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
+                    this.setCurrentEditorContent(this.filePath)
+                }
+            } else {
+                this.setCurrentEditorContent(this.filePath)
+            }
+        })
+
+        this.root.querySelector("file-browser").addEventListener('open-file', /** @param {CustomEvent} event */(event) => {
+            this.setCurrentEditorContent(event.detail)
+        })
+
     }
 
-    setEditorContent() {
-        this.filePath = localStorage.getItem("open-file");
+    /**
+     * @private
+     */
+    async loadDataFromLocalStorage() {
+        await this.setCurrentEditorContent(
+            localStorage.getItem("open-file"),
+            localStorage.getItem("content")
+        );
+        // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
+        // want to only call passInValues once)
         this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);
 
-        if (localStorage.getItem('content') !== null) {
-            this.editor.value = localStorage.getItem('content');
+        if(this.filePath != null){
+            if (localStorage.getItem('open-tab') !== null) {
+                const buttonIndex = parseInt(localStorage.getItem('open-tab'));
+                
+                this.switchToEditor(buttonIndex);
+                
+                this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
+            }
+            else {
+                this.switchToEditor(DEFAULT_EDITOR_INDEX);
+            }
         }
-        else if (localStorage.getItem("open-file") !== null) {
-            // NOTE: we don't have to wait for this to happen
-            (async () => {
-                this.editor.value = await this.gitlabInterface.readFile(localStorage.getItem("open-file"));
-            })()
-        }
-        else {
-            this.updateFileNameUI(true, null);
-            this.filePath = null;
-            this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
+        
+    }
 
+    
+    /**
+     * Function to set the file the editor is editing.
+     * 
+     * @param {string | null} filePath If filepath is null, this means no file is to be loaded.
+     * @param {string | null} localFileChanges If set, set the editor content to this values, for 
+     * loading from local storage
+     */
+    async setCurrentEditorContent(filePath, localFileChanges=null) {
+        if(filePath == null){
+            this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
+            this.filePath = null;
+
+            this.updateFileNameUI(true, null);
             return;
         }
 
-        this.updateFileNameUI(Boolean(localStorage.getItem("isCommitted") || true), this.filePath);
-
-        if (localStorage.getItem('open-tab') !== null) {
-            const buttonIndex = parseInt(localStorage.getItem('open-tab'));
-
-            this.switchToEditor(buttonIndex);
-
-            this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
-        }
-        else {
+        if (this.filePath == null) {
+            // The filepath has been null and now isn't, so switch to the default editor.
             this.switchToEditor(DEFAULT_EDITOR_INDEX);
         }
+
+        const fileContent = await this.gitlabInterface.readFile(filePath);
+        // NOTE: we trim below to remove a new line as the last line
+        if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()){
+            this.value = localFileChanges;
+
+            this.updateFileNameUI(false, filePath);
+        }
+        else{
+            this.value = fileContent;
+
+            this.updateFileNameUI(true, filePath);
+        }
+        this.filePath = filePath;
+
+
+        localStorage.setItem('open-file', filePath);
+        localStorage.setItem('content', this.value);
     }
 
     /**
@@ -258,20 +297,6 @@ export default class OverallEditor extends HTMLElement {
 
         this.editor = editorElement;
         localStorage.setItem('open-tab', index.toString());
-    }
-
-    async setGitLabFile(filepath) {
-        if (this.filePath === null) {
-            this.switchToEditor(DEFAULT_EDITOR_INDEX);
-        }
-
-        this.value = await this.gitlabInterface.readFile(filepath);
-
-        this.filePath = filepath;
-        this.updateFileNameUI(true, filepath);
-
-        localStorage.setItem('open-file', filepath);
-        localStorage.setItem('content', this.value);
     }
 
     template() {

@@ -507,7 +507,7 @@ export default class CodeEditor extends HTMLElement {
      * Gets the value, without a need for parsing the document (so uses the latest header).
      */
     get noParseValue() {
-        return addLineNumbers(this.topLineEditor.getValue() + "\n" + this.rawValue + "\n" + "END_SEQUENCE", 0);
+        return addLineNumbers(this.topLineEditor.getValue() + "\n" + this.rawValue + "\n" + "END_SEQUENCE\n", 0);
     }
 
     get value() {
