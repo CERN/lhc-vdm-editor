@@ -12,8 +12,12 @@ function trimTime(dist) {
     const trimRate = 0.1; // mm/s
     return Math.abs(dist) * trimRate;
 }
-function sigmaToMM(amount) {
-    const factor = 1;
+export function sigmaToMM(amount) {
+    const betaStar = 20; // m
+    const normEmittance = 3.5*1e-6; // m
+    const gamma = 6500/0.938;
+    const emittance = normEmittance/gamma;
+    const factor = Math.sqrt(emittance*betaStar);
     return amount * factor;
 }
 
