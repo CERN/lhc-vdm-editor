@@ -141,7 +141,8 @@ export default class CreateFileWindow extends HTMLElement {
             this.dispatchEvent(new CustomEvent("submit", {
                 detail: {
                     ip: this.selectionBoxes.ip,
-                    campaign: this.selectionBoxes.campaign
+                    campaign: this.selectionBoxes.campaign,
+                    filePaths: this.root.querySelector('folder-triangle').isOpen ? this.chosenFiles : []
                 }
             }));
         });
@@ -190,6 +191,14 @@ export default class CreateFileWindow extends HTMLElement {
         })
     }
 
+    get chosenFiles() {
+        let arr = [];
+        this.root.querySelector('#file-list-content').querySelectorAll('input').forEach( x => {
+            if(x.checked) arr.push(x.value)
+        })
+        return arr;
+    }
+
     async setFilesFromPath(path) {
         let files = [NO_FILES_TEXT];
         try {
@@ -211,10 +220,16 @@ export default class CreateFileWindow extends HTMLElement {
         let list = document.createDocumentFragment();
         for (let file of files) {
             let line = document.createElement('div');
-            line.innerHTML = html`
-                <input type='checkbox' checked>
-                ${file}
-            `;
+            if (file == NO_FILES_TEXT) {
+                line.innerHTML = html`
+                    ${NO_FILES_TEXT}
+                `;
+            } else {
+                line.innerHTML = html`
+                    <input type='checkbox' value=${file} checked>
+                    ${file}
+                `;
+            }
             list.appendChild(line);
         }
 
