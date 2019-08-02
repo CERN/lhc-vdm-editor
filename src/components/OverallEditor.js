@@ -6,7 +6,7 @@ import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
 import "./FileBrowser.js"
 import "./ResizeHandle.js"
-import GitLab from "../GitLab.js"
+import GitLab, { NoPathExistsError } from "../GitLab.js"
 import { parseVdM, deparseVdM } from "../parser.js"
 import './RevertButton.js'
 
@@ -186,10 +186,24 @@ export default class OverallEditor extends HTMLElement {
      * @private
      */
     async loadDataFromLocalStorage() {
-        await this.setCurrentEditorContent(
-            localStorage.getItem("open-file"),
-            localStorage.getItem("content")
-        );
+        try{
+            await this.setCurrentEditorContent(
+                localStorage.getItem("open-file"),
+                localStorage.getItem("content")
+            )
+        }
+        catch(error){
+            if(error instanceof NoPathExistsError){
+                alert(`Last edited file deleted in the repository, please recreate if required. The locally stored file was: \n${
+                    localStorage.getItem("content")
+                }`)
+                await this.setCurrentEditorContent(
+                    null,
+                    null
+                )
+            }
+            else throw error;
+        }
         // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
         // want to only call passInValues once)
         this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);

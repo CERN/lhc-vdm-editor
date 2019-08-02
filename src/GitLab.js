@@ -42,14 +42,22 @@ export default class GitLab {
      */
 
     async readFile(filePath) {
-        return await (
-            await gFetch(
-                `${URL_START}/repository/files/${
-                encodeURIComponent(filePath)
-                }/raw?ref=${this.branch}`,
-                { headers: new Headers(this.authHeader) }
-            )
-        ).text();
+        try{
+            return await (
+                await gFetch(
+                    `${URL_START}/repository/files/${
+                    encodeURIComponent(filePath)
+                    }/raw?ref=${this.branch}`,
+                    { headers: new Headers(this.authHeader) }
+                )
+            ).text();
+        }
+        catch(error){
+            if(error instanceof Response && (await error.json()).message == "404 File Not Found"){
+                throw new NoPathExistsError(`${filePath} does not exist`);
+            }
+            else throw error;
+        }
     };
 
     /**
