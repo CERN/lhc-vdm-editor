@@ -1,4 +1,4 @@
-import { parseVdM, deparseVdM, MySyntaxError } from "./parser.js"
+import { parseVdM, deparseVdM, MySyntaxError, sigmaToMM } from "./parser.js"
 
 let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
@@ -37,15 +37,15 @@ describe("Parser", () => {
     })
     it("Simple parse ", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n 1 END_SEQUENCE'))
-            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
+            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}},{"type":"command","command":"END_SEQUENCE","args":[],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}}]'))
     })
     it("Empty line parse", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 END_SEQUENCE'))
-            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"empty"},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
+            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}},{"type":"empty"},{"type":"command","command":"END_SEQUENCE","args":[],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}}]'))
     })
     it("Comment line parse", () => {
         expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 END_SEQUENCE'))
-            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"]},{"type":"comment","comment":""},{"type":"command","command":"END_SEQUENCE","args":[]}]'))
+            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}},{"type":"comment","comment":""},{"type":"command","command":"END_SEQUENCE","args":[],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}}]'))
     })
     it('File parse and then deparse', () => {
         expect(deparseVdM(parseVdM(file))).toEqual(file)
@@ -74,4 +74,9 @@ describe("Parser", () => {
         expect(function () { parseVdM(faultyFile) })
             .toThrow(jasmine.arrayWithExactContents(new Array(8).fill(jasmine.any(MySyntaxError))))
     }) 
+
+
+    it('sigma to mm convertion', () => {
+        expect(Math.round(sigmaToMM(1)*1e7)).toEqual(1005)
+    })
 })
