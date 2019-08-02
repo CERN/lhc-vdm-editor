@@ -28,6 +28,11 @@ const styling = css`
     overflow: hidden;
     white-space: nowrap;
 }
+
+.no-files-item {
+    cursor: default;
+}
+
 .item-open {
     font-weight: bold;
 }
@@ -228,6 +233,9 @@ export default class FileBrowser extends HTMLElement {
                     });
 
                     this.addContextMenuListener(itemEl, prefix + fileName);
+                }
+                else{
+                    itemEl.classList.add("no-files-item")
                 }
 
                 result.appendChild(itemEl);

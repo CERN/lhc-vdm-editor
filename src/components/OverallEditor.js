@@ -85,6 +85,12 @@ raw-editor{
 .body{
     display: flex;
 }
+
+.vr {
+    border-left: 1px solid #cccccc;
+    display: inline;
+    margin: 0px 2px 0px 4px;
+}
 `
 
 const BLANK_EDITOR_HTML = html`<div class="blank-editor">No File Selected</div>`;
@@ -278,6 +284,7 @@ export default class OverallEditor extends HTMLElement {
                 <div id="file-name"></div>
                 <div id='header-buttons'>
                     <commit-element></commit-element>
+                    <div class="vr">&nbsp;</div>
                     <revert-button></revert-button>
                 </div>
             </div>
