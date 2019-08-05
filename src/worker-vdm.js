@@ -9,7 +9,7 @@ async function getParser(){
         (await (await fetch("./parser.js")).text())
         .replace(/export function/g, "function")
         .replace(/export class/g, "class")
-        + "\n;(() => ({parseVdM: parseVdM, deparseVdM: deparseVdM}))()";
+        + "\n;(() => ({parseVdM: parseVdM, deparseVdM: deparseVdM, VdMSyntaxError: VdMSyntaxError}))()";
     return eval(parserSourceText);
 }
 
@@ -20,24 +20,27 @@ async function getParser(){
             let messageToSend = {
                 type: "lint"
             }
+            let parsedResult;
 
             try {
-                var parsedResult = parser.parseVdM(message.data.text, message.data.parseHeader);
+                parsedResult = parser.parseVdM(message.data.text, message.data.parseHeader);
                 const result = parser.deparseVdM(parsedResult);
 
                 messageToSend.header = result.split("\n")[0];
             }
-            catch(errors){
-                if(Array.isArray(errors)){
-                    messageToSend.errors = errors.map(error => ({
+            catch(error){
+                if(error instanceof parser.VdMSyntaxError){
+                    messageToSend.errors = error.errors.map(error => ({
                         row: error.line,
                         column: 0,
                         text: error.message,
                         type: "error"
                     }))
+
+                    parsedResult = error.dataStructure;
                 }
                 else{
-                    throw errors;
+                    throw error;
                 }
             }
 

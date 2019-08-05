@@ -1,6 +1,6 @@
 import { html, css, addLineNumbers } from "../HelperFunctions.js"
 import "../mode-vdm.js"
-import { parseVdM, deparseVdM } from "../parser.js"
+import { parseVdM, deparseVdM, VdMSyntaxError } from "../parser.js"
 import "../token_tooltip.js"
 const token_tooltip = ace.require("ace/token_tooltip");
 const Autocomplete = ace.require("ace/autocomplete").Autocomplete;
@@ -480,7 +480,7 @@ export default class CodeEditor extends HTMLElement {
                 + deparseVdM(parseVdM(addLineNumbers(editorValue), true));
         }
         catch (error) {
-            if (Array.isArray(error)) {
+            if (error instanceof VdMSyntaxError) {
                 return this.noParseValue;
             }
             else {

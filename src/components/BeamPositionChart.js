@@ -106,7 +106,7 @@ export default class BeamPositionChart extends HTMLElement {
      */
     updateData(newData){
         this.chart.series[0].setData(newData[0]);
-        this.chart.series[0].setData(newData[1]);
+        this.chart.series[1].setData(newData[1]);
     }
 
     connectedCallback(){

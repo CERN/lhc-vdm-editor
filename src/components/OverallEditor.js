@@ -7,7 +7,7 @@ import "./CommitElement.js"
 import "./FileBrowser.js"
 import "./ResizeablePanel.js"
 import GitLab, { NoPathExistsError } from "../GitLab.js"
-import { parseVdM, deparseVdM } from "../parser.js"
+import { parseVdM, deparseVdM, VdMSyntaxError } from "../parser.js"
 import './RevertButton.js'
 import "./BeamPositionChart.js"
 
@@ -175,8 +175,8 @@ export default class OverallEditor extends HTMLElement {
 
                 this.updateFileNameUI(true, this.filePath);
             } catch (errArr) {
-                if (Array.isArray(errArr)) {
-                    alert('Commit failed! Following errors encountered:\n\n' + errArr.map(x => x.message).join('\n'))
+                if (errArr instanceof VdMSyntaxError) {
+                    alert('Commit failed! Following errors encountered:\n\n' + errArr.errors.map(x => x.message).join('\n'))
                 } else throw errArr
             }
         })

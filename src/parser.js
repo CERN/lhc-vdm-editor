@@ -28,7 +28,7 @@ export class VdMSyntaxError extends Error {
     constructor(errArr, structure){
         super()
         this.errors = errArr;
-        this.data = structure;
+        this.dataStructure = structure;
     }
 }
 
@@ -123,11 +123,11 @@ class VdM {
                     if (obj.args.length != 1) {
                         throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
                     }
-                    if (isFinite(Number(obj.args[0]))) {
+                    if (isFinite(Number(obj.args[0])) && Number(obj.args[0]) >= 0) {
                         this.state.sequenceTime += Number(obj.args[0]);
                         this.state.realTime += Number(obj.args[0]);
                     } else {
-                        throw 'Invalid SECONDS_WAIT command. Argument must be a finte number but got ' + obj.args
+                        throw 'Invalid SECONDS_WAIT command. Argument must be a finite positive number but got ' + obj.args
                     }
                 },
             'RELATIVE_TRIM':
@@ -142,7 +142,7 @@ class VdM {
                         try {
                             const amount = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
                             this.state.pos[obj.args[i + 1]][obj.args[i + 2]] += amount;
-                            this.state.realTime += amount * this.trim_rate;
+                            this.state.realTime += Math.abs(amount) * this.trim_rate;
                             const pos = this.state.pos[obj.args[i + 1]][obj.args[i + 2]];
                             if (Math.abs(pos) > this.scan_limit) {
                                 throw 'Beam position: ' + pos + 'mm exceeds the maximally allowed distance from zero of ' + this.scan_limit + 'mm'
@@ -164,7 +164,7 @@ class VdM {
                     for (let i = 0; i < obj.args.length; i += 5) {
                         try {
                             const pos = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
-                            const dist = this.state.pos[obj.args[i + 1]][obj.args[i + 2]] - pos;
+                            const dist = Math.abs(this.state.pos[obj.args[i + 1]][obj.args[i + 2]] - pos);
                             this.state.pos[obj.args[i + 1]][obj.args[i + 2]] = pos;
                             this.state.realTime += dist * this.trim_rate;
                             if (Math.abs(pos) > this.scan_limit) {
