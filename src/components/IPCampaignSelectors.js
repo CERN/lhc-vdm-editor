@@ -31,7 +31,7 @@ export default class Selectors extends HTMLElement {
      */
     passInValues(gitlab) {
         (async () => {
-            const campaigns = await gitlab.listCampaigns();
+            const campaigns = (await gitlab.listCampaigns()).reverse();
             this.root.getElementById("campaign-select").innerHTML = campaigns.map(campaignName => {
                 return html`<option value=${campaignName}>${campaignName}</option>`
             }).join("\n");

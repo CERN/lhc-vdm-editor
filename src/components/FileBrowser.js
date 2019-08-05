@@ -118,7 +118,7 @@ export default class FileBrowser extends HTMLElement {
         this.gitlab = gitlab;
         (async () => {
             const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns[0]);
+            this.setFileUI('IP1', campaigns.pop());
         })();
         
         this.setOpenFile(openFile);
