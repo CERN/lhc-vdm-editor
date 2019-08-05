@@ -78,7 +78,7 @@ const lhc_constants = {
 
 class VdM {
     constructor(param = init_beam_param) {
-        this.sigma = Math.sqrt((param.emittance / (param.energy / param.particle_mass)) * param.beta_star.IP1); // mm
+        this.sigma = Math.sqrt((param.emittance / (param.energy / param.particle_mass)) * param.beta_star.IP1)*1e3; // mm
         this.trim_rate = param.trim_rate; // mm/s
         this.scan_limit = param.scan_limits.IP1 * this.sigma; // mm
         this.state = {};

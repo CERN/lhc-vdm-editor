@@ -1,4 +1,4 @@
-import { css, html, throttle } from "../HelperFunctions.js";
+import { css, html, throttle, repeat } from "../HelperFunctions.js";
 
 const styling = css`
 :host {
@@ -12,6 +12,8 @@ export default class BeamPositionChart extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
+
+        this.limit = 0;
 
         this.attachChart();
     }
@@ -72,33 +74,46 @@ export default class BeamPositionChart extends HTMLElement {
                 name: 'Beam 2',
                 data: [],
                 color: "hsl(240, 70%, 70%)"
+            }, {
+                type: "area",
+                name: null,
+                showInLegend: false,
+                threshold: Infinity,
+                showInNavigator: false,
+                data: [],
+                color: "rgb(154, 154, 154)"
+            }, {
+                type: "area",
+                name: null,
+                showInLegend: false,
+                showInNavigator: false,
+                threshold: -Infinity,
+                data: [],
+                color: "rgb(154, 154, 154)"
             }
         ]
         });
     }
 
-
-
     /**
      * @param {number} newLimit
      */
-    set limits(newLimit){
-        // {
-        //     type: "area",
-        //     name: null,
-        //     showInLegend: false,
-        //     showInNavigator: false,
-        //     data: [24916, 24916, 24916, 24916, 24916, 24916, 24916, 24916],
-        //     color: "rgb(154, 154, 154)"
-        // }, {
-        //     type: "area",
-        //     name: null,
-        //     showInLegend: false,
-        //     showInNavigator: false,
-        //     threshold: Infinity,
-        //     data: [154175, 154175, 154175, 154175, 154175, 154175, 154175, 154175],
-        //     color: "rgb(154, 154, 154)"
-        // }
+    updateLimits(newLimit){
+        this.chart.series[2].setData(
+            [
+                [0, newLimit],
+                [this.maxTime, newLimit]
+            ]
+        )
+
+        this.chart.series[3].setData(
+            [
+                [0, -newLimit],
+                [this.maxTime, -newLimit]
+            ]
+        )
+
+        this.limit = newLimit;
     }
 
     /**
@@ -107,6 +122,10 @@ export default class BeamPositionChart extends HTMLElement {
     updateData(newData){
         this.chart.series[0].setData(newData[0]);
         this.chart.series[1].setData(newData[1]);
+
+        this.maxTime = newData[0].slice(-1)[0][0]
+
+        this.updateLimits(this.limit);
     }
 
     connectedCallback(){

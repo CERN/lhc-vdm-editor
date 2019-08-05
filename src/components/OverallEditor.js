@@ -88,8 +88,6 @@ raw-editor{
 }
 `
 
-
-
 const BLANK_EDITOR_HTML = html`<div class="blank-editor">No File Selected</div>`;
 const EDITOR_TAG_NAMES = [
     "raw-editor",
@@ -115,6 +113,8 @@ export default class OverallEditor extends HTMLElement {
         this.errorWebWorker = new Worker("./src/worker-vdm.js");
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
+
+        this.root.querySelector("beam-position-chart").updateLimits(0.6)
 
         this.addListeners();
         this.loadDataFromLocalStorage();

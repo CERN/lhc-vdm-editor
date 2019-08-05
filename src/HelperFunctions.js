@@ -7,6 +7,14 @@ export function range(to, start = 0) {
     return array;
 }
 
+/**
+ * @param {any} element
+ * @param {number} numberOfTimes
+ */
+export function repeat(element, numberOfTimes){
+    return (new Array(numberOfTimes)).fill(element);
+}
+
 function interpolate(literals, ...expressions) {
     let string = ``
     for (const [i, val] of expressions.entries()) {
