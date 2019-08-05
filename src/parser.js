@@ -286,8 +286,8 @@ class VdM {
             'type': 'command',
             'command': 'END_SEQUENCE',
             'args': [],
-            'realTime': 0,
-            'sequenceTime': 0,
+            'realTime': objArr[objArr.length-1].realTime,
+            'sequenceTime': objArr[objArr.length-1].sequenceTime,
             'pos': {
                 'BEAM1': {
                     'SEPARATION': 0,
