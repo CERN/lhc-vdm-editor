@@ -74,6 +74,9 @@ function addHeaders(objArr) {
         'command': 'END_SEQUENCE',
         'args': []
     });
+    res.push({
+        'type': 'empty'
+    })
     return res;
 }
 /**
