@@ -46,6 +46,12 @@ export default class ResizeablePanel extends HTMLElement {
             }
             container.style.width = newWidth + "px";
 
+
+            Array.from(this.children).forEach(child => {
+                if(typeof child.reflow == "function")
+                    child.reflow();
+            })
+
         }
         const onMouseMove = _onMouseMove.bind(this);
     
@@ -68,7 +74,7 @@ export default class ResizeablePanel extends HTMLElement {
             ${styling}
         </style>
         ${this.side == "right"?html`<div id="resize-handle">&nbsp;</div>`:""}
-        <div id="container">
+        <div ${this.hasAttribute("default-width") ? `style="width: ${this.getAttribute("default-width")}"` : ""} id="container">
             <slot></slot>
         </div>
         ${this.side == "left"?html`<div id="resize-handle">&nbsp;</div>`:""}

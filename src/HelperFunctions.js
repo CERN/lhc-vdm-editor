@@ -111,4 +111,30 @@ export const preventResizeCSS = `
 user-select: none;
 `
 
-export const NO_FILES_TEXT = "--- NO FILES ---"
+/**
+ * @param {number} milliseconds
+ */
+export async function wait(milliseconds){
+    return new Promise((resolve, _) => {
+        setTimeout(resolve, milliseconds);
+    })
+}
+
+export const NO_FILES_TEXT = "--- NO FILES ---";
+
+let throttleIDs = new Set();
+/**
+ * @param {number} time
+ * @param {() => any} func
+ */
+export async function throttle(func, time, uid){
+    if(!throttleIDs.has(uid)){
+        throttleIDs.add(uid);
+        func();
+
+        (async () => {
+            await wait(time);
+            throttleIDs.delete(uid);
+        })()
+    }
+}

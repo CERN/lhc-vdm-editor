@@ -9,6 +9,7 @@ import "./ResizeablePanel.js"
 import GitLab, { NoPathExistsError } from "../GitLab.js"
 import { parseVdM, deparseVdM } from "../parser.js"
 import './RevertButton.js'
+import "./BeamPositionChart.js"
 
 const styling = css`
 #editor-container {
@@ -35,7 +36,6 @@ revert-button {
 .container {
     width: calc(100% - 30px);
     height: calc(100% - 8px);
-    max-width: 1600px;
     margin: 0 auto;
 }
 
@@ -324,6 +324,9 @@ export default class OverallEditor extends HTMLElement {
                     </div>
                     <switch-editor-buttons></switch-editor-buttons>
                 </div>
+                <resizeable-panel default-width="300px" side="right">
+                    <beam-position-chart></beam-position-chart>
+                </resizeable-panel>
             <div>
         </div>`
     }

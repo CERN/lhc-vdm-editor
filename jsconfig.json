@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
         "checkJs": true,
-        "target": "es2018"
+        "target": "es2018",
+        "allowUmdGlobalAccess": true
     },
     "typeAcquisition": {
-        "include": ["ace", "jquery"]
+        "include": ["ace", "jquery", "highcharts"]
     }
 }
