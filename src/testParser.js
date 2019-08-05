@@ -1,4 +1,4 @@
-import { parseVdM, deparseVdM, MySyntaxError, sigmaToMM } from "./parser.js"
+import { parseVdM, deparseVdM, MySyntaxError } from "./parser.js"
 
 let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
@@ -75,9 +75,4 @@ describe("Parser", () => {
         expect(function () { parseVdM(faultyFile) })
             .toThrow(jasmine.arrayWithExactContents(new Array(8).fill(jasmine.any(MySyntaxError))))
     }) 
-
-
-    it('sigma to mm convertion', () => {
-        expect(Math.round(sigmaToMM(1)*1e7)).toEqual(1005)
-    })
 })
