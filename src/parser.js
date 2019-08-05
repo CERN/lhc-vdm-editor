@@ -301,7 +301,8 @@ class VdM {
                     'SEPARATION': 0,
                     'CROSSING': 0,
                 }
-            }
+            },
+            'luminosity': 0
         });
         res.push({
             'type': 'command',
@@ -318,7 +319,8 @@ class VdM {
                     'SEPARATION': 0,
                     'CROSSING': 0,
                 }
-            }
+            },
+            'luminosity': 0
         });
         return res;
     }
