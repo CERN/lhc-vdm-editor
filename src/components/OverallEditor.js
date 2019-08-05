@@ -5,7 +5,7 @@ import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
 import "./CommitElement.js"
 import "./FileBrowser.js"
-import "./ResizeHandle.js"
+import "./ResizeablePanel.js"
 import GitLab, { NoPathExistsError } from "../GitLab.js"
 import { parseVdM, deparseVdM } from "../parser.js"
 import './RevertButton.js'
@@ -56,11 +56,6 @@ raw-editor{
 
 .uncommitted {
     color: orange;
-}
-
-#file-browser-container {
-    width: 20%;
-    height: calc(100% - 45px);
 }
 
 /* Clearfix to make floats take up space */
@@ -148,14 +143,6 @@ export default class OverallEditor extends HTMLElement {
         this.editorContainer.addEventListener('editor-content-change', ev => {
             localStorage.setItem('content', ev.detail);
             this.updateFileNameUI(false, this.filePath);
-        })
-
-        this.root.querySelector("resize-handle").addEventListener("update-size", event => {
-            const fileBrowser = this.root.querySelector("#file-browser-container");
-            const fileBrowserLeft = fileBrowser.getBoundingClientRect().left;
-
-            const newWidth = event.detail - fileBrowserLeft - 12;
-            fileBrowser.style.width = newWidth + "px";
         })
 
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
@@ -328,10 +315,9 @@ export default class OverallEditor extends HTMLElement {
                 </div>
             </div>
             <div class="body">
-                <div id="file-browser-container">
+                <resizeable-panel>
                     <file-browser></file-browser>
-                </div>
-                <resize-handle></resize-handle>
+                </resizeable-panel>
                 <div id="editor-container">
                     <div id="editor">
                         <raw-editor></raw-editor>
