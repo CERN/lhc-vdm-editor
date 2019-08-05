@@ -11,14 +11,24 @@
     <title>LHC VdM web-editor</title>
     <script>
         window.addEventListener("error", function (error) {
-            alert(error.filename + ":" + error.lineno + "\n" + error.message)
+            alert(error.filename + ":" + error.lineno + "\n" + error.message);
         })
-        window.addEventListener('unhandledrejection', function (err) {
-            if(err instanceof Response){
-                alert(`GitLab API error, ${err.status}: ${(await err.json()).message}`)
+        window.addEventListener('unhandledrejection', async function (err) {
+            if (err.reason instanceof Response) {
+                try {
+                    const obj = await err.reason.json();
+                    if (Object.keys(obj).includes('message')) {
+                        alert('GitLab API error: ' + obj.message);
+                    } else {
+                        throw err
+                    }
+                } catch (err) {
+                    alert('There has been an error. Please check the console.');
+                    throw err;
+                }
             }
-            else{
-                alert('There has been an error. Please check the console.')
+            else {
+                alert('There has been an error. Please check the console.');
             }
         });
     </script>
