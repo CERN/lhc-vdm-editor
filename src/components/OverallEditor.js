@@ -121,8 +121,14 @@ export default class OverallEditor extends HTMLElement {
     }
 
     onWebWorkerMessage(message){
-        if (message.data.type == "lint" && typeof this.editor.setCurrentParsedResult == "function") {
-            this.editor.setCurrentParsedResult(message.data)
+        if (message.data.type == "lint") {
+            if(typeof this.editor.setCurrentParsedResult == "function"){
+                this.editor.setCurrentParsedResult(message.data)
+            }
+
+            this.root.querySelector("beam-position-chart").updateData(
+                message.data.beamSeparationData
+            )
         }
     }
 
@@ -176,7 +182,7 @@ export default class OverallEditor extends HTMLElement {
         })
 
         this.editorContainer.addEventListener('editor-content-change', ev => {
-            this.onEditorContentChange(ev.detail.localStorageValue, ev.detail.valueToBeParsed)
+            this.onEditorContentChange(ev.detail)
         })
 
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {

@@ -22,7 +22,8 @@ async function getParser(){
             }
 
             try {
-                const result = parser.deparseVdM(parser.parseVdM(message.data.text, message.data.parseHeader));
+                var parsedResult = parser.parseVdM(message.data.text, message.data.parseHeader);
+                const result = parser.deparseVdM(parsedResult);
 
                 messageToSend.header = result.split("\n")[0];
             }
@@ -39,6 +40,15 @@ async function getParser(){
                     throw errors;
                 }
             }
+
+            messageToSend.beamSeparationData = [
+                parsedResult.map(line => {
+                    if(line.type == "command") return [line.realTime, line.pos.BEAM1.SEPARATION]
+                }).filter(x => x),
+                parsedResult.map(line => {
+                    if(line.type == "command") return [line.realTime, line.pos.BEAM2.SEPARATION]
+                }).filter(x => x)
+            ]
 
             postMessage(messageToSend);
         }

@@ -257,12 +257,36 @@ class VdM {
         res.unshift({
             'type': 'command',
             'command': 'INITIALIZE_TRIM',
-            'args': this.genInitTrimArgs(objArr)
+            'args': this.genInitTrimArgs(objArr),
+            'realTime': 0,
+            'sequenceTime': 0,
+            'pos': {
+                'BEAM1': {
+                    'SEPARATION': 0,
+                    'CROSSING': 0,
+                },
+                'BEAM2': {
+                    'SEPARATION': 0,
+                    'CROSSING': 0,
+                }
+            }
         });
         res.push({
             'type': 'command',
             'command': 'END_SEQUENCE',
-            'args': []
+            'args': [],
+            'realTime': 0,
+            'sequenceTime': 0,
+            'pos': {
+                'BEAM1': {
+                    'SEPARATION': 0,
+                    'CROSSING': 0,
+                },
+                'BEAM2': {
+                    'SEPARATION': 0,
+                    'CROSSING': 0,
+                }
+            }
         });
         return res;
     }
@@ -418,7 +442,7 @@ class VdM {
                         finally {
                             obj.realTime = this.state.realTime;
                             obj.sequenceTime = this.state.sequenceTime;
-                            obj.pos = this.state.pos;
+                            obj.pos = JSON.parse(JSON.stringify(this.state.pos));
                         }
                         // Check line numbering.
                         // Must be executed last for command terminations to be detected beforehand
