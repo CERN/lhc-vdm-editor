@@ -25,18 +25,18 @@ export class VdMSyntaxError extends Error {
      * @param {MySyntaxError[]} errArr
      * @param {Object[]} structure
      */
-    constructor(errArr, structure){
+    constructor(errArr, structure) {
         super()
         this.errors = errArr;
         this.dataStructure = structure;
     }
 }
 
-export function parseVdM(data, genHeaders = false){
+export function parseVdM(data, genHeaders = false) {
     return (new VdM()).parseVdM(data, genHeaders)
     //return (new VdM(param)).parseVdM(data, genHeaders)
 }
-export function deparseVdM(structure){
+export function deparseVdM(structure) {
     return (new VdM()).deparseVdM(structure)
 }
 
@@ -64,7 +64,13 @@ const init_beam_param = { // IP1
     },
     "trim_rate": 0.1,
     "intensity": 1e11,
-    "bunches": 50
+    "bunch_pair_collisions": {
+        "IP1": 50,
+        "IP2": 50,
+        "IP5": 50,
+        "IP8": 50
+    },
+    "bunch_length": 80
 }
 const lhc_constants = {
     f_rev: 11245,
@@ -78,8 +84,8 @@ const lhc_constants = {
 
 class VdM {
     constructor(param = init_beam_param) {
-        this.sigma = Math.sqrt((param.emittance / (param.energy / param.particle_mass)) * param.beta_star.IP1)*1e3; // mm
-        this.trim_rate = param.trim_rate; // mm/s
+        this.sigma = Math.sqrt((param.emittance / (param.energy / param.particle_mass)) * param.beta_star.IP1) * 1e3; // mm
+        this.param = param;
         this.scan_limit = param.scan_limits.IP1 * this.sigma; // mm
         this.state = {};
 
@@ -142,7 +148,7 @@ class VdM {
                         try {
                             const amount = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
                             this.state.pos[obj.args[i + 1]][obj.args[i + 2]] += amount;
-                            this.state.realTime += Math.abs(amount) * this.trim_rate;
+                            this.state.realTime += Math.abs(amount) * this.param.trim_rate;
                             const pos = this.state.pos[obj.args[i + 1]][obj.args[i + 2]];
                             if (Math.abs(pos) > this.scan_limit) {
                                 throw 'Beam position: ' + pos + 'mm exceeds the maximally allowed distance from zero of ' + this.scan_limit + 'mm'
@@ -166,7 +172,7 @@ class VdM {
                             const pos = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
                             const dist = Math.abs(this.state.pos[obj.args[i + 1]][obj.args[i + 2]] - pos);
                             this.state.pos[obj.args[i + 1]][obj.args[i + 2]] = pos;
-                            this.state.realTime += dist * this.trim_rate;
+                            this.state.realTime += dist * this.param.trim_rate;
                             if (Math.abs(pos) > this.scan_limit) {
                                 throw 'Beam position ' + pos + 'mm exceeds the maximally allowed distance to zero of ' + this.scan_limit + 'mm'
                             }
@@ -233,6 +239,21 @@ class VdM {
                 }
         }
     }
+    calcLuminosity(beamSeparation) {
+        const d = beamSeparation; // separation in separation plane in mm
+        const sigma = this.sigma; // mm
+        const alpha = this.param.crossing_angle.IP1; // rad
+        const sigmaz = this.param.bunch_length; // mm
+        const nbb = this.param.bunch_pair_collisions.IP1;
+
+        const Sx = 2 * ((sigma * Math.cos(alpha / 2)) ** 2 + (sigmaz * Math.sin(alpha / 2)) ** 2); // effective area x-size in mm
+        const Sy = 2 * (sigma ** 2); // effective area y-size in mm
+        const S = Math.sqrt(2) * sigma / Sx; // geometric factor
+        const F = Math.exp((d / Sy) ** 2 / -2); // separation factor
+        const Lbb = lhc_constants.f_rev * ((this.param.intensity * Math.cos(alpha / 2) / sigma) ** 2) * S * F / (4 * Math.PI); // luminosity per bunch pair in Hz/mm^2
+        const L = nbb * Lbb; // luminosity in Hz/mm^2
+        return L;
+    }
     /**
      * @param {object[]} objArr
      */
@@ -286,8 +307,8 @@ class VdM {
             'type': 'command',
             'command': 'END_SEQUENCE',
             'args': [],
-            'realTime': objArr[objArr.length-1].realTime,
-            'sequenceTime': objArr[objArr.length-1].sequenceTime,
+            'realTime': objArr[objArr.length - 1].realTime,
+            'sequenceTime': objArr[objArr.length - 1].sequenceTime,
             'pos': {
                 'BEAM1': {
                     'SEPARATION': 0,
@@ -454,6 +475,9 @@ class VdM {
                             obj.realTime = this.state.realTime;
                             obj.sequenceTime = this.state.sequenceTime;
                             obj.pos = JSON.parse(JSON.stringify(this.state.pos));
+                            
+                            let dist = Math.abs(obj.pos.BEAM1.SEPARATION - obj.pos.BEAM2.SEPARATION);
+                            obj.luminosity = this.calcLuminosity(dist);
                         }
                         // Check line numbering.
                         // Must be executed last for command terminations to be detected beforehand
@@ -463,7 +487,7 @@ class VdM {
                     } finally { this.state.currentLineNum++; }
                 }
             } catch (err) {
-                if(err instanceof MySyntaxError) errArr.push(err)
+                if (err instanceof MySyntaxError) errArr.push(err)
                 else throw err
             } finally {
                 objArr.push(obj);
