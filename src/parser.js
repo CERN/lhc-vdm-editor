@@ -20,6 +20,17 @@ export class MySyntaxError extends Error {
         this.message = message;
     }
 }
+export class VdMSyntaxError extends Error {
+    /**
+     * @param {MySyntaxError[]} errArr
+     * @param {Object[]} structure
+     */
+    constructor(errArr, structure){
+        super()
+        this.errors = errArr;
+        this.data = structure;
+    }
+}
 
 export function parseVdM(data, genHeaders = false){
     return (new VdM()).parseVdM(data, genHeaders)
@@ -483,6 +494,6 @@ class VdM {
 
         // Return finished structure or throw error array
         if (errArr.length == 0) { return objArr }
-        else throw errArr
+        else throw new VdMSyntaxError(errArr, objArr)
     }
 }
