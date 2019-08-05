@@ -74,9 +74,6 @@ function addHeaders(objArr) {
         'command': 'END_SEQUENCE',
         'args': []
     });
-    res.push({
-        'type': 'empty'
-    })
     return res;
 }
 /**
@@ -317,7 +314,7 @@ export function deparseVdM(struct) {
         line += '\n';
         string += line;
     }
-    return string.trim();
+    return string.trim() + '\n';
 }
 /**
  * @param {string} data
