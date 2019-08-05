@@ -1,4 +1,4 @@
-import { html, css } from "../HelperFunctions.js"
+import { html, css, addLineNumbers } from "../HelperFunctions.js"
 import "../mode-vdm.js"
 import { parseVdM, deparseVdM } from "../parser.js"
 import "../token_tooltip.js"
@@ -57,26 +57,6 @@ const styling = css`
     background: lightgrey;
 }
 `
-
-/**
- * Adds the VDM line numbers to a file without line numbers
- * 
- * @param {string} text
- */
-function addLineNumbers(text, start = 1) {
-    let currentLine = start;
-
-    return text.split("\n").map((line) => {
-        if (line[0] == "#" || line.trim() == "") {
-            return line;
-        }
-        else {
-            let newLine = currentLine.toString() + " " + line;
-            currentLine++;
-            return newLine;
-        }
-    }).join("\n");
-}
 
 /**
  * Calculates the line number used in vdm (empty lines and comments don't have line numbers).
@@ -187,7 +167,6 @@ const commandHints = {
 }
 
 const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
-let errorWebWorker = new Worker("./src/worker-vdm.js");
 
 export default class CodeEditor extends HTMLElement {
     constructor() {
@@ -198,12 +177,13 @@ export default class CodeEditor extends HTMLElement {
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
         this.lastEditorChangeTimeout = null;
-        errorWebWorker.onmessage = message => this.onWebWorkerMessage(message);
         this.lastHeader = DEFAULT_HEADER;
         this.numberBarWidth = 14;
         this.topLineHeaderPosition = 0;
         this.defaultFontSize = getDefaultFontSize();
         this.tooltip = new token_tooltip.TokenTooltip(this.editor, value => commandHints[value]);
+        // NOTE: this is to tell OverallEditor to parse the header
+        this.headerlessParse = true;
 
         this.preventAutocompleteClosing();
 
@@ -424,71 +404,49 @@ export default class CodeEditor extends HTMLElement {
     }
 
     /**
-     * This function gets called when the web worker gives us a message.
      * 
-     * @param {MessageEvent} message
+     * @param {any} message
      */
-    onWebWorkerMessage(message) {
-        if (message.data.type == "lint") {
-            const maxRow = this.rawValue.split("\n").length;
+    setCurrentParsedResult(message) {
+        const maxRow = this.rawValue.split("\n").length;
 
-            // Reset the annotations on everywhere (message.data.errors might be undefined)
-            this.lastLineEditor.getSession().setAnnotations([]);
-            this.topLineEditor.getSession().setAnnotations([]);
-            this.editor.getSession().setAnnotations([]);
+        // Reset the annotations on everywhere (message.data.errors might be undefined)
+        this.lastLineEditor.getSession().setAnnotations([]);
+        this.topLineEditor.getSession().setAnnotations([]);
+        this.editor.getSession().setAnnotations([]);
 
-            if(message.data.errors !== undefined){
-                this.editor.getSession().setAnnotations(message.data.errors.filter(error => {
-                    if(error.row == maxRow){
-                        this.lastLineEditor.getSession().setAnnotations([{
-                            ...error,
-                            row: 0
-                        }])
-    
-                        return false;
-                    }
-                    if(error.row == 0){
-                        this.topLineEditor.getSession().setAnnotations([{
-                            ...error,
-                            row: this.topLineHeaderPosition
-                        }])
-    
-                        return false;
-                    }
+        if(message.errors !== undefined){
+            this.editor.getSession().setAnnotations(message.errors.filter(error => {
+                if(error.row == maxRow){
+                    this.lastLineEditor.getSession().setAnnotations([{
+                        ...error,
+                        row: 0
+                    }])
 
-                    return true;
-                }));
-            }
+                    return false;
+                }
+                if(error.row == 0){
+                    this.topLineEditor.getSession().setAnnotations([{
+                        ...error,
+                        row: this.topLineHeaderPosition
+                    }])
 
-            if (message.data.header !== undefined) {
-                this.setNewHeader(removeLineNumbers(message.data.header));
-            }
+                    return false;
+                }
+
+                return true;
+            }));
         }
-    }
 
-    /**
-     * Post a message to tell the web to parse the current editor text.
-     */
-    makeWebWorkerParse() {
-        errorWebWorker.postMessage({
-            type: "text_change",
-            text: addLineNumbers(this.rawValue)
-        })
+        if (message.header !== undefined) {
+            this.setNewHeader(removeLineNumbers(message.header));
+        }
     }
 
     /**
      * This function gets called on a change in the editor
      */
     editorChange() {
-        const TIMEOUT = 1000;
-        clearTimeout(this.lastEditorChangeTimeout);
-        this.lastEditorChangeTimeout = setTimeout(() => {
-            if (Date.now() - this.lastEditorChange >= TIMEOUT) {
-                this.makeWebWorkerParse();
-            }
-        }, TIMEOUT + 100);
-
-        this.lastEditorChange = Date.now();
         this.dispatchEvent(new CustomEvent("editor-content-change", {
             bubbles: true,
             detail: this.noParseValue
@@ -542,7 +500,6 @@ export default class CodeEditor extends HTMLElement {
         }
 
         this.editor.setValue(mainText, -1); // use -1 move the cursor to the start of the file
-        this.makeWebWorkerParse();
     }
 
     template() {

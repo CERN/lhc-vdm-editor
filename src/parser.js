@@ -68,7 +68,7 @@ const lhc_constants = {
 class VdM {
     constructor(param = init_beam_param) {
         this.sigma = Math.sqrt((param.emittance / (param.energy / param.particle_mass)) * param.beta_star.IP1); // mm
-        this.trimrate = param.trim_rate; // mm/s
+        this.trim_rate = param.trim_rate; // mm/s
         this.scan_limit = param.scan_limits.IP1 * this.sigma; // mm
         this.state = {};
 
@@ -77,7 +77,7 @@ class VdM {
                 /**
                  * @param {{ args: any[]; }} obj
                  */
-                function (obj) {
+                (obj) => {
                     if (this.state.currentLineNum != 0) {
                         throw 'Invalid INITIALIZE_TRIM command. Must occur on line zero'
                     }
@@ -108,7 +108,7 @@ class VdM {
                 /**
                  * @param {{ args: string[]; }} obj
                  */
-                function (obj) {
+                (obj) => {
                     if (obj.args.length != 1) {
                         throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
                     }
@@ -123,13 +123,13 @@ class VdM {
                 /**
                  * @param {any} obj
                  */
-                function (obj) {
+                (obj) => {
                     // Check syntax
                     this.checkTrim(obj)
                     // Update this.state simulation
                     for (let i = 0; i < obj.args.length; i += 5) {
                         try {
-                            const amount = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : this.sigmaToMM(Number(obj.args[i + 3]));
+                            const amount = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
                             this.state.pos[obj.args[i + 1]][obj.args[i + 2]] += amount;
                             this.state.realTime += amount * this.trim_rate;
                             const pos = this.state.pos[obj.args[i + 1]][obj.args[i + 2]];
@@ -146,7 +146,7 @@ class VdM {
                 /**
                  * @param {any} obj
                  */
-                function (obj) {
+                (obj) => {
                     // Check syntax
                     this.checkTrim(obj)
                     // Update this.state simulation
@@ -168,7 +168,7 @@ class VdM {
                 /**
                  * @param {{ args: string | any[]; }} obj
                  */
-                function (obj) {
+                (obj) => {
                     try {
                         if (this.state.isFitting) {
                             throw 'Invalid START_FIT command. Previous fit command not teminated'
@@ -190,7 +190,7 @@ class VdM {
                 /**
                  * @param {{ args: string; }} obj
                  */
-                function (obj) {
+                (obj) => {
                     try {
                         if (!this.state.isFitting) {
                             throw 'Invalid END_FIT command. Missing START_FIT command'
@@ -207,7 +207,7 @@ class VdM {
                 /**
                  * @param {{ args: string; }} obj
                  */
-                function (obj) {
+                (obj) => {
                     this.state.hasEnded = true;
                     if (obj.args.length != 0) {
                         throw 'Invalid END_SEQUENCE command. No arguments allowed but got ' + obj.args
@@ -217,7 +217,7 @@ class VdM {
                 /**
                  * @param {any} obj
                  */
-                function (obj) {
+                (obj) => {
                     // Do nothing
                 }
         }
@@ -428,7 +428,8 @@ class VdM {
                     } finally { this.state.currentLineNum++; }
                 }
             } catch (err) {
-                errArr.push(err)
+                if(err instanceof MySyntaxError) errArr.push(err)
+                else throw err
             } finally {
                 objArr.push(obj);
             }

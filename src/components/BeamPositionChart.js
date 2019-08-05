@@ -25,6 +25,10 @@ export default class BeamPositionChart extends HTMLElement {
                 height: 300
             },
 
+            credits: {
+                enabled: false
+            },
+
             title: {
                 text: "Separation",
             },
@@ -86,6 +90,34 @@ export default class BeamPositionChart extends HTMLElement {
             }
         ]
         });
+    }
+
+    /**
+     * @param {number} newLimit
+     */
+    set limits(newLimit){
+
+    }
+
+    /**
+     * @param {[number, number][][]} newData
+     */
+    set data(newData){
+        this.chart.update({
+            series: [{
+                    type: "line",
+                    name: 'Beam 1',
+                    data: newData[0],
+                    color: "hsl(240, 70%, 70%)"
+                }, {
+                    type: "line",
+                    name: 'Beam 2',
+                    data: newData[1],
+                    color: "hsl(0, 70%, 70%)"
+                }
+            ]
+        })
+
     }
 
     connectedCallback(){

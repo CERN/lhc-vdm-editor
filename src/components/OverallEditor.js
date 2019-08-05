@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html } from "../HelperFunctions.js"
+import { css, html, addLineNumbers } from "../HelperFunctions.js"
 import "./RawEditor.js"
 import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
@@ -112,9 +112,44 @@ export default class OverallEditor extends HTMLElement {
         /** @type {any} */
         this.editor = this.root.querySelector("raw-editor");
         this.gitlabInterface = gitlab;
+        this.errorWebWorker = new Worker("./src/worker-vdm.js");
+        this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
+        this.lastEditorChangeTimeout = null;
 
         this.addListeners();
         this.loadDataFromLocalStorage();
+    }
+
+    onWebWorkerMessage(message){
+        if (message.data.type == "lint" && typeof this.editor.setCurrentParsedResult == "function") {
+            this.editor.setCurrentParsedResult(message.data)
+        }
+    }
+
+    /**
+     * Post a message to tell the web to parse the current editor text.
+     */
+    makeWebWorkerParse() {
+        this.errorWebWorker.postMessage({
+            type: "text_change",
+            parseHeader: this.editor.headerlessParse || false,
+            text: this.editor.headerlessParse ? addLineNumbers(this.editor.rawValue) : this.editor.value
+        })
+    }
+
+    onEditorContentChange(newValue){
+        localStorage.setItem('content', newValue);
+        this.updateFileNameUI(false, this.filePath);
+
+        const TIMEOUT = 1000;
+        clearTimeout(this.lastEditorChangeTimeout);
+        this.lastEditorChangeTimeout = setTimeout(() => {
+            if (Date.now() - this.lastEditorChange >= TIMEOUT) {
+                this.makeWebWorkerParse();
+            }
+        }, TIMEOUT + 100);
+
+        this.lastEditorChange = Date.now();
     }
 
     /**
@@ -141,8 +176,7 @@ export default class OverallEditor extends HTMLElement {
         })
 
         this.editorContainer.addEventListener('editor-content-change', ev => {
-            localStorage.setItem('content', ev.detail);
-            this.updateFileNameUI(false, this.filePath);
+            this.onEditorContentChange(ev.detail.localStorageValue, ev.detail.valueToBeParsed)
         })
 
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
@@ -246,6 +280,8 @@ export default class OverallEditor extends HTMLElement {
         }
         this.filePath = filePath;
 
+        this.makeWebWorkerParse();
+
 
         localStorage.setItem('open-file', filePath);
         localStorage.setItem('content', this.value);
@@ -288,15 +324,17 @@ export default class OverallEditor extends HTMLElement {
      * @param {number} index
      */
     switchToEditor(index, setValue = true) {
-        const editorElement = document.createElement(EDITOR_TAG_NAMES[index]);
+        const previousEditor = this.editor;
+
+        this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
+
         if (setValue) {
-            editorElement.value = this.editor.value;
+            this.editor.value = previousEditor.value;
         }
 
         this.editorContainer.innerHTML = "";
-        this.editorContainer.appendChild(editorElement);
+        this.editorContainer.appendChild(this.editor);
 
-        this.editor = editorElement;
         localStorage.setItem('open-tab', index.toString());
     }
 

@@ -22,7 +22,7 @@ async function getParser(){
             }
 
             try {
-                const result = parser.deparseVdM(parser.parseVdM(message.data.text, true));
+                const result = parser.deparseVdM(parser.parseVdM(message.data.text, message.data.parseHeader));
 
                 messageToSend.header = result.split("\n")[0];
             }

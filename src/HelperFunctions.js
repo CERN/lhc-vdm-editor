@@ -138,3 +138,23 @@ export async function throttle(func, time, uid){
         })()
     }
 }
+
+/**
+ * Adds the VDM line numbers to a file without line numbers
+ * 
+ * @param {string} text
+ */
+export function addLineNumbers(text, start = 1) {
+    let currentLine = start;
+
+    return text.split("\n").map((line) => {
+        if (line[0] == "#" || line.trim() == "") {
+            return line;
+        }
+        else {
+            let newLine = currentLine.toString() + " " + line;
+            currentLine++;
+            return newLine;
+        }
+    }).join("\n");
+}
