@@ -48,8 +48,9 @@ export default class ResizeablePanel extends HTMLElement {
 
 
             Array.from(this.children).forEach(child => {
-                if(typeof child.reflow == "function")
+                if(typeof child.reflow == "function"){
                     child.reflow();
+                }
             })
 
         }

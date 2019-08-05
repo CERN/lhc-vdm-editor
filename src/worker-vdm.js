@@ -53,6 +53,19 @@ async function getParser(){
                 }).filter(x => x)
             ]
 
+            messageToSend.beamCrossingData = [
+                parsedResult.map(line => {
+                    if(line.type == "command") return [line.realTime, line.pos.BEAM1.CROSSING]
+                }).filter(x => x),
+                parsedResult.map(line => {
+                    if(line.type == "command") return [line.realTime, line.pos.BEAM2.CROSSING]
+                }).filter(x => x)
+            ]
+
+            messageToSend.luminosityData = parsedResult.map(line => {
+                if(line.type == "command") return [line.realTime, line.luminosity]
+            }).filter(x => x);
+
             postMessage(messageToSend);
         }
     })

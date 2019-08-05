@@ -22,8 +22,6 @@ export default class BeamPositionChart extends HTMLElement {
         this.chart = Highcharts.chart({
             chart: {
                 renderTo: this.root.querySelector("#container"),
-                reflow: true,
-                animation: false,
                 height: 300
             },
 
@@ -32,7 +30,7 @@ export default class BeamPositionChart extends HTMLElement {
             },
 
             title: {
-                text: "Separation",
+                text: this.getAttribute("title"),
             },
 
             yAxis: {
@@ -47,11 +45,19 @@ export default class BeamPositionChart extends HTMLElement {
                 }
             },
 
-            exporting: {
-                enabled: false
+            noData: {
+                position: {
+                    x: -50 // this is needed to correct for a incorrect center calulation in HighChartss
+                }
             },
 
             plotOptions: {
+                line: {
+                    // @ts-ignore
+                    label: {
+                        enabled: false
+                    }
+                },
                 area: {
                     marker: {
                         enabled: false,
@@ -60,11 +66,20 @@ export default class BeamPositionChart extends HTMLElement {
                                 enabled: false
                             }
                         }
+                    },
+                    // @ts-ignore
+                    label: {
+                        enabled: false
                     }
                 }
             },
+
+            legend: {
+                verticalAlign: 'top'
+            },
         
-            series: [{
+            series: 
+             [{
                 type: "line",
                 name: 'Beam 1',
                 data: [],
@@ -77,6 +92,7 @@ export default class BeamPositionChart extends HTMLElement {
             }, {
                 type: "area",
                 name: null,
+                // @ts-ignore
                 showInLegend: false,
                 threshold: Infinity,
                 showInNavigator: false,
@@ -85,6 +101,7 @@ export default class BeamPositionChart extends HTMLElement {
             }, {
                 type: "area",
                 name: null,
+                // @ts-ignore
                 showInLegend: false,
                 showInNavigator: false,
                 threshold: -Infinity,
@@ -135,7 +152,7 @@ export default class BeamPositionChart extends HTMLElement {
     async reflow(){
         throttle(() => {
             this.chart.reflow()
-        }, 100, "beam-position-throttle");
+        }, 500, this);
     }
 
     template() {
