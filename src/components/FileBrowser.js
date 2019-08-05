@@ -178,10 +178,15 @@ export default class FileBrowser extends HTMLElement {
                         deleteButton.classList.add("disabled");
                         renameButton.classList.add("disabled");
 
-                        if (element.classList.contains('folder')) {
-                            await this.gitlab.deleteFolder(filePath);
-                        } else {
-                            await this.gitlab.deleteFile(filePath);
+                        try{
+                            if (element.classList.contains('folder')) {
+                                await this.gitlab.deleteFolder(filePath);
+                            } else {
+                                await this.gitlab.deleteFile(filePath);
+                            }
+                        }
+                        finally{
+                            this.tryRemoveContextMenu();
                         }
 
                         if(this.openFile == filePath){
@@ -194,8 +199,6 @@ export default class FileBrowser extends HTMLElement {
 
                         this.reloadFileUI();
                     }
-
-                    this.tryRemoveContextMenu();
                 })();
 
             })
@@ -220,10 +223,15 @@ export default class FileBrowser extends HTMLElement {
                             deleteButton.classList.add("disabled");
                             renameButton.classList.add("disabled");
 
-                            if (element.classList.contains('folder')) {
-                                await this.gitlab.renameFolder(filePath, newName);
-                            } else {
-                                await this.gitlab.renameFile(filePath, newName);
+                            try{
+                                if (element.classList.contains('folder')) {
+                                    await this.gitlab.renameFolder(filePath, newName);
+                                } else {
+                                    await this.gitlab.renameFile(filePath, newName);
+                                }
+                            }
+                            finally{
+                                this.tryRemoveContextMenu();
                             }
 
                             if(this.openFile == filePath){
@@ -237,8 +245,6 @@ export default class FileBrowser extends HTMLElement {
                             }
 
                             this.reloadFileUI();
-
-                            this.tryRemoveContextMenu();
                         })()
                     }
                 }
@@ -250,6 +256,12 @@ export default class FileBrowser extends HTMLElement {
         })
     }
 
+    /**
+     * @param {string} source
+     * @param {string} ip
+     * @param {string} campaign
+     * @param {string[]} files
+     */
     async tryCopyFolder(source, ip, campaign, files=[]) {
         if (!confirm(`Are you sure you want to copy files from the campaign "${campaign}" and interaction point "${ip}"?`)) {
             return;
@@ -386,11 +398,14 @@ export default class FileBrowser extends HTMLElement {
                 createFileWindow.passInValues(this.gitlab);
 
                 createFileWindow.addEventListener("submit", async (event) => {
-                    await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign, event.detail.filePaths);
-                    this.reloadFileUI();
+                    try{
+                        await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign, event.detail.filePaths);
+                    }
+                    finally {
+                        this.root.removeChild(createFileWindow);
+                    }
 
-                    // Succeeded, so remove the root
-                    this.root.removeChild(createFileWindow);
+                    this.reloadFileUI();
                 });
 
                 createFileWindow.addEventListener("cancel", () => {
@@ -410,9 +425,11 @@ export default class FileBrowser extends HTMLElement {
                             throw error;
                         }
                     }
-                    this.reloadFileUI();
+                    finally {
+                        this.root.removeChild(createFileWindow);
+                    }
 
-                    this.root.removeChild(createFileWindow);
+                    this.reloadFileUI();
                 });
 
                 this.root.appendChild(createFileWindow);
