@@ -116,10 +116,6 @@ export default class FileBrowser extends HTMLElement {
      */
     passInValues(gitlab, openFile) {
         this.gitlab = gitlab;
-        (async () => {
-            const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns.pop());
-        })();
         
         this.setOpenFile(openFile);
         this.root.querySelector('selection-boxes').passInValues(gitlab);
@@ -130,8 +126,9 @@ export default class FileBrowser extends HTMLElement {
      */
     setOpenFile(newOpenFile){
         this.openFile = newOpenFile;
+        const parts = this.openFile.split("/");
 
-        this.reloadFileUI();
+        this.setFileUI(parts[1], parts[0]);
     }
 
     get ip(){

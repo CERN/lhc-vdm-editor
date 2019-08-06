@@ -231,8 +231,8 @@ export default class OverallEditor extends HTMLElement {
             }
             else throw error;
         }
-        // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
-        // want to only call passInValues once)
+        // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent
+        // (but we can't as we want to only call passInValues once)
         this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);
 
         if(this.filePath != null){
