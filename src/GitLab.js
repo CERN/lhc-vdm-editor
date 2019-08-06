@@ -142,7 +142,7 @@ export default class GitLab {
      *  {files: string[], folders: Map<string, Structure>}. Note, if this is false,
      *  only file paths are returned, not folders
      */
-    async listFiles(path, recursive = true, returnStructure = true) {
+    async listFiles(path, recursive=true, returnStructure=true) {
         const perPage = 100;
         const page = await gFetch(
             `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${
@@ -166,7 +166,7 @@ export default class GitLab {
         /**
          * @param {object[]} fileList
          */
-        function getGitLabFileStructure(fileList) {
+        function getGitLabFileStructure(fileList){
             let structure = { files: [], folders: new Map() };
 
             for (let item of fileList) {
@@ -188,7 +188,7 @@ export default class GitLab {
 
         let fileList = await page.json();
 
-        if (fileList.length == 0) {
+        if(fileList.length == 0){
             throw new NoPathExistsError(`Invalid path ${path} (GitLab request returned no information)`)
         }
 
@@ -206,10 +206,10 @@ export default class GitLab {
             fileList = fileList.concat(await page.json())
         }
 
-        if (returnStructure) {
+        if(returnStructure){
             return getGitLabFileStructure(fileList);
         }
-        else {
+        else{
             return fileList.filter(x => x.type == "blob")
                 .map(x => x.path);
         }
@@ -218,29 +218,17 @@ export default class GitLab {
     /**
      * @param {string} fromFolder
      * @param {string} toFolder
-     * @param {string[]} fileArr
      */
-    async copyFilesFromFolder(fromFolder, toFolder, fileArr = []) {
-        const fromFolderContents = (fileArr.length > 0 ? fileArr : await this.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
-        let toFolderContents;
-        try { toFolderContents = (await this.listFiles(toFolder, true, false)).map(x => getRelativePath(x, toFolder)) }
-        catch (error) {
-            if (error instanceof NoPathExistsError) {
-                toFolderContents = [];
-            }
-            else {
-                throw error;
-            }
-        };
+    async copyFilesFromFolder(fromFolder, toFolder){
+        const fromFolderContents = await this.listFiles(fromFolder, true, false)
+        const toFolderContents = new Set(await this.listFiles(toFolder, true, false));
 
-        const actions = (await awaitArray(fromFolderContents.filter(x => !toFolderContents.includes(x))
-            .map(async filePath => ({
-                action: "create",
-                file_path: toFolder + "/" + filePath,
-                content: await this.readFile(fromFolder + '/' + filePath)
-            }))
-        ))
-
+        const neededFiles = fromFolderContents.filter(x => !toFolderContents.has(x));
+        const actions = await awaitArray(neededFiles.map(async filePath => ({
+            action: "create",
+            file_path: toFolder + "/" + getRelativePath(filePath, fromFolder),
+            content: await this.readFile(filePath)
+        })));
 
         await gFetch(
             `${URL_START}/repository/commits`,
