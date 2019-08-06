@@ -166,3 +166,46 @@ export function addLineNumbers(text, start = 1) {
         }
     }).join("\n");
 }
+
+/**
+ * @param {number} num
+ * @param {number} sigFigs
+ */
+export function sigFigRound(num, sigFigs){
+    const numTxt = num.toString();
+
+    if(num < 0 && numTxt.length <= sigFigs + 1) return numTxt; // negative numbers
+    else if(Math.round(num) != num && numTxt.length <= sigFigs + 1) return numTxt; // non-integers
+    else if(numTxt.length <= sigFigs) return numTxt; // integers
+    else if(numTxt.split("e")[0].length <= sigFigs + 1) return numTxt; // standard form
+    return num.toExponential(sigFigs - 1).replace(".00e", "e").replace("0e", "e");
+}
+
+/**
+ * Merges the propeties from two objects recursively, only if they
+ * are pure objects, not instances of classes
+ * @param {Object} obA Note: this function modifies this parameter
+ * @param {Object} obB 
+ */
+export function deepMerge(obA, obB){
+    for(let [key, value] of Object.entries(obB)){
+        if(obA[key] == undefined || obA[key].__proto__ != Object.prototype) obA[key] = value;
+        else deepMerge(obA[key], obB[key])
+    }
+
+    return obA;
+}
+
+/**
+ * Makes a deep copy of an object
+ * @param {Object} object 
+ */
+export function deepCopy(object){
+    if(typeof object !== "object" || object == null) return object;
+    let newObject = {};
+
+    for(let [key, value] of Object.entries(object)){
+        newObject[key] = deepCopy(value);
+    }
+    return newObject;
+}

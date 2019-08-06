@@ -1,4 +1,5 @@
-import { css, html, throttle, repeat } from "../HelperFunctions.js";
+import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
+import { commonChartOptions } from "./GenericChart.js"
 
 const styling = css`
 :host {
@@ -19,14 +20,9 @@ export default class BeamPositionChart extends HTMLElement {
     }
 
     attachChart(){
-        this.chart = Highcharts.chart({
+        this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), {
             chart: {
                 renderTo: this.root.querySelector("#container"),
-                height: 300
-            },
-
-            credits: {
-                enabled: false
             },
 
             title: {
@@ -45,41 +41,7 @@ export default class BeamPositionChart extends HTMLElement {
                 }
             },
 
-            noData: {
-                position: {
-                    x: -50 // this is needed to correct for a incorrect center calulation in HighChartss
-                }
-            },
-
-            plotOptions: {
-                line: {
-                    // @ts-ignore
-                    label: {
-                        enabled: false
-                    }
-                },
-                area: {
-                    marker: {
-                        enabled: false,
-                        states: {
-                            hover: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    // @ts-ignore
-                    label: {
-                        enabled: false
-                    }
-                }
-            },
-
-            legend: {
-                verticalAlign: 'top'
-            },
-        
-            series: 
-             [{
+            series: [{
                 type: "line",
                 name: 'Beam 1',
                 data: [],
@@ -108,8 +70,7 @@ export default class BeamPositionChart extends HTMLElement {
                 data: [],
                 color: "rgb(154, 154, 154)"
             }
-        ]
-        });
+        ]}));
     }
 
     /**

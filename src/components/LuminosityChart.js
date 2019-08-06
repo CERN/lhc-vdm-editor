@@ -1,4 +1,5 @@
-import { css, html, throttle } from "../HelperFunctions.js";
+import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
+import { commonChartOptions } from "./GenericChart.js"
 
 const styling = css`
 :host {
@@ -17,14 +18,9 @@ export default class LuminosityChart extends HTMLElement {
     }
 
     attachChart(){
-        this.chart = Highcharts.chart({
+        this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), {
             chart: {
                 renderTo: this.root.querySelector("#container"),
-                height: 300
-            },
-
-            credits: {
-                enabled: false
             },
 
             title: {
@@ -33,28 +29,15 @@ export default class LuminosityChart extends HTMLElement {
 
             yAxis: {
                 title: {
-                    text: "Luminosity [mm]"
-                }
+                    useHTML: true,
+                    text: "Luminosity [Hz/mm<sup>2</sup>]",
+                },
+                type: 'logarithmic'
             },
 
             xAxis: {
                 title: {
                     text: "Time [s]"
-                }
-            },
-
-            noData: {
-                position: {
-                    x: -50 // this is needed to correct for a incorrect center calulation in HighChartss
-                }
-            },
-
-            plotOptions: {
-                line: {
-                    // @ts-igWnore
-                    label: {
-                        enabled: false
-                    }
                 }
             },
 
@@ -66,16 +49,15 @@ export default class LuminosityChart extends HTMLElement {
              [{
                 type: "line",
                 data: [],
-            }
-        ]
-        });
+            }]
+        }));
     }
 
     /**
-     * @param {[number, number][][]} newData
+     * @param {[number, number][]} newData
      */
     updateData(newData){
-        this.chart.series[0].setData(newData[0]);
+        this.chart.series[0].setData(newData);
     }
 
     connectedCallback(){

@@ -308,8 +308,8 @@ class VdM {
             'type': 'command',
             'command': 'END_SEQUENCE',
             'args': [],
-            'realTime': objArr[objArr.length - 1].realTime,
-            'sequenceTime': objArr[objArr.length - 1].sequenceTime,
+            'realTime': objArr.filter(x => x.type == "command").pop().realTime,
+            'sequenceTime': objArr.filter(x => x.type == "command").pop().sequenceTime,
             'pos': {
                 'BEAM1': {
                     'SEPARATION': 0,
@@ -511,7 +511,10 @@ class VdM {
                     this.state.currentLineNum = 0;
                     this.validateArgs(objArr[0]);
                 } catch (err) {
-                    errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+                    if(typeof err == "string"){
+                        errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+                    }
+                    else throw err;
                 }
             }
         } else if (!this.state.hasEnded) {
