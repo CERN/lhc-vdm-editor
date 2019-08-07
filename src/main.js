@@ -16,6 +16,7 @@ $(async () => {
         }
         else{
             oa.getCredentials();
+            return;
         }
         usesOAuth = true;
     }
