@@ -40,6 +40,25 @@ export default class ChartsComponent extends HTMLElement {
         this.luminosityChart = this.root.querySelector("#luminosity-chart");
 
         this.allCharts = [this.separationChart, this.crossingChart, this.luminosityChart];
+        
+        Array.from(this.root.querySelectorAll("#realSequenceRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
+            let timeType = this.root.querySelector("#realRadio").checked ? "real" : "sequence";
+
+            this.allCharts.map(x => x.setTimeType(timeType));
+        }))
+
+        Array.from(this.root.querySelectorAll("#mmSigmaRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
+            let units = this.root.querySelector("#mmRadio").checked ? "mm" : "sigma";
+
+            this.separationChart.setUnits(units);
+            this.crossingChart.setUnits(units);
+        }))
+
+        Array.from(this.root.querySelectorAll("#logLinearRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
+            let scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
+
+            this.luminosityChart.setScale(scale)
+        }))
     }
 
     set sigmaToMMFactor(newValue){
@@ -59,25 +78,6 @@ export default class ChartsComponent extends HTMLElement {
 
         this.separationChart.setLimits(limits);
         this.crossingChart.setLimits(limits);
-
-        Array.from(this.root.querySelectorAll("#realSequenceRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            let timeType = this.root.querySelector("#realRadio").checked ? "real" : "sequence";
-
-            this.allCharts.map(x => x.setTimeType(timeType));
-        }))
-
-        Array.from(this.root.querySelectorAll("#mmSigmaRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            let units = this.root.querySelector("#mmRadio").checked ? "mm" : "sigma";
-
-            this.separationChart.setUnits(units);
-            this.crossingChart.setUnits(units);
-        }))
-
-        Array.from(this.root.querySelectorAll("#logLinearRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            let scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
-
-            this.luminosityChart.setScale(scale)
-        }))
     }
 
     reflow(){
