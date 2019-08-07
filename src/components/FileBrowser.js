@@ -153,13 +153,7 @@ export default class FileBrowser extends HTMLElement {
 
 
     async reloadFileUI() {
-        if(this.openFile == null){
-            const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns.pop());
-        }
-        else{
-            this.setFileUI(this.ip, this.campaign);
-        }
+        this.setFileUI(this.ip, this.campaign);
     }
 
     tryRemoveContextMenu() {

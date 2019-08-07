@@ -32,7 +32,7 @@ let faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) 
 7 SECONDS_WAIT 10.0`
 
 // Tests on the parser and deparser functions
-describe("Parser", () => {
+xdescribe("Parser", () => {
     it("File parse", () => {
         expect(parseVdM(file)).toEqual(jasmine.any(Array))
     })

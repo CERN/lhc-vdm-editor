@@ -13,7 +13,7 @@ export default class LuminosityChart extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
-        this.data = [];
+        this.data = null;
 
         this.timeType = "real";
 
@@ -67,7 +67,9 @@ export default class LuminosityChart extends HTMLElement {
         ));
     }
 
-    refreshDataComputation(){
+    refresh(){
+        if(this.data == null) return;
+
         this.updateData(this.data);
     }
     
@@ -81,7 +83,7 @@ export default class LuminosityChart extends HTMLElement {
             text: `${newTimeType[0].toUpperCase()}${newTimeType.slice(1)} time [s]`
         })
 
-        this.refreshDataComputation();
+        this.refresh();
     }
 
     connectedCallback(){

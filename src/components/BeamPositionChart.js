@@ -18,7 +18,7 @@ export default class BeamPositionChart extends HTMLElement {
         this.timeType = "real";
 
         this.limits = 0;
-        this.data = [];
+        this.data = null;
         this.sigmaToMMFactor = 0.10050641005198852; // NOTE: this needs to be changed later
 
         this.attachChart();
@@ -51,6 +51,8 @@ export default class BeamPositionChart extends HTMLElement {
     }
 
     refresh(){
+        if(this.data == null) return;
+
         this.updateData(this.data);
         this.setLimits(this.limits);
     }

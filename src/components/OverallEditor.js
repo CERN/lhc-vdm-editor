@@ -16,6 +16,7 @@ const styling = css`
     position: relative;
     height: calc(100% - 55px);
     flex-grow: 1;
+    padding-bottom: 20px;
 }
 
 .header {
@@ -117,6 +118,7 @@ export default class OverallEditor extends HTMLElement {
         this.lastEditorChangeTimeout = null;
         this.initEditorContent = "";
 
+        this.chartsComponent = this.root.querySelector("charts-component");
         this.fileBrowser = this.root.querySelector("file-browser");
 
         this.addListeners();
@@ -176,9 +178,9 @@ export default class OverallEditor extends HTMLElement {
             }
 
             const sigmaToMMFactor = getSigmaToMMFactor(this.beamJSON, this.ip);
-            this.root.querySelector("charts-component").sigmaToMMFactor = sigmaToMMFactor;
+            this.chartsComponent.sigmaToMMFactor = sigmaToMMFactor;
 
-            this.root.querySelector("charts-component").updateData(
+            this.chartsComponent.updateData(
                 message.data.beamSeparationData,
                 message.data.beamCrossingData,
                 message.data.luminosityData,
@@ -240,32 +242,31 @@ export default class OverallEditor extends HTMLElement {
             }
         })
 
-        this.editorContainer.addEventListener('editor-content-change', ev => {
-            this.onEditorContentChange(ev.detail)
-        })
-
-        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", /** @param {CustomEvent} ev */ev => {
-            if (this.filePath === null) return;
-
-            this.switchToEditor(ev.detail)
-        });
-
-        this.root.querySelector('revert-button').addEventListener('revert-changes', () => {
-            if (this.filePath === null) return;
-
-            if (!this.isCommitted) {
-                if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
-                    this.setCurrentEditorContent(this.filePath)
-                }
-            } else {
-                this.setCurrentEditorContent(this.filePath)
-            }
-        })
+        this.editorContainer.addEventListener('editor-content-change', ev => this.onEditorContentChange(ev.detail))
+        this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.onRevertButtonPress());
+        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onTrySwitchEditor(ev.detail));
 
         this.fileBrowser.addEventListener('open-file', /** @param {CustomEvent} event */(event) => {
             this.setCurrentEditorContent(event.detail)
         })
+    }
 
+    onTrySwitchEditor(editorIndex){
+        if (this.filePath === null) return;
+
+        this.switchToEditor(editorIndex)
+    }
+
+    onRevertButtonPress(){
+        if (this.filePath === null) return;
+
+        if (!this.isCommitted) {
+            if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
+                this.setCurrentEditorContent(this.filePath)
+            }
+        } else {
+            this.setCurrentEditorContent(this.filePath)
+        }
     }
 
     /**

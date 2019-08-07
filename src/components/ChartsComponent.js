@@ -42,25 +42,47 @@ export default class ChartsComponent extends HTMLElement {
         this.allCharts = [this.separationChart, this.crossingChart, this.luminosityChart];
         
         Array.from(this.root.querySelectorAll("#realSequenceRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            let timeType = this.root.querySelector("#realRadio").checked ? "real" : "sequence";
-
-            this.allCharts.map(x => x.setTimeType(timeType));
+            this.timeType = this.root.querySelector("#realRadio").checked ? "real" : "sequence";
         }))
 
         Array.from(this.root.querySelectorAll("#mmSigmaRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            let units = this.root.querySelector("#mmRadio").checked ? "mm" : "sigma";
-
-            this.separationChart.setUnits(units);
-            this.crossingChart.setUnits(units);
+            this.units = (this.root.querySelector("#mmRadio").checked ? "mm" : "sigma");
         }))
 
         Array.from(this.root.querySelectorAll("#logLinearRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            let scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
-
-            this.luminosityChart.setScale(scale)
+            this.scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
         }))
     }
 
+    /**
+     * @public
+     * @param {string} newTimeType
+     */
+    set timeType(newTimeType){
+        this.allCharts.map(x => x.setTimeType(newTimeType));
+    }
+
+    /**
+     * @public
+     * @param {string} newUnits
+     */
+    set units(newUnits){
+        this.separationChart.setUnits(newUnits);
+        this.crossingChart.setUnits(newUnits);
+    }
+
+    /**
+     * @public
+     * @param {string} newScale
+     */
+    set scale(newScale){
+        this.luminosityChart.setScale(newScale)
+    }
+
+    /**
+     * @public
+     * @param {any} newValue
+     */
     set sigmaToMMFactor(newValue){
         this.allCharts.forEach(chart => {chart.sigmaToMMFactor=newValue});
     }
@@ -71,6 +93,13 @@ export default class ChartsComponent extends HTMLElement {
         this.allCharts.forEach(chart => chart.passInValues(sigmaToMMFactor));
     }
 
+    /**
+     * @public
+     * @param {any} beamSeparationData
+     * @param {any} beamCrossingData
+     * @param {any} luminosityData
+     * @param {any} limits
+     */
     updateData(beamSeparationData, beamCrossingData, luminosityData, limits){
         this.separationChart.updateData(beamSeparationData);
         this.crossingChart.updateData(beamCrossingData);
