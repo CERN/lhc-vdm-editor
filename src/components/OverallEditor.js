@@ -280,8 +280,6 @@ export default class OverallEditor extends HTMLElement {
                 const buttonIndex = parseInt(localStorage.getItem('open-tab'));
                 
                 this.switchToEditor(buttonIndex);
-                
-                this.root.querySelector("switch-editor-buttons").setActiveButton(buttonIndex);
             }
             else {
                 this.switchToEditor(DEFAULT_EDITOR_INDEX);
@@ -372,6 +370,7 @@ export default class OverallEditor extends HTMLElement {
     switchToEditor(index, setValue = true) {
         const previousEditor = this.editor;
 
+        this.root.querySelector("switch-editor-buttons").setActiveButton(index);
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
 
         if (setValue) {
