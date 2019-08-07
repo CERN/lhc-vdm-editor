@@ -1,11 +1,11 @@
 // NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
 
 export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb) {
-    // s - separation in separation plane - mm
-    // c - separation in crossing plane - mm
-    // sigma - mm
+    // s - separation in separation plane - m
+    // c - separation in crossing plane - m
+    // sigma - m
     // alpha - crossing_angle - rad
-    // sigmaZ - this.param.bunch_length - mm
+    // sigmaZ - this.param.bunch_length - m
     // nbb - bunch_pair_collisions.IP1
     // intensity - nuclei per bunch
 
@@ -14,14 +14,14 @@ export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb)
     const cos2 = Math.cos(alpha / 2) ** 2;
     const sin2 = Math.sin(alpha / 2) ** 2;
 
-    const SigmaCross = Math.sqrt(2 * (s2 * cos2 + sz2 * sin2)); // effective size in crossing plane - mm
-    const SigmaSep = Math.sqrt(2 * s2); // effective size in separation plane - mm
+    const SigmaCross = Math.sqrt(2 * (s2 * cos2 + sz2 * sin2)); // effective size in crossing plane - m
+    const SigmaSep = Math.sqrt(2 * s2); // effective size in separation plane - m
 
     const Ssep = Math.exp((-1 / 2) * (sep / SigmaSep) ** 2); // separation factor in separation plane
     const Scross = Math.exp((-1 / 2) * (cross / SigmaCross) ** 2); // separation factor in crossing plane
-    const Lbb = lhc_constants.f_rev * intensity ** 2 / (2 * Math.PI * SigmaCross * SigmaSep) * Ssep * Scross; // luminosity per bunch pair in Hz/mm^2
+    const Lbb = lhc_constants.f_rev * cos2 * intensity ** 2 / (2 * Math.PI * SigmaCross * SigmaSep) * Ssep * Scross; // luminosity per bunch pair in Hz/m^2
 
-    const L = nbb * Lbb; // luminosity in Hz/mm^2
+    const L = nbb * Lbb; // luminosity in Hz/m^2
     return L;
 }
 export function isSubsetOf(arr1, arr2) {
@@ -334,12 +334,12 @@ export const init_beam_param = { // these are parameters for IP1
     "particle_mass": 0.938, // GeV
     "emittance": 3.5e-6, // m
     "beta_star": 20, // m
-    "crossing_angle": 0, // rad
+    "crossing_angle": 300e-6, // rad
     "scan_limits": 6, // sigma
     "trim_rate": 1e-4, // m/s
     "intensity": 1e11, // particles per bunch
     "bunch_pair_collisions": 50,
-    "bunch_length": 80 // m
+    "bunch_length": 0.0787 // m
 };
 export class VdM {
     constructor(beamParameters = init_beam_param) {
@@ -498,7 +498,7 @@ export class VdM {
     }
     deparse() {
         let string = '';
-        for (let [i, obj] of this.structure.entries()){
+        for (let [i, obj] of this.structure.entries()) {
             let line = '';
             if (obj.type == 'command') {
                 line += obj.stringify();
@@ -528,9 +528,9 @@ export class VdM {
 
                     // Simulate luminocity
                     let pos = command.position;
-                    let sep = pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION'];
-                    let cross = pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING'];
-                    command.luminocity = this.luminocity(sep, cross);
+                    let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']) * this.sigma; // in m
+                    let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']) * this.sigma; // in m
+                    command.luminocity = this.luminocity(sep, cross); // Hz/m^2
                 }
             } catch (error) {
                 if (typeof error == 'string') errArr.push(new MySyntaxError(i, error))
