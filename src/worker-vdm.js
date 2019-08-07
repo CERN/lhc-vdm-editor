@@ -13,6 +13,8 @@ async function getParser(){
     return eval(parserSourceText);
 }
 
+const SIGMA_TO_MM = 0.10050641005198852; // NOTE: this needs to be changed later
+
 (async () => {
     const parser = await getParser();
     addEventListener("message", (message) => {
@@ -44,26 +46,34 @@ async function getParser(){
                 }
             }
 
+            function getBeamGraph(beamNumber, sepCrossing){
+                return parsedResult.map(line => {
+                    if(line.type == "command")
+                        return [{
+                            realTime: line.realTime,
+                            sequenceTime: line.sequenceTime
+                        }, {
+                            mm: line.pos["BEAM" + beamNumber][sepCrossing],
+                            sigma: line.pos["BEAM" + beamNumber][sepCrossing] / SIGMA_TO_MM
+                        }]
+                }).filter(x => x);
+            }
+
             messageToSend.beamSeparationData = [
-                parsedResult.map(line => {
-                    if(line.type == "command") return [line.realTime, line.pos.BEAM1.SEPARATION]
-                }).filter(x => x),
-                parsedResult.map(line => {
-                    if(line.type == "command") return [line.realTime, line.pos.BEAM2.SEPARATION]
-                }).filter(x => x)
+                getBeamGraph(1, "SEPARATION"),
+                getBeamGraph(2, "SEPARATION")
             ]
 
             messageToSend.beamCrossingData = [
-                parsedResult.map(line => {
-                    if(line.type == "command") return [line.realTime, line.pos.BEAM1.CROSSING]
-                }).filter(x => x),
-                parsedResult.map(line => {
-                    if(line.type == "command") return [line.realTime, line.pos.BEAM2.CROSSING]
-                }).filter(x => x)
+                getBeamGraph(1, "CROSSING"),
+                getBeamGraph(2, "CROSSING")
             ]
 
             messageToSend.luminosityData = parsedResult.map(line => {
-                if(line.type == "command") return [line.realTime, line.luminosity]
+                if(line.type == "command") return [{
+                    realTime: line.realTime,
+                    sequenceTime: line.sequenceTime
+                }, line.luminosity]
             }).filter(x => x);
 
             postMessage(messageToSend);

@@ -1,8 +1,12 @@
 import { sigFigRound } from "../HelperFunctions.js";
 
+const commonFormatter = x => sigFigRound(x.value, 3);
+
+/** @type {Highcharts.Options} */
 export const commonChartOptions = {
     chart: {
-        height: 300
+        height: 300,
+        zoomType: "xy"
     },
 
     credits: {
@@ -11,13 +15,13 @@ export const commonChartOptions = {
 
     yAxis: {
         labels: {
-            formatter: (x) => sigFigRound(x.value, 3)
+            formatter: commonFormatter
         }
     },
 
     xAxis: {
         labels: {
-            formatter: (x) => sigFigRound(x.value, 3)
+            formatter: commonFormatter
         }
     },
 
@@ -25,6 +29,10 @@ export const commonChartOptions = {
         position: {
             x: -50 // this is needed to correct for a incorrect center calulation in HighCharts
         }
+    },
+
+    tooltip: {
+        valueDecimals: 2
     },
 
     plotOptions: {

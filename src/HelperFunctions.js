@@ -8,8 +8,8 @@ export function range(to, start = 0) {
 }
 
 /**
- * @param {any} element
- * @param {number} numberOfTimes
+ * @params {any} element
+ * @params {number} numberOfTimes
  */
 export function repeat(element, numberOfTimes){
     return (new Array(numberOfTimes)).fill(element);
@@ -37,8 +37,8 @@ export function getFragmentOfChildNodes(node){
 }
 
 /**
- * @param {string} absPath
- * @param {string} prefix
+ * @params {string} absPath
+ * @params {string} prefix
  */
 export function getRelativePath(absPath, prefix){
     return absPath.split("/").filter(x => x != "").slice(
@@ -46,7 +46,7 @@ export function getRelativePath(absPath, prefix){
 }
 
 /**
- * @param {string} filePath
+ * @params {string} filePath
  */
 export function getFilenameFromPath(filePath){
     return filePath.split("/").pop();
@@ -54,8 +54,8 @@ export function getFilenameFromPath(filePath){
 
 
 /**
- * @param {Map} map1
- * @param {Map} map2
+ * @params {Map} map1
+ * @params {Map} map2
  */
 export function mergeMaps(map1, map2){
     return new Map(Array.from(map1.entries()).concat(
@@ -69,7 +69,7 @@ export const html = interpolate;
 
 
 /**
- * @param {Response} response
+ * @params {Response} response
  */
 export function handleFetchErrors(response) {
     if (!response.ok) {
@@ -120,7 +120,7 @@ user-select: none;
 `
 
 /**
- * @param {number} milliseconds
+ * @params {number} milliseconds
  */
 export async function wait(milliseconds){
     return new Promise((resolve, _) => {
@@ -132,10 +132,15 @@ export const NO_FILES_TEXT = "--- NO FILES ---";
 
 let throttleIDs = new Set();
 /**
+ * Makes sure that the function is called at most once (or twice if callLast is true)
+ * per amount of time
  * @param {number} time
  * @param {() => any} func
+ * @param {any} uid
+ * @param {boolean} callLast Calls the function every `time` milliseconds (to make 
+ * sure the function is always called after throttle is stopped being called)
  */
-export async function throttle(func, time, uid){
+export async function throttle(func, time, uid, callLast=false){
     if(!throttleIDs.has(uid)){
         throttleIDs.add(uid);
         func();
@@ -143,6 +148,8 @@ export async function throttle(func, time, uid){
         (async () => {
             await wait(time);
             throttleIDs.delete(uid);
+
+            if(callLast) func();
         })()
     }
 }
@@ -150,7 +157,7 @@ export async function throttle(func, time, uid){
 /**
  * Adds the VDM line numbers to a file without line numbers
  * 
- * @param {string} text
+ * @params {string} text
  */
 export function addLineNumbers(text, start = 1) {
     let currentLine = start;
@@ -168,8 +175,8 @@ export function addLineNumbers(text, start = 1) {
 }
 
 /**
- * @param {number} num
- * @param {number} sigFigs
+ * @params {number} num
+ * @params {number} sigFigs
  */
 export function sigFigRound(num, sigFigs){
     const numTxt = num.toString();
@@ -184,8 +191,8 @@ export function sigFigRound(num, sigFigs){
 /**
  * Merges the propeties from two objects recursively, only if they
  * are pure objects, not instances of classes
- * @param {Object} obA Note: this function modifies this parameter
- * @param {Object} obB 
+ * @params {Object} obA Note: this function modifies this paramseter
+ * @params {Object} obB 
  */
 export function deepMerge(obA, obB){
     for(let [key, value] of Object.entries(obB)){
@@ -198,7 +205,7 @@ export function deepMerge(obA, obB){
 
 /**
  * Makes a deep copy of an object
- * @param {Object} object 
+ * @params {Object} object 
  */
 export function deepCopy(object){
     if(typeof object !== "object" || object == null) return object;
@@ -208,4 +215,44 @@ export function deepCopy(object){
         newObject[key] = deepCopy(value);
     }
     return newObject;
+}
+
+export const TEST_BEAM_PARAMS = {
+    "energy": 6500,
+    "particle_mass": 0.938,
+    "emittance": 3.5e-6,
+    "beta_star": {
+        "IP1": 20,
+        "IP2": 21,
+        "IP5": 20,
+        "IP8": 23
+    },
+    "crossing_angle": {
+        "IP1": 0,
+        "IP2": 200e-6,
+        "IP5": 0,
+        "IP8": 200e-6
+    },
+    "scan_limits": {
+        "IP1": 6,
+        "IP2": 4,
+        "IP5": 6,
+        "IP8": 4
+    },
+    "trim_rate": 0.1,
+    "intensity": 1e11,
+    "bunch_pair_collisions": {
+        "IP1": 50,
+        "IP2": 50,
+        "IP5": 50,
+        "IP8": 50
+    },
+    "bunch_length": 80
+}
+
+/**
+ * @param {typeof TEST_BEAM_PARAMS} params
+ */
+export function getSigmaToMMFactor(params, ipNumber){
+    return Math.sqrt((params.emittance / (params.energy / params.particle_mass)) * params.beta_star["IP" + ipNumber]) * 1e3;
 }

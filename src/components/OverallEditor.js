@@ -9,8 +9,7 @@ import "./ResizeablePanel.js"
 import GitLab, { NoPathExistsError } from "../GitLab.js"
 import { parseVdM, deparseVdM, VdMSyntaxError } from "../parser.js"
 import './RevertButton.js'
-import "./BeamPositionChart.js"
-import "./LuminosityChart.js"
+import "./ChartsComponent.js"
 
 const styling = css`
 #editor-container {
@@ -115,9 +114,6 @@ export default class OverallEditor extends HTMLElement {
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
 
-        this.root.querySelector("#separation-chart").updateLimits(0.6)
-        this.root.querySelector("#crossing-chart").updateLimits(0.6)
-
         this.addListeners();
         this.loadDataFromLocalStorage();
     }
@@ -128,16 +124,11 @@ export default class OverallEditor extends HTMLElement {
                 this.editor.setCurrentParsedResult(message.data)
             }
 
-            this.root.querySelector("#separation-chart").updateData(
-                message.data.beamSeparationData
-            )
-
-            this.root.querySelector("#crossing-chart").updateData(
-                message.data.beamCrossingData
-            )
-
-            this.root.querySelector("#luminosity-chart").updateData(
-                message.data.luminosityData
+            this.root.querySelector("charts-component").updateData(
+                message.data.beamSeparationData,
+                message.data.beamCrossingData,
+                message.data.luminosityData,
+                0.6
             )
         }
     }
@@ -379,9 +370,7 @@ export default class OverallEditor extends HTMLElement {
                     <switch-editor-buttons></switch-editor-buttons>
                 </div>
                 <resizeable-panel default-width="300px" side="right">
-                    <beam-position-chart id="separation-chart" title="Separation"></beam-position-chart>
-                    <beam-position-chart id="crossing-chart" title="Crossing"></beam-position-chart>
-                    <luminosity-chart id="luminosity-chart"></luminosity-chart>
+                    <charts-component></charts-component>
                 </resizeable-panel>
             <div>
         </div>`
