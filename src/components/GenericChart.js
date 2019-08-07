@@ -17,6 +17,7 @@ export const commonChartOptions = {
             color: "#333333",
             fontSize: "16px"
         },
+        // @ts-ignore
         widthAdjust: 0 // we don't need to adjust the width as we're not using the burger menu
     },
 
