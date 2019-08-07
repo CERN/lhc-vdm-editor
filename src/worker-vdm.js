@@ -25,7 +25,7 @@ const SIGMA_TO_MM = 0.10050641005198852; // NOTE: this needs to be changed later
             let parsedResult;
 
             try {
-                parsedResult = parser.parseVdM(message.data.text, message.data.parseHeader);
+                parsedResult = parser.parseVdM(message.data.text, message.data.parseHeader, message.data.beamParams);
                 const result = parser.deparseVdM(parsedResult);
 
                 messageToSend.header = result.split("\n")[0];

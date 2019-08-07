@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html, addLineNumbers } from "../HelperFunctions.js"
+import { css, html, addLineNumbers, getSigmaToMMFactor, DEFAULT_BEAM_PARAMS, deepCopy } from "../HelperFunctions.js"
 import "./RawEditor.js"
 import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
@@ -95,6 +95,8 @@ const EDITOR_TAG_NAMES = [
 ]
 const DEFAULT_EDITOR_INDEX = 1;
 
+const beamJSONCache = new Map();
+
 export default class OverallEditor extends HTMLElement {
     /**
      * @param {GitLab} gitlab
@@ -117,6 +119,39 @@ export default class OverallEditor extends HTMLElement {
         this.addListeners();
         this.loadDataFromLocalStorage();
     }
+    
+    get ip(){
+        if(this.filePath == null) return null
+        else return this.filePath.split("/")[1];
+    }
+    
+    get campaign(){
+        if(this.filePath == null) return null
+        else return this.filePath.split("/")[0];
+    }
+
+    async getCurrentBeamJSON(){
+        // Caching this as we may be getting this multiple times
+        if(beamJSONCache.has(this.campaign)) return beamJSONCache.get(this.campaign);
+        else {
+            let beamJSONFile;
+
+            try{
+                beamJSONFile = JSON.parse(await this.gitlabInterface.readFile(`${this.campaign}/beam.json`));
+            }
+            catch(error){
+                if(error instanceof NoPathExistsError){
+                    // TODO: actually display proper beams.json file here
+                    alert(`Campaign ${this.campaign} has no beams.json file, using the default file.`)
+                    beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
+                } else throw error;
+            }
+
+            beamJSONCache.set(this.campaign, beamJSONFile);
+            return beamJSONFile;
+        }
+        
+    }
 
     onWebWorkerMessage(message){
         if (message.data.type == "lint") {
@@ -124,11 +159,14 @@ export default class OverallEditor extends HTMLElement {
                 this.editor.setCurrentParsedResult(message.data)
             }
 
+            const sigmaToMMFactor = getSigmaToMMFactor(this.beamJSON, this.ip);
+            this.root.querySelector("charts-component").sigmaToMMFactor = sigmaToMMFactor;
+
             this.root.querySelector("charts-component").updateData(
                 message.data.beamSeparationData,
                 message.data.beamCrossingData,
                 message.data.luminosityData,
-                0.6
+                this.beamJSON.scan_limits[this.ip]
             )
         }
     }
@@ -140,7 +178,8 @@ export default class OverallEditor extends HTMLElement {
         this.errorWebWorker.postMessage({
             type: "text_change",
             parseHeader: this.editor.headerlessParse || false,
-            text: this.editor.headerlessParse ? addLineNumbers(this.editor.rawValue) : this.editor.value
+            text: this.editor.headerlessParse ? addLineNumbers(this.editor.rawValue) : this.editor.value,
+            beamParams: this.beamJSON
         })
     }
 
@@ -171,7 +210,7 @@ export default class OverallEditor extends HTMLElement {
                 this.gitlabInterface.writeFile(
                     this.filePath,
                     ev.detail,
-                    deparseVdM(parseVdM(this.value))
+                    deparseVdM(parseVdM(this.value, false, this.beamJSON))
                 );
 
                 this.updateFileNameUI(true, this.filePath);
@@ -248,9 +287,7 @@ export default class OverallEditor extends HTMLElement {
                 this.switchToEditor(DEFAULT_EDITOR_INDEX);
             }
         }
-        
     }
-
     
     /**
      * Function to set the file the editor is editing.
@@ -263,6 +300,7 @@ export default class OverallEditor extends HTMLElement {
         if(filePath == null){
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
             this.filePath = null;
+            this.beamJSON = null;
 
             this.updateFileNameUI(true, null);
             return;
@@ -286,6 +324,7 @@ export default class OverallEditor extends HTMLElement {
             this.updateFileNameUI(true, filePath);
         }
         this.filePath = filePath;
+        this.beamJSON = await this.getCurrentBeamJSON();
 
         this.makeWebWorkerParse();
 

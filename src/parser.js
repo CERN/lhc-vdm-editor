@@ -32,12 +32,11 @@ export class VdMSyntaxError extends Error {
     }
 }
 
-export function parseVdM(data, genHeaders = false) {
-    return (new VdM()).parseVdM(data, genHeaders)
-    //return (new VdM(param)).parseVdM(data, genHeaders)
+export function parseVdM(data, genHeaders=false, init_beam_param=undefined) {
+    return (new VdM(init_beam_param)).parseVdM(data, genHeaders)
 }
-export function deparseVdM(structure) {
-    return (new VdM()).deparseVdM(structure)
+export function deparseVdM(structure, init_beam_param=undefined) {
+    return (new VdM(init_beam_param)).deparseVdM(structure)
 }
 
 const init_beam_param = { // IP1

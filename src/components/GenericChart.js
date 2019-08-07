@@ -6,8 +6,18 @@ const commonFormatter = x => sigFigRound(x.value, 3);
 /** @type {Highcharts.Options} */
 export const commonChartOptions = {
     chart: {
-        height: 300,
-        zoomType: "xy"
+        height: 270,
+        zoomType: "xy",
+        spacingBottom: 5
+    },
+
+    title: {
+        margin: 2,
+        style: {
+            color: "#333333",
+            fontSize: "16px"
+        },
+        widthAdjust: 0 // we don't need to adjust the width as we're not using the burger menu
     },
 
     credits: {

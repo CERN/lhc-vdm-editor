@@ -30,16 +30,11 @@ export default class BeamPositionChart extends HTMLElement {
     setTimeType(newTimeType){
         this.timeType = newTimeType;
 
-        // TODO: set the X axis description
         this.chart.xAxis[0].setTitle({
             text: `${newTimeType[0].toUpperCase()}${newTimeType.slice(1)} time [s]`
         });
 
         this.refresh();
-    }
-
-    setSigmaMMFactor(newConversionFactor){
-        // TODO
     }
 
     /**
@@ -65,8 +60,8 @@ export default class BeamPositionChart extends HTMLElement {
      */
     setLimits(newLimit){
         const putInUnit = (number) => {
-            if(this.units == "sigma") return number / this.sigmaToMMFactor;
-            else return number;
+            if(this.units == "sigma") return number;
+            else return number * this.sigmaToMMFactor;
         }
 
         this.chart.series[2].setData(

@@ -217,7 +217,7 @@ export function deepCopy(object){
     return newObject;
 }
 
-export const TEST_BEAM_PARAMS = {
+export const DEFAULT_BEAM_PARAMS = {
     "energy": 6500,
     "particle_mass": 0.938,
     "emittance": 3.5e-6,
@@ -251,8 +251,13 @@ export const TEST_BEAM_PARAMS = {
 }
 
 /**
- * @param {typeof TEST_BEAM_PARAMS} params
+ * @param {typeof DEFAULT_BEAM_PARAMS} params
+ * @param {string} ip
  */
-export function getSigmaToMMFactor(params, ipNumber){
-    return Math.sqrt((params.emittance / (params.energy / params.particle_mass)) * params.beta_star["IP" + ipNumber]) * 1e3;
+export function getSigmaToMMFactor(params, ip){
+    return Math.sqrt((params.emittance / (params.energy / params.particle_mass)) * params.beta_star[ip]) * 1e3;
+}
+
+export function cache(func, key){
+
 }

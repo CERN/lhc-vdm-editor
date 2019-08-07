@@ -23,6 +23,7 @@ export default class LuminosityChart extends HTMLElement {
     attachChart(){
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), /** @type {Highcharts.Options} */({
             chart: {
+                height: 250,
                 renderTo: this.root.querySelector("#container"),
             },
 
@@ -35,12 +36,12 @@ export default class LuminosityChart extends HTMLElement {
                     useHTML: true,
                     text: "Luminosity [Hz/mm<sup>2</sup>]",
                 },
-                type: 'logarithmic'
+                type: 'linear'
             },
 
             xAxis: {
                 title: {
-                    text: "Time [s]"
+                    text: "Real time [s]"
                 }
             },
 
@@ -76,7 +77,6 @@ export default class LuminosityChart extends HTMLElement {
     setTimeType(newTimeType){
         this.timeType = newTimeType;
 
-        // TODO: set the X axis description
         this.chart.xAxis[0].setTitle({
             text: `${newTimeType[0].toUpperCase()}${newTimeType.slice(1)} time [s]`
         })
@@ -92,6 +92,12 @@ export default class LuminosityChart extends HTMLElement {
         throttle(() => {
             this.chart.reflow()
         }, 500, this, true);
+    }
+
+    setScale(newScale){
+        this.chart.yAxis[0].update({
+            type: newScale == "log" ? "logarithmic" : "linear"
+        })
     }
 
     template() {

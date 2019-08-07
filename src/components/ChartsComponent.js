@@ -12,8 +12,7 @@ input[type="radio"]{
 }
 
 .option{
-    padding: 5px;
-    margin: 3px;
+    padding: 3px;
     display: table-cell;
 }
 
@@ -43,6 +42,10 @@ export default class ChartsComponent extends HTMLElement {
         this.allCharts = [this.separationChart, this.crossingChart, this.luminosityChart];
     }
 
+    set sigmaToMMFactor(newValue){
+        this.allCharts.forEach(chart => {chart.sigmaToMMFactor=newValue});
+    }
+
     passInValues(sigmaToMMFactor){
         this.sigmaToMMFactor = sigmaToMMFactor;
 
@@ -68,6 +71,12 @@ export default class ChartsComponent extends HTMLElement {
 
             this.separationChart.setUnits(units);
             this.crossingChart.setUnits(units);
+        }))
+
+        Array.from(this.root.querySelectorAll("#logLinearRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
+            let scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
+
+            this.luminosityChart.setScale(scale)
         }))
     }
 
@@ -107,6 +116,18 @@ export default class ChartsComponent extends HTMLElement {
         <hr>
         <beam-position-chart id="separation-chart" title="Separation"></beam-position-chart>
         <beam-position-chart id="crossing-chart" title="Crossing"></beam-position-chart>
+        <hr>
+        <div id="logLinearRadio">
+            <span class="radio-description">Scale:</span>
+            <div class="option">
+                <input checked type="radio" name="logLinear" id="linearRadio" value="linear" />
+                <label for="linearRadio">Linear</label>
+            </div>
+            <div class="option">
+                <input type="radio" name="logLinear" id="logRadio" value="log" />
+                <label for="logRadio">Logarithmic</label>
+            </div>
+        </div>
         <luminosity-chart id="luminosity-chart"></luminosity-chart>
     `
     }
