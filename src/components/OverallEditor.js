@@ -308,7 +308,7 @@ export default class OverallEditor extends HTMLElement {
 
         if (this.filePath == null) {
             // The filepath has been null and now isn't, so switch to the default editor.
-            this.switchToEditor(DEFAULT_EDITOR_INDEX);
+            this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
         }
 
         const fileContent = await this.gitlabInterface.readFile(filePath);
