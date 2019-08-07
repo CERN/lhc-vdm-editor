@@ -104,7 +104,7 @@ export default class ChartsComponent extends HTMLElement {
             <div class="switchingRow" id="mmSigmaRadio">
                 <span class="radio-description">Units:</span>
                 <div class="option">
-                    <input active type="radio" name="mmSigma" id="sigmaRadio" value="sigma" />
+                    <input checked type="radio" name="mmSigma" id="sigmaRadio" value="sigma" />
                     <label for="sigmaRadio">&sigma;</label>
                 </div>
                 <div class="option">

@@ -116,7 +116,7 @@ export default class BeamPositionChart extends HTMLElement {
 
             yAxis: {
                 title: {
-                    text: "Beam position [mm]",
+                    text: "Beam position [&sigma;]",
                     useHTML: true // for &sigma;
                 }
             },

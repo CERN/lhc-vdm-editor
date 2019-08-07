@@ -101,28 +101,31 @@ export default class FileBrowser extends HTMLElement {
         /** @type {HTMLDivElement} */
         this.myContextMenu = null;
 
-        this.root.querySelector("selection-boxes").addEventListener("change", () => this.reloadFileUI());
+        this.selectionBoxes = this.root.querySelector("selection-boxes");
+
+        this.selectionBoxes.addEventListener("change", () => this.reloadFileUI());
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
                 this.tryRemoveContextMenu();
             }
-        })
+        });
     }
 
     /**
      * @param {GitLab} gitlab
      * @param {string} openFile The current open file, as path relative to the current explored folder
      */
-    passInValues(gitlab, openFile) {
+    async passInValues(gitlab, openFile) {
         this.gitlab = gitlab;
-        (async () => {
-            const campaigns = await this.gitlab.listCampaigns();
-            this.setFileUI('IP1', campaigns.pop());
-        })();
         
+        // NOTE: we need to await this to make sure the campaign list is populated
+        // TODO: make this nicer
+        await this.selectionBoxes.passInValues(
+            gitlab,
+        );
+
         this.setOpenFile(openFile);
-        this.root.querySelector('selection-boxes').passInValues(gitlab);
     }
 
     /**
@@ -130,21 +133,29 @@ export default class FileBrowser extends HTMLElement {
      */
     setOpenFile(newOpenFile){
         this.openFile = newOpenFile;
+        this.selectionBoxes.campaign = this.openFile.split("/")[0];
+        this.selectionBoxes.ip = this.openFile.split("/")[1];
 
         this.reloadFileUI();
     }
 
     get ip(){
-        return this.root.querySelector('selection-boxes').ip;
+        return this.selectionBoxes.ip;
     }
 
     get campaign(){
-        return this.root.querySelector('selection-boxes').campaign;
+        return this.selectionBoxes.campaign;
     }
 
 
-    reloadFileUI() {
-        this.setFileUI(this.ip, this.campaign);
+    async reloadFileUI() {
+        if(this.openFile == null){
+            const campaigns = await this.gitlab.listCampaigns();
+            this.setFileUI('IP1', campaigns.pop());
+        }
+        else{
+            this.setFileUI(this.ip, this.campaign);
+        }
     }
 
     tryRemoveContextMenu() {

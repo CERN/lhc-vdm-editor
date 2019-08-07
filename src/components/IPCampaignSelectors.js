@@ -20,6 +20,9 @@ export default class Selectors extends HTMLElement {
         super()
         this.root = this.attachShadow({ mode: 'open' });
         this.root.innerHTML = this.template();
+        this.waitForInit = new Promise((resolve, _) => {
+            this.onInitFinished = resolve;
+        })
 
         Array.from(this.root.querySelectorAll("#ip-select, #campaign-select")).map(x => x.addEventListener("change", () => {
             this.dispatchEvent(new CustomEvent('change'))
@@ -29,20 +32,31 @@ export default class Selectors extends HTMLElement {
     /**
      * @param {GitLab} gitlab
      */
-    passInValues(gitlab) {
-        (async () => {
-            const campaigns = (await gitlab.listCampaigns()).reverse();
-            this.root.getElementById("campaign-select").innerHTML = campaigns.map(campaignName => {
-                return html`<option value=${campaignName}>${campaignName}</option>`
-            }).join("\n");
-        })();
+    async passInValues(gitlab) {
+        const campaigns = (await gitlab.listCampaigns()).reverse();
+        this.root.getElementById("campaign-select").innerHTML = campaigns.map(campaignName => {
+            return html`<option value=${campaignName}>${campaignName}</option>`
+        }).join("\n");
+
+        this.onInitFinished();
     }
+
     get ip() {
         return this.root.getElementById("ip-select").value;
     }
+
+    set ip(newIp){
+        this.root.getElementById("ip-select").value = newIp;
+    }
+
     get campaign() {
         return this.root.getElementById("campaign-select").value;
     }
+
+    set campaign(newCampaign){
+        this.root.getElementById("campaign-select").value = newCampaign;
+    }
+
     get path() {
         return this.campaign + '/' + this.ip
     }
