@@ -2,6 +2,7 @@ import { sigFigRound } from "../HelperFunctions.js";
 
 const commonFormatter = x => sigFigRound(x.value, 3);
 
+
 /** @type {Highcharts.Options} */
 export const commonChartOptions = {
     chart: {
@@ -32,7 +33,8 @@ export const commonChartOptions = {
     },
 
     tooltip: {
-        valueDecimals: 2
+        headerFormat: `<span style="font-size: 10px">{point.key:.2f}</span><br/>`,
+        pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y:.2f}</b><br/>`
     },
 
     plotOptions: {
