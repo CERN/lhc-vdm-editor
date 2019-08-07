@@ -425,7 +425,7 @@ export default class CodeEditor extends HTMLElement {
 
                     return false;
                 }
-                if(error.row == 0){
+                if(error.row == -1){
                     this.topLineEditor.getSession().setAnnotations([{
                         ...error,
                         row: this.topLineHeaderPosition
@@ -459,6 +459,8 @@ export default class CodeEditor extends HTMLElement {
 
     set rawValue(newRawValue) {
         this.editor.setValue(newRawValue, -1);
+        // Make sure you can't undo the insertion of this text
+        this.editor.getSession().setUndoManager(new ace.UndoManager());
     }
 
     /**
@@ -500,6 +502,8 @@ export default class CodeEditor extends HTMLElement {
         }
 
         this.editor.setValue(mainText, -1); // use -1 move the cursor to the start of the file
+        // Make sure you can't undo the insertion of this text
+        this.editor.getSession().setUndoManager(new ace.UndoManager());
     }
 
     template() {

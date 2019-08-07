@@ -54,6 +54,7 @@ declare namespace AceAjax {
     }
 
     export interface Ace {
+        UndoManager: any;
         config: any;
     }
 

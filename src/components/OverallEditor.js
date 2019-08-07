@@ -103,7 +103,7 @@ export default class OverallEditor extends HTMLElement {
      */
     constructor(gitlab) {
         super();
-        this.isCommitted = true;
+        this._isCommitted = true;
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template()
 
@@ -115,9 +115,25 @@ export default class OverallEditor extends HTMLElement {
         this.errorWebWorker = new Worker("./src/worker-vdm.js");
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
+        this.initEditorContent = "";
+
+        this.fileBrowser = this.root.querySelector("file-browser");
 
         this.addListeners();
         this.loadDataFromLocalStorage();
+    }
+
+    set isCommitted(newValue){
+        if(this._isCommitted != newValue){
+            this._isCommitted = newValue;
+            this.fileBrowser.isCommitted = newValue;
+
+            this.updateFileNameUI(this._isCommitted, this.filePath);
+        }
+    }
+
+    get isCommitted(){
+        return this._isCommitted;
     }
     
     get ip(){
@@ -185,7 +201,10 @@ export default class OverallEditor extends HTMLElement {
 
     onEditorContentChange(newValue){
         localStorage.setItem('content', newValue);
-        this.updateFileNameUI(false, this.filePath);
+        if(newValue == this.initEditorContent)
+            this.isCommitted = true;
+        else
+            this.isCommitted = false;
 
         const TIMEOUT = 1000;
         clearTimeout(this.lastEditorChangeTimeout);
@@ -243,7 +262,7 @@ export default class OverallEditor extends HTMLElement {
             }
         })
 
-        this.root.querySelector("file-browser").addEventListener('open-file', /** @param {CustomEvent} event */(event) => {
+        this.fileBrowser.addEventListener('open-file', /** @param {CustomEvent} event */(event) => {
             this.setCurrentEditorContent(event.detail)
         })
 
@@ -273,7 +292,7 @@ export default class OverallEditor extends HTMLElement {
         }
         // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
         // want to only call passInValues once)
-        this.root.querySelector("file-browser").passInValues(this.gitlabInterface, this.filePath);
+        this.fileBrowser.passInValues(this.gitlabInterface, this.filePath);
 
         if(this.filePath != null){
             if (localStorage.getItem('open-tab') !== null) {
@@ -310,6 +329,7 @@ export default class OverallEditor extends HTMLElement {
         }
 
         const fileContent = await this.gitlabInterface.readFile(filePath);
+        this.initEditorContent = fileContent;
         // NOTE: we trim below to remove a new line as the last line
         if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()){
             this.value = localFileChanges;
@@ -344,7 +364,6 @@ export default class OverallEditor extends HTMLElement {
             return;
         }
 
-        localStorage.setItem("isCommitted", isCommitted.toString());
         this.isCommitted = isCommitted;
         if (isCommitted) {
             this.root.querySelector("#file-name").innerText = "./" + fileName + " (committed)";

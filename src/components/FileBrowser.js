@@ -101,6 +101,8 @@ export default class FileBrowser extends HTMLElement {
         /** @type {HTMLDivElement} */
         this.myContextMenu = null;
 
+        this.isCommitted = true;
+
         this.selectionBoxes = this.root.querySelector("selection-boxes");
 
         this.selectionBoxes.addEventListener("change", () => this.reloadFileUI());
@@ -219,7 +221,7 @@ export default class FileBrowser extends HTMLElement {
             container.querySelector("#rename-button").addEventListener("click", () => {
                 // NOTE: local storage is nasty but works
                 // TODO: could refractor this so it's nicer
-                if(!localStorage.getItem("isCommitted")){
+                if(this.isCommitted){
                     alert("Cannot rename a file without committing the current changes");
                     return;
                 }
@@ -330,7 +332,7 @@ export default class FileBrowser extends HTMLElement {
                     const fullFileName = prefix + fileName;
 
                     itemEl.addEventListener("click", () => {
-                        if (localStorage.getItem("isCommitted") === "0") {
+                        if (!this.isCommitted) {
                             if (confirm(`Changes not committed. Are you sure you want to open ${fullFileName}? All current changes will be discarded.`)) {
                                 this.dispatchEvent(new CustomEvent('open-file', {
                                     detail: fullFileName,

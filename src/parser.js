@@ -275,7 +275,7 @@ class VdM {
         }
         for (let type of argArr) {
             if (type.values.size < 1) {
-                throw new Error('Missing ' + type.type + ' argument to generate INITIALIZE_TRIM command')
+                console.log('Missing ' + type.type + ' argument to generate INITIALIZE_TRIM command, returning default INITIALIZE_TRIM')
             }
         }
         return argArr.map(x => x.type + '(' + Array.from(x.values).join(',').trim() + ')');
@@ -511,7 +511,7 @@ class VdM {
                     this.validateArgs(objArr[0]);
                 } catch (err) {
                     if(typeof err == "string"){
-                        errArr.push(new MySyntaxError(0, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
+                        errArr.push(new MySyntaxError(-1, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
                     }
                     else throw err;
                 }
