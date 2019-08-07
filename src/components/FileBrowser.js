@@ -131,10 +131,12 @@ export default class FileBrowser extends HTMLElement {
     /**
      * @param {string} newOpenFile
      */
-    setOpenFile(newOpenFile){
+    async setOpenFile(newOpenFile){
         this.openFile = newOpenFile;
-        this.selectionBoxes.campaign = this.openFile.split("/")[0];
-        this.selectionBoxes.ip = this.openFile.split("/")[1];
+        if(this.openFile != null){
+            this.selectionBoxes.campaign = this.openFile.split("/")[0];
+            this.selectionBoxes.ip = this.openFile.split("/")[1];
+        }
 
         this.reloadFileUI();
     }
