@@ -277,7 +277,8 @@ export default class OverallEditor extends HTMLElement {
     onSwitchEditorButtonPress(editorIndex){
         if (this.filePath === null) return;
 
-        this.switchToEditor(editorIndex)
+        this.switchToEditor(editorIndex);
+        localStorage.setItem('open-tab', editorIndex.toString());
     }
 
     tryToRevert(){
@@ -432,8 +433,6 @@ export default class OverallEditor extends HTMLElement {
 
         this.editorContainer.innerHTML = "";
         this.editorContainer.appendChild(this.editor);
-
-        localStorage.setItem('open-tab', index.toString());
     }
 
     template() {
