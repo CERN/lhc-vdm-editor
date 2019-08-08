@@ -1,6 +1,6 @@
-import { parseVdM, deparseVdM, MySyntaxError } from "./parser.js"
+import * as script from "./parser.js"
 
-let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
+let file = `
 1 SECONDS_WAIT 10.0
 2 START_FIT SEPARATION GAUSSIAN
 3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
@@ -11,17 +11,23 @@ let file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(
 8 SECONDS_WAIT 10.0
 9 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
 10 SECONDS_WAIT 10.0
+# this is a comment
 11 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
 12 SECONDS_WAIT 10.0
 13 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
 14 SECONDS_WAIT 10.0
+
 15 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA IP1 BEAM2 SEPARATION -1.0 SIGMA
 16 SECONDS_WAIT 10.0
 17 RELATIVE_TRIM IP1 BEAM1 SEPARATION -3.0 SIGMA IP1 BEAM2 SEPARATION 3.0 SIGMA
 18 SECONDS_WAIT 10.0
 19 END_FIT
-20 END_SEQUENCE
+20 RELATIVE_TRIM IP1 BEAM1 SEPARATION 1.0 SIGMA
 `
+let simpleHead = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
+let noHeader = '1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA'
+let empty = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
+let comment = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
 let faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
 1 START_FIT SEPARATION GAUSSIAN
@@ -32,22 +38,8 @@ let faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) 
 7 SECONDS_WAIT 10.0`
 
 // Tests on the parser and deparser functions
-xdescribe("Parser", () => {
-    it("File parse", () => {
-        expect(parseVdM(file)).toEqual(jasmine.any(Array))
-    })
-    it("Simple parse ", () => {
-        expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n 1 END_SEQUENCE'))
-            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}},{"type":"command","command":"END_SEQUENCE","args":[],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}}]'))
-    })
-    it("Empty line parse", () => {
-        expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 END_SEQUENCE'))
-            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}},{"type":"empty"},{"type":"command","command":"END_SEQUENCE","args":[],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}}]'))
-    })
-    it("Comment line parse", () => {
-        expect(parseVdM('0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 END_SEQUENCE'))
-            .toEqual(JSON.parse('[{"type":"command","command":"INITIALIZE_TRIM","args":["IP(IP1)","BEAM(BEAM1,BEAM2)","PLANE(SEPARATION)","UNITS(SIGMA)"],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}},{"type":"comment","comment":""},{"type":"command","command":"END_SEQUENCE","args":[],"realTime":0,"sequenceTime":0,"pos":{"BEAM1":{"SEPARATION":0,"CROSSING":0},"BEAM2":{"SEPARATION":0,"CROSSING":0}}}]'))
-    })
+describe("Parser", () => {
+    /*
     it('File parse and then deparse', () => {
         expect(deparseVdM(parseVdM(file))).toEqual(file)
     })
@@ -62,5 +54,103 @@ xdescribe("Parser", () => {
     it('Faulty INITIALIZE_TRIM', () => {
         expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
             .toThrow(jasmine.any(Array))
+    }) */
+
+
+
+
+    // Tests on isSubsetOf()
+    it('returns of isSubsetOf', () => {
+        let arr1 = ['1', '2', '4', '4'];
+        let arr2 = ['1', '2', '3'];
+        let set = new Set(arr1);
+        let str1 = '2';
+        let str2 = '3';
+
+        function f(in1, in2) { return script.isSubsetOf(in1, in2) }
+        expect(f(arr1, set) && f(set, arr1) && f(str1, arr1) && !f(arr1, str1) && !f(arr1, arr2) && f(str1, str1) && !f(str2, arr1) && f(1, [1, 2])).toBeTruthy()
+    })
+
+    // Tests on Luminocity
+    it('Luminocity test calculation', () => {
+        let inst = new script.VdM();
+        expect(inst.luminosity(0, 0).toPrecision(2)).toEqual('4.4e+34')
+        expect(inst.luminosity())
+    })
+
+    // Tests on getInnerBracket
+    it('Return [SEPARATION,CROSSING] from PLANE(SEPARATION,CROSSING)', () => {
+        expect(script.getInnerBracket('PLANE(SEPARATION,CROSSING)', 'PLANE')).toEqual(['SEPARATION', 'CROSSING'])
+    })
+    it('Faulty key for PLANE(SEPARATION,CROSSING)', () => {
+        expect(() => script.getInnerBracket('PLANE(SEPARATION,CROSSING)', 'BEAM')).toThrow(jasmine.any(String))
+    })
+
+    // Test arguments are valid
+    it('test argument validity', () => {
+        expect(script.checkTrimArgs(['IP1', 'BEAM2', 'SEPARATION', '0', 'SIGMA'])).toBeTruthy()
+    })
+    it('test argument validity', () => {
+        expect(() => script.testArgs({ IP: ['IP3'] })).toThrow(jasmine.any(String))
+    })
+
+    // Test position manipulations
+    it('Position adding', () => {
+        let pos = {
+            'BEAM1': {
+                'SEPARATION': 1,
+                'CROSSING': 2,
+            },
+            'BEAM2': {
+                'SEPARATION': 3,
+                'CROSSING': 4,
+            }
+        }
+        let pos2 = {
+            'BEAM1': {
+                'SEPARATION': 2,
+                'CROSSING': 4,
+            },
+            'BEAM2': {
+                'SEPARATION': 6,
+                'CROSSING': 8,
+            }
+        }
+        script.addPos(pos, pos);
+        expect(pos).toEqual(pos2)
+    })
+    it('Position boundary test', () => {
+        let pos = {
+            'BEAM1': {
+                'SEPARATION': 1,
+                'CROSSING': 2,
+            },
+            'BEAM2': {
+                'SEPARATION': 3,
+                'CROSSING': 4,
+            }
+        }
+        expect(() => script.checkPosLim(pos, 2)).toThrow(jasmine.any(String))
+        expect(script.checkPosLim(pos, 5)).toBeTruthy()
+    })
+
+
+    // Parse adn deparse tests
+    it('Parsing files', () => {
+        expect(() => {
+            let inst = new script.VdM();
+            
+            inst.parse(simpleHead, true)
+            inst.parse(noHeader)
+            inst.parse(empty, true)
+            inst.parse(comment, true)
+        }).not.toThrow()
+    })
+    it('Parsing files', () => {
+        expect(() => {
+            let inst = new script.VdM();
+            
+            inst.parse(file)
+        }).not.toThrow()
     })
 })

@@ -7,7 +7,7 @@ import "./CommitElement.js"
 import "./FileBrowser.js"
 import "./ResizeablePanel.js"
 import GitLab, { NoPathExistsError } from "../GitLab.js"
-import { parseVdM, deparseVdM, VdMSyntaxError } from "../parser.js"
+import VdM from "../parser.js"
 import './RevertButton.js'
 import "./ChartsComponent.js"
 
@@ -147,8 +147,8 @@ export default class OverallEditor extends HTMLElement {
         }
     }
 
-    set isCommitted(newValue){
-        if(this._isCommitted != newValue){
+    set isCommitted(newValue) {
+        if (this._isCommitted != newValue) {
             this._isCommitted = newValue;
             this.fileBrowser.isCommitted = newValue;
 
@@ -156,31 +156,31 @@ export default class OverallEditor extends HTMLElement {
         }
     }
 
-    get isCommitted(){
+    get isCommitted() {
         return this._isCommitted;
     }
-    
-    get ip(){
-        if(this.filePath == null) return null
+
+    get ip() {
+        if (this.filePath == null) return null
         else return this.filePath.split("/")[1];
     }
-    
-    get campaign(){
-        if(this.filePath == null) return null
+
+    get campaign() {
+        if (this.filePath == null) return null
         else return this.filePath.split("/")[0];
     }
 
-    async getCurrentBeamJSON(){
+    async getCurrentBeamJSON() {
         // Caching this as we may be getting this multiple times
-        if(beamJSONCache.has(this.campaign)) return beamJSONCache.get(this.campaign);
+        if (beamJSONCache.has(this.campaign)) return beamJSONCache.get(this.campaign);
         else {
             let beamJSONFile;
 
-            try{
+            try {
                 beamJSONFile = JSON.parse(await this.gitlabInterface.readFile(`${this.campaign}/beam.json`));
             }
-            catch(error){
-                if(error instanceof NoPathExistsError){
+            catch (error) {
+                if (error instanceof NoPathExistsError) {
                     // TODO: actually display proper beams.json file here
                     alert(`Campaign ${this.campaign} has no beams.json file, using the default file.`)
                     beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
@@ -190,12 +190,12 @@ export default class OverallEditor extends HTMLElement {
             beamJSONCache.set(this.campaign, beamJSONFile);
             return beamJSONFile;
         }
-        
+
     }
 
-    onWebWorkerMessage(message){
+    onWebWorkerMessage(message) {
         if (message.data.type == "lint") {
-            if(typeof this.editor.setCurrentParsedResult == "function"){
+            if (typeof this.editor.setCurrentParsedResult == "function") {
                 this.editor.setCurrentParsedResult(message.data)
             }
 
@@ -223,9 +223,9 @@ export default class OverallEditor extends HTMLElement {
         })
     }
 
-    changeEditorContent(newValue){
+    onEditorContentChange(newValue) {
         localStorage.setItem('content', newValue);
-        if(newValue == this.initEditorContent)
+        if (newValue == this.initEditorContent)
             this.isCommitted = true;
         else
             this.isCommitted = false;
@@ -247,18 +247,21 @@ export default class OverallEditor extends HTMLElement {
     tryToCommit(commitMessage){
         if (this.filePath === null) return;
 
-        try {
+        //let instance = new VdM(beamParameters, openIP);
+        let instance = new VdM()
+        instance.parse(this.value, true);
+
+        if (instance.isValid) {
             this.gitlabInterface.writeFile(
                 this.filePath,
                 commitMessage,
-                deparseVdM(parseVdM(this.value, false, this.beamJSON))
+                instance.deparse()
             );
 
             this.updateFileNameUI(true, this.filePath);
-        } catch (errArr) {
-            if (errArr instanceof VdMSyntaxError) {
-                alert('Commit failed! Following errors encountered:\n\n' + errArr.errors.map(x => x.message).join('\n'))
-            } else throw errArr
+        }
+        else {
+            alert('Commit failed! Following errors encountered:\n\n' + instance.errors.map(x => x.message).join('\n'))
         }
     }
 
@@ -268,7 +271,7 @@ export default class OverallEditor extends HTMLElement {
      */
     addListeners(){
         this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => this.tryToCommit(ev.detail));
-        this.editorContainer.addEventListener('editor-content-change', ev => this.changeEditorContent(ev.detail))
+        this.editorContainer.addEventListener('editor-content-change', ev => this.setCurrentEditorContent(ev.detail))
         this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));
         this.fileBrowser.addEventListener('open-file', event => this.setCurrentEditorContent(event.detail));
@@ -297,18 +300,18 @@ export default class OverallEditor extends HTMLElement {
      * @private
      */
     async loadDataFromLocalStorage() {
-        try{
+        try {
             await this.setCurrentEditorContent(
                 localStorage.getItem("open-file"),
                 localStorage.getItem("content"),
                 false
             )
         }
-        catch(error){
-            if(error instanceof NoPathExistsError){
+        catch (error) {
+            if (error instanceof NoPathExistsError) {
                 alert(`Last edited file deleted in the repository, please recreate if required. The locally stored file was: \n${
                     localStorage.getItem("content")
-                }`)
+                    }`)
                 await this.setCurrentEditorContent(
                     null,
                     null
@@ -320,10 +323,10 @@ export default class OverallEditor extends HTMLElement {
         // want to only call passInValues once)
         await this.fileBrowser.passInValues(this.gitlabInterface, this.filePath);
 
-        if(this.filePath != null){
+        if (this.filePath != null) {
             if (localStorage.getItem('open-tab') !== null) {
                 const buttonIndex = parseInt(localStorage.getItem('open-tab'));
-                
+
                 this.switchToEditor(buttonIndex);
             }
             else {
@@ -331,7 +334,7 @@ export default class OverallEditor extends HTMLElement {
             }
         }
     }
-    
+
     /**
      * Function to set the file the editor is editing.
      * 
@@ -362,12 +365,12 @@ export default class OverallEditor extends HTMLElement {
         const fileContent = await this.gitlabInterface.readFile(filePath);
         this.initEditorContent = fileContent;
         // NOTE: we trim below to remove a new line as the last line
-        if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()){
+        if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()) {
             this.value = localFileChanges;
 
             this.updateFileNameUI(false, filePath);
         }
-        else{
+        else {
             this.value = fileContent;
 
             this.updateFileNameUI(true, filePath);
@@ -390,7 +393,7 @@ export default class OverallEditor extends HTMLElement {
      * @param {string | null} fileName NOTE: if this is null, the isCommitted attribute is ignored
      */
     updateFileNameUI(isCommitted, fileName) {
-        if(fileName == null){
+        if (fileName == null) {
             this.root.querySelector("#file-name").innerText = "-- NO FILE LOADED --";
             this.root.querySelector("#file-name").classList.add("uncommitted");
             this.isCommitted = true;

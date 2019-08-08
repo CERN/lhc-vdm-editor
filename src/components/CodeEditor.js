@@ -1,6 +1,6 @@
 import { html, css, addLineNumbers, groupBy } from "../HelperFunctions.js"
 import "../mode-vdm.js"
-import { parseVdM, deparseVdM, VdMSyntaxError } from "../parser.js"
+import VdM from "../parser.js"
 import "../token_tooltip.js"
 const token_tooltip = ace.require("ace/token_tooltip");
 const Autocomplete = ace.require("ace/autocomplete").Autocomplete;
@@ -149,7 +149,7 @@ function stripText(text) {
     ];
 }
 
-function getDefaultFontSize(){
+function getDefaultFontSize() {
     const ta = document.createElement("textarea");
     ta.style.display = "none";
     document.body.appendChild(ta);
@@ -481,22 +481,17 @@ export default class CodeEditor extends HTMLElement {
 
     get value() {
         const editorValue = this.rawValue;
+        //let instance = new VdM(beamParameters, openIP);
+        let instance = new VdM();
 
-        try {
+        instance.parse(addLineNumbers(editorValue));
+        if (!instance.isValid) return this.noParseValue;
+        else {
             const commentsAboveHeader = this.topLineEditor.getValue().split("\n")
                 .slice(0, this.topLineHeaderPosition).join("\n");
-
             // Add the headers (we don't know if this.lastHeader is stale
             return (commentsAboveHeader == "" ? "" : (commentsAboveHeader + '\n'))
-                + deparseVdM(parseVdM(addLineNumbers(editorValue), true));
-        }
-        catch (error) {
-            if (error instanceof VdMSyntaxError) {
-                return this.noParseValue;
-            }
-            else {
-                throw error;
-            }
+                + instance.deparse();
         }
     }
 
