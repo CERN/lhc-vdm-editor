@@ -226,7 +226,7 @@ export default class CreateFileWindow extends HTMLElement {
                 `;
             } else {
                 line.innerHTML = html`
-                    <input type='checkbox' value=${file} checked>
+                    <input type='checkbox' value=${file}>
                     ${file}
                 `;
             }

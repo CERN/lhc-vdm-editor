@@ -120,7 +120,7 @@ export default class FileBrowser extends HTMLElement {
      */
     async passInValues(gitlab, openFile) {
         this.gitlab = gitlab;
-        
+
         // NOTE: we need to await this to make sure the campaign list is populated
         // TODO: make this nicer
         await this.selectionBoxes.passInValues(
@@ -133,9 +133,9 @@ export default class FileBrowser extends HTMLElement {
     /**
      * @param {string} newOpenFile
      */
-    async setOpenFile(newOpenFile){
+    async setOpenFile(newOpenFile) {
         this.openFile = newOpenFile;
-        if(this.openFile != null){
+        if (this.openFile != null) {
             this.selectionBoxes.campaign = this.openFile.split("/")[0];
             this.selectionBoxes.ip = this.openFile.split("/")[1];
         }
@@ -143,11 +143,11 @@ export default class FileBrowser extends HTMLElement {
         await this.reloadFileUI();
     }
 
-    get ip(){
+    get ip() {
         return this.selectionBoxes.ip;
     }
 
-    get campaign(){
+    get campaign() {
         return this.selectionBoxes.campaign;
     }
 
@@ -195,9 +195,8 @@ export default class FileBrowser extends HTMLElement {
                                 await this.gitlab.deleteFile(filePath);
                             }
                         }
-                        
 
-                        if(this.openFile == filePath){
+                        if (this.openFile == filePath) {
                             this.dispatchEvent(new CustomEvent("open-file", {
                                 detail: null
                             }));
@@ -233,12 +232,11 @@ export default class FileBrowser extends HTMLElement {
                                 deleteButton.classList.add("disabled");
                                 renameButton.classList.add("disabled");
 
-
-                                    if (element.classList.contains('folder')) {
-                                        await this.gitlab.renameFolder(filePath, newName);
-                                    } else {
-                                        await this.gitlab.renameFile(filePath, newName);
-                                    }
+                                if (element.classList.contains('folder')) {
+                                    await this.gitlab.renameFolder(filePath, newName);
+                                } else {
+                                    await this.gitlab.renameFile(filePath, newName);
+                                }
 
                                 if(this.openFile == filePath){
                                     const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
@@ -272,7 +270,7 @@ export default class FileBrowser extends HTMLElement {
      * @param {string} campaign
      * @param {string[]} files
      */
-    async tryCopyFolder(source, ip, campaign, files=[]) {
+    async tryCopyFolder(source, ip, campaign, files = []) {
         if (!confirm(`Are you sure you want to copy files from the campaign "${campaign}" and interaction point "${ip}"?`)) {
             return;
         }
@@ -280,10 +278,17 @@ export default class FileBrowser extends HTMLElement {
         const fromFolder = campaign + "/" + ip;
         const toFolder = source;
 
-        try {
-            const fromFolderContents = (await this.gitlab.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
-            const toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, fromFolder));
+        let toFolderContents
+        let fromFolderContents
 
+        try {
+            toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, fromFolder));
+        } catch (error) {
+            if (error instanceof NoPathExistsError) toFolderContents = []
+            else throw error
+        }
+        try {
+            fromFolderContents = (await this.gitlab.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
             const commonFileNames = fromFolderContents.filter(x => toFolderContents.includes(x));
             if (commonFileNames.length != 0) {
                 alert(`Note:\n"${commonFileNames.join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)
@@ -297,12 +302,9 @@ export default class FileBrowser extends HTMLElement {
         catch (error) {
             if (error instanceof NoPathExistsError) {
                 alert(`The campaign "${campaign}" and interaction point "${ip}" has no files.`);
-
                 return;
             }
-            else {
-                throw error;
-            }
+            else throw error;
         }
     }
 
@@ -333,7 +335,7 @@ export default class FileBrowser extends HTMLElement {
                                     detail: fullFileName,
                                 }))
                             }
-                            else{
+                            else {
                                 return;
                             }
                         }
@@ -350,7 +352,7 @@ export default class FileBrowser extends HTMLElement {
 
                     this.addContextMenuListener(itemEl, fullFileName);
                 }
-                else{
+                else {
                     itemEl.classList.add("no-files-item")
                 }
 
@@ -408,7 +410,7 @@ export default class FileBrowser extends HTMLElement {
                 createFileWindow.passInValues(this.gitlab);
 
                 createFileWindow.addEventListener("submit", async (event) => {
-                    try{
+                    try {
                         await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign, event.detail.filePaths);
                     }
                     finally {
