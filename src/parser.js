@@ -612,8 +612,12 @@ export class VdM {
 }
 
 export function parseVdM(data, beamParameters){
-    if(beamParameters) return (new VdM(properUnits(beamParameters))).parse(data).structure
-    else return (new VdM()).parse(data).structure
+    let instance
+    if(beamParameters) instance = new VdM(toProperUnits(beamParameters))
+    else instance = new VdM()
+
+    instance.parse(data)
+    return instance.structure
 }
 export function deparseVdM(objArr) {
     let instance = new VdM();
