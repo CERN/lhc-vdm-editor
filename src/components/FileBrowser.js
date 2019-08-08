@@ -213,9 +213,7 @@ export default class FileBrowser extends HTMLElement {
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                // NOTE: local storage is nasty but works
-                // TODO: could refractor this so it's nicer
-                if(this.isCommitted){
+                if(!this.isCommitted){
                     alert("Cannot rename a file without committing the current changes");
                     return;
                 }
