@@ -6,7 +6,7 @@ export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb)
     // sigma - m
     // alpha - crossing_angle - rad
     // sigmaZ - this.param.bunch_length - m
-    // nbb - bunch_pair_collisions.IP1
+    // nbb - bunch_pair_collisions
     // intensity - nuclei per bunch
 
     const s2 = sigma ** 2;
@@ -106,7 +106,8 @@ export function testArgs(argsObj) {
         BEAM: [],
         PLANE: [],
         UNITS: []
-    } */
+    } 
+    all are optional*/
     for (const [key, value] of Object.entries(argsObj)) {
         if (!isSubsetOf(value, validArguments[key])) {
             throw `Invalid ${key} argument. Expected subset of {${validArguments[key]}} but got {${value}}`
@@ -145,11 +146,14 @@ export function addPos(pos1, pos2) {
 }
 export function checkPosLim(pos, limit) {
     let errArr = []
-    if (pos['BEAM1']['SEPARATION'] > limit) errArr.push('* Beam1, separation, ' + pos['BEAM1']['SEPARATION']);
-    if (pos['BEAM1']['CROSSING'] > limit) errArr.push('* Beam1, crossing, ' + pos['BEAM1']['CROSSING']);
-    if (pos['BEAM2']['SEPARATION'] > limit) errArr.push('* Beam2, separation, ' + pos['BEAM2']['SEPARATION']);
-    if (pos['BEAM2']['CROSSING'] > limit) errArr.push('* Beam2, crossing, ' + pos['BEAM2']['CROSSING']);
-    if (errArr.length > 0) throw errArr.join('\n');
+    if (pos['BEAM1']['SEPARATION'] > limit) errArr.push(`* Beam1, separation, ' + ${pos['BEAM1']['SEPARATION'] * 1e-3} mm`);
+    if (pos['BEAM1']['CROSSING'] > limit) errArr.push(`* Beam1, crossing, ' + ${pos['BEAM1']['CROSSING'] * 1e-3} mm`);
+    if (pos['BEAM2']['SEPARATION'] > limit) errArr.push(`* Beam2, separation, ' + ${pos['BEAM2']['SEPARATION'] * 1e-3} mm`);
+    if (pos['BEAM2']['CROSSING'] > limit) errArr.push(`* Beam2, crossing, ' + ${pos['BEAM2']['CROSSING'] * 1e-3} mm`);
+    if (errArr.length > 0) {
+        errArr.unshift('Beam out of bounds!')
+        throw errArr.join('\n');
+    }
 
     return true
 }
@@ -230,7 +234,8 @@ export class VdMcommandObject {
                         checkTrimArgs(args)
                     }
                     catch (error) {
-                        throw 'Invalid RELATIVE_TRIM command. ' + error;
+                        if(typeof error == 'string') throw 'Invalid RELATIVE_TRIM command. ' + error
+                        else throw error
                     }
                 },
             'ABSOLUTE_TRIM':
@@ -243,7 +248,8 @@ export class VdMcommandObject {
                         checkTrimArgs(args)
                     }
                     catch (error) {
-                        throw 'Invalid ABSOLUTE_TRIM command. ' + error;
+                        if(typeof error == 'string') throw 'Invalid ABSOLUTE_TRIM command. ' + error
+                        else throw error
                     }
                 },
             'START_FIT':
@@ -304,6 +310,7 @@ export class VdMcommandObject {
             for (let i = 0; i < this.args.length; i += 5) {
                 let amount = Number(this.args[i + 3]);
                 if (this.args[i + 4] == 'SIGMA') amount = amount * sigma; // to meters
+                if (this.args[i + 4] == 'MM') amount *= 1e-3; // to meters
 
                 let dist;
                 if (this.command == 'RELATIVE_TRIM') {
@@ -355,13 +362,14 @@ const init_beam_param = { // these are parameters for IP1
     "bunch_pair_collisions": 50,
     "bunch_length": 0.0787 // m
 };
-export class VdM {
+export default class VdM {
     constructor(beamParameters, IP) {
         this.param = beamParameters ? toProperUnits(beamParameters, IP) : init_beam_param;
         this.sigma = Math.sqrt((this.param.emittance / (this.param.energy / this.param.particle_mass)) * this.param.beta_star); // m
 
         this.structure = [];
         this.errors = [];
+        this.isValid = false;
     }
 
     /**
@@ -507,8 +515,8 @@ export class VdM {
         }
 
 
-        // throw error-array if there are any
-        // if (this.errors.length > 0) throw new VdMSyntaxError(this.errors, this.structure);
+
+        this.isValid = this.errors.length == 0 ? true : false;
         return this.structure
     }
     deparse() {
@@ -541,11 +549,11 @@ export class VdM {
                         command.simulateStep(this.sigma, this.param.trim_rate, this.param.scan_limits, prevCommand);
                     }
 
-                    // Simulate luminocity
+                    // Simulate luminosity
                     let pos = command.position;
-                    let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']) * this.sigma; // in m
-                    let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']) * this.sigma; // in m
-                    command.luminocity = this.luminocity(sep, cross); // Hz/m^2
+                    let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']); // in m
+                    let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']); // in m
+                    command.luminosity = this.luminosity(sep, cross); // Hz/m^2
                 }
             } catch (error) {
                 if (typeof error == 'string') errArr.push(new MySyntaxError(i, error))
@@ -594,7 +602,7 @@ export class VdM {
         return '0 INITIALIZE_TRIM ' + Object.entries(argArr).map(x => x[0] + '(' + Array.from(x[1]).join(',').trim() + ')').join(' ');
     }
 
-    luminocity(separation, crossing) {
+    luminosity(separation, crossing) {
         return calcLuminosity(separation, crossing, this.sigma, this.param.bunch_length, this.param.crossing_angle, this.param.intensity, this.param.bunch_pair_collisions)
     }
 
@@ -616,12 +624,12 @@ export class VdM {
             if (line.type == "command") return [{
                 realTime: line.realTime,
                 sequenceTime: line.sequenceTime
-            }, line.luminocity]
+            }, line.luminosity]
         }).filter(x => x);
     }
 }
 
-export function parseVdM(data, genheaders = false, beamParameters, ip) {
+/* export function parseVdM(data, genheaders = false, beamParameters, ip) {
     let instance
     if (beamParameters) instance = new VdM(toProperUnits(beamParameters, ip))
     else instance = new VdM()
@@ -633,4 +641,4 @@ export function deparseVdM(objArr) {
     let instance = new VdM();
     instance.structure = objArr;
     return instance.deparse()
-}
+} */

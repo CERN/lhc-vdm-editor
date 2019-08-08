@@ -9,6 +9,7 @@ async function getParser(){
         (await (await fetch("./parser.js")).text())
         .replace(/export function/g, "function")
         .replace(/export class/g, "class")
+        .replace(/export default class/g, "class")
         + "\n;(() => ({VdM: VdM}))()";
     return eval(parserSourceText);
 }
