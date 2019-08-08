@@ -59,6 +59,17 @@ raw-editor{
     color: orange;
 }
 
+#loading-indicator {
+    position: fixed;
+    top: 0px;
+    left: calc(50% - 52px);
+    font-family: sans-serif;
+    background-color: #ffcdbd;
+    padding: 5px 10px 5px 10px;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
 /* Clearfix to make floats take up space */
 .cf:before,
 .cf:after {
@@ -117,12 +128,22 @@ export default class OverallEditor extends HTMLElement {
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
         this.initEditorContent = "";
+        this.loadingIndicator = this.root.querySelector("#loading-indicator")
 
         this.chartsComponent = this.root.querySelector("charts-component");
         this.fileBrowser = this.root.querySelector("file-browser");
 
         this.addListeners();
-        this.loadDataFromLocalStorage();
+        this.asyncConstrutor();
+    }
+
+    async asyncConstrutor(){
+        try{
+            await this.loadDataFromLocalStorage();
+        } 
+        finally {
+            this.loadingIndicator.style.display = "none";
+        }
     }
 
     set isCommitted(newValue){
@@ -276,7 +297,8 @@ export default class OverallEditor extends HTMLElement {
         try{
             await this.setCurrentEditorContent(
                 localStorage.getItem("open-file"),
-                localStorage.getItem("content")
+                localStorage.getItem("content"),
+                false
             )
         }
         catch(error){
@@ -293,7 +315,7 @@ export default class OverallEditor extends HTMLElement {
         }
         // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
         // want to only call passInValues once)
-        this.fileBrowser.passInValues(this.gitlabInterface, this.filePath);
+        await this.fileBrowser.passInValues(this.gitlabInterface, this.filePath);
 
         if(this.filePath != null){
             if (localStorage.getItem('open-tab') !== null) {
@@ -314,7 +336,7 @@ export default class OverallEditor extends HTMLElement {
      * @param {string | null} localFileChanges If set, set the editor content to this values, for 
      * loading from local storage
      */
-    async setCurrentEditorContent(filePath, localFileChanges=null) {
+    async setCurrentEditorContent(filePath, localFileChanges=null, showLoadingIndicator=true) {
         if(filePath == null){
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
             this.filePath = null;
@@ -322,6 +344,10 @@ export default class OverallEditor extends HTMLElement {
 
             this.updateFileNameUI(true, null);
             return;
+        }
+
+        if(showLoadingIndicator){
+            this.loadingIndicator.style.display = "block";
         }
 
         if (this.filePath == null) {
@@ -347,9 +373,12 @@ export default class OverallEditor extends HTMLElement {
 
         this.makeWebWorkerParse();
 
-
         localStorage.setItem('open-file', filePath);
         localStorage.setItem('content', this.value);
+
+        if(showLoadingIndicator){
+            this.loadingIndicator.style.display = "none";
+        }
     }
 
     /**
@@ -409,6 +438,7 @@ export default class OverallEditor extends HTMLElement {
             ${styling}
         </style>
         <div class="container">
+            <div id="loading-indicator">Loading ...</div>
             <div class="header cf">
                 <div id="file-name"></div>
                 <div id='header-buttons'>

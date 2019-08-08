@@ -127,7 +127,7 @@ export default class FileBrowser extends HTMLElement {
             gitlab,
         );
 
-        this.setOpenFile(openFile);
+        await this.setOpenFile(openFile);
     }
 
     /**
@@ -140,7 +140,7 @@ export default class FileBrowser extends HTMLElement {
             this.selectionBoxes.ip = this.openFile.split("/")[1];
         }
 
-        this.reloadFileUI();
+        await this.reloadFileUI();
     }
 
     get ip(){
@@ -153,7 +153,7 @@ export default class FileBrowser extends HTMLElement {
 
 
     async reloadFileUI() {
-        this.setFileUI(this.ip, this.campaign);
+        await this.setFileUI(this.ip, this.campaign);
     }
 
     tryRemoveContextMenu() {
