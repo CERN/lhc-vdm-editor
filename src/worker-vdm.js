@@ -13,8 +13,6 @@ async function getParser(){
     return eval(parserSourceText);
 }
 
-const SIGMA_TO_MM = 0.10050641005198852; // NOTE: this needs to be changed later
-
 (async () => {
     const parser = await getParser();
     addEventListener("message", (message) => {

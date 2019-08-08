@@ -247,7 +247,7 @@ export const DEFAULT_BEAM_PARAMS = {
         "IP5": 50,
         "IP8": 50
     },
-    "bunch_length": 80
+    "bunch_length": 0.0787
 }
 
 /**
@@ -258,6 +258,23 @@ export function getSigmaToMMFactor(params, ip){
     return Math.sqrt((params.emittance / (params.energy / params.particle_mass)) * params.beta_star[ip]) * 1e3;
 }
 
-export function cache(func, key){
+/**
+ * @template T
+ * @param {T[]} arr
+ * @param {(element: T) => any} func
+ * @returns {T[][]}
+ */
+export function groupBy(arr, func){
+    const groups = new Map();
+    arr.forEach(element => {
+        const key = func(element);
+        if(!groups.has(key)){
+            groups.set(key, [element]);
+        }
+        else{
+            groups.set(key, groups.get(key).concat([element]))
+        }
+    })
 
+    return Array.from(groups.values())
 }

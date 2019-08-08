@@ -223,7 +223,7 @@ export default class OverallEditor extends HTMLElement {
         })
     }
 
-    onEditorContentChange(newValue){
+    changeEditorContent(newValue){
         localStorage.setItem('content', newValue);
         if(newValue == this.initEditorContent)
             this.isCommitted = true;
@@ -242,44 +242,45 @@ export default class OverallEditor extends HTMLElement {
     }
 
     /**
+     * @param {string} commitMessage
+     */
+    tryToCommit(commitMessage){
+        if (this.filePath === null) return;
+
+        try {
+            this.gitlabInterface.writeFile(
+                this.filePath,
+                commitMessage,
+                deparseVdM(parseVdM(this.value, false, this.beamJSON))
+            );
+
+            this.updateFileNameUI(true, this.filePath);
+        } catch (errArr) {
+            if (errArr instanceof VdMSyntaxError) {
+                alert('Commit failed! Following errors encountered:\n\n' + errArr.errors.map(x => x.message).join('\n'))
+            } else throw errArr
+        }
+    }
+
+    /**
      * Adds event listeners for all the elements 
      * @private
      */
     addListeners(){
-        this.root.querySelector("commit-element").addEventListener("commit-button-press", /** @param {CustomEvent} ev */ev => {
-            if (this.filePath === null) return;
-
-            try {
-                this.gitlabInterface.writeFile(
-                    this.filePath,
-                    ev.detail,
-                    deparseVdM(parseVdM(this.value, false, this.beamJSON))
-                );
-
-                this.updateFileNameUI(true, this.filePath);
-            } catch (errArr) {
-                if (errArr instanceof VdMSyntaxError) {
-                    alert('Commit failed! Following errors encountered:\n\n' + errArr.errors.map(x => x.message).join('\n'))
-                } else throw errArr
-            }
-        })
-
-        this.editorContainer.addEventListener('editor-content-change', ev => this.onEditorContentChange(ev.detail))
-        this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.onRevertButtonPress());
-        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onTrySwitchEditor(ev.detail));
-
-        this.fileBrowser.addEventListener('open-file', /** @param {CustomEvent} event */(event) => {
-            this.setCurrentEditorContent(event.detail)
-        })
+        this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => this.tryToCommit(ev.detail));
+        this.editorContainer.addEventListener('editor-content-change', ev => this.changeEditorContent(ev.detail))
+        this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
+        this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));
+        this.fileBrowser.addEventListener('open-file', event => this.setCurrentEditorContent(event.detail));
     }
 
-    onTrySwitchEditor(editorIndex){
+    onSwitchEditorButtonPress(editorIndex){
         if (this.filePath === null) return;
 
         this.switchToEditor(editorIndex)
     }
 
-    onRevertButtonPress(){
+    tryToRevert(){
         if (this.filePath === null) return;
 
         if (!this.isCommitted) {

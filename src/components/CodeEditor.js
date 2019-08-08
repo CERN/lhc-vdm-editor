@@ -1,4 +1,4 @@
-import { html, css, addLineNumbers } from "../HelperFunctions.js"
+import { html, css, addLineNumbers, groupBy } from "../HelperFunctions.js"
 import "../mode-vdm.js"
 import { parseVdM, deparseVdM, VdMSyntaxError } from "../parser.js"
 import "../token_tooltip.js"
@@ -416,26 +416,35 @@ export default class CodeEditor extends HTMLElement {
         this.editor.getSession().setAnnotations([]);
 
         if(message.errors !== undefined){
-            this.editor.getSession().setAnnotations(message.errors.filter(error => {
-                if(error.row == maxRow){
-                    this.lastLineEditor.getSession().setAnnotations([{
-                        ...error,
-                        row: 0
-                    }])
+            this.editor.getSession().setAnnotations(
+                // @ts-ignore
+                groupBy(
+                    message.errors.filter(error => {
+                        if(error.row == maxRow){
+                            this.lastLineEditor.getSession().setAnnotations([{
+                                ...error,
+                                row: 0
+                            }])
 
-                    return false;
-                }
-                if(error.row == -1){
-                    this.topLineEditor.getSession().setAnnotations([{
-                        ...error,
-                        row: this.topLineHeaderPosition
-                    }])
+                            return false;
+                        }
+                        if(error.row == -1){
+                            this.topLineEditor.getSession().setAnnotations([{
+                                ...error,
+                                row: this.topLineHeaderPosition
+                            }])
 
-                    return false;
-                }
+                            return false;
+                        }
 
-                return true;
-            }));
+                        return true;
+                    }),
+                    x => x.row
+                ).map(errorArray => ({
+                    ...errorArray[0],
+                    text: errorArray.map(x => x.text).join("\n")
+                }))
+            );
         }
 
         if (message.header !== undefined) {

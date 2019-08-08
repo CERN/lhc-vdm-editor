@@ -35,8 +35,11 @@ export default class LuminosityChart extends HTMLElement {
                 title: {
                     useHTML: true,
                     text: "Luminosity [Hz/mm<sup>2</sup>]",
-                },
-                type: 'linear'
+                }
+            },
+
+            tooltip: {
+                pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y:.8f}</b><br/>`
             },
 
             xAxis: {
