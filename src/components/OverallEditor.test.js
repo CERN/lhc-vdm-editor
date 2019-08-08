@@ -4,7 +4,7 @@ import GitLab from "../GitLab.js";
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000000
 
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
-const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n 1 END_SEQUENCE\n";
+const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
 
 async function getNewOverallEditor(){
     const token = (await (await fetch("../secrets.json")).json()).token;

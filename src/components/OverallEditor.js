@@ -271,7 +271,7 @@ export default class OverallEditor extends HTMLElement {
      */
     addListeners(){
         this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => this.tryToCommit(ev.detail));
-        this.editorContainer.addEventListener('editor-content-change', ev => this.setCurrentEditorContent(ev.detail))
+        this.editorContainer.addEventListener('editor-content-change', ev => this.onEditorContentChange(ev.detail))
         this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));
         this.fileBrowser.addEventListener('open-file', event => this.setCurrentEditorContent(event.detail));
