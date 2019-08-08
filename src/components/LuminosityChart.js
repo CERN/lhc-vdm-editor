@@ -96,12 +96,6 @@ export default class LuminosityChart extends HTMLElement {
         }, 500, this, true);
     }
 
-    setScale(newScale){
-        this.chart.yAxis[0].update({
-            type: newScale == "log" ? "logarithmic" : "linear"
-        })
-    }
-
     template() {
         return html`
         <style>
