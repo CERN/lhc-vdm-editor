@@ -146,10 +146,10 @@ export function addPos(pos1, pos2) {
 }
 export function checkPosLim(pos, limit) {
     let errArr = []
-    if (Math.abs(pos['BEAM1']['SEPARATION']) > limit) errArr.push(`* Beam1, separation, ' + ${pos['BEAM1']['SEPARATION'] * 1e-3} mm`);
-    if (Math.abs(pos['BEAM1']['CROSSING']) > limit) errArr.push(`* Beam1, crossing, ' + ${pos['BEAM1']['CROSSING'] * 1e-3} mm`);
-    if (Math.abs(pos['BEAM2']['SEPARATION']) > limit) errArr.push(`* Beam2, separation, ' + ${pos['BEAM2']['SEPARATION'] * 1e-3} mm`);
-    if (Math.abs(pos['BEAM2']['CROSSING']) > limit) errArr.push(`* Beam2, crossing, ' + ${pos['BEAM2']['CROSSING'] * 1e-3} mm`);
+    if (Math.abs(pos['BEAM1']['SEPARATION']) > limit) errArr.push(`* Beam1, separation, ${pos['BEAM1']['SEPARATION'] * 1e3} mm`);
+    if (Math.abs(pos['BEAM1']['CROSSING']) > limit) errArr.push(`* Beam1, crossing, ${pos['BEAM1']['CROSSING'] * 1e3} mm`);
+    if (Math.abs(pos['BEAM2']['SEPARATION']) > limit) errArr.push(`* Beam2, separation, ${pos['BEAM2']['SEPARATION'] * 1e3} mm`);
+    if (Math.abs(pos['BEAM2']['CROSSING']) > limit) errArr.push(`* Beam2, crossing, ${pos['BEAM2']['CROSSING'] * 1e3} mm`);
     if (errArr.length > 0) {
         errArr.unshift('Beam out of bounds!')
         throw errArr.join('\n');
@@ -332,7 +332,7 @@ export class VdMcommandObject {
 
         this.realTime += prevCommand.realTime;
         this.sequenceTime += prevCommand.sequenceTime;
-        // Check pos limit must be last. It might throw an error and everything above is important.
+        // Check pos limit must be last. It might throw an error and everything above is not expected to.
         checkPosLim(this.position, limit * sigma);
     }
 
@@ -531,7 +531,7 @@ export default class VdM {
             } else if (obj.type == 'comment') {
                 line += '# ' + obj.comment;
             } else {
-                throw new MySyntaxError(i, 'Expected object of type command, empty, or comment but got ' + obj.type)
+                throw new Error('Expected object of type command, empty, or comment but got ' + obj.type)
             }
             line += '\n';
             string += line;
@@ -557,7 +557,7 @@ export default class VdM {
                     command.luminosity = this.luminosity(sep, cross); // Hz/m^2
                 }
             } catch (error) {
-                if (typeof error == 'string') errArr.push(new MySyntaxError(i, error))
+                if (typeof error == 'string') errArr.push(new MySyntaxError(i-1, error))
                 else throw error
             }
         }
@@ -629,17 +629,3 @@ export default class VdM {
         }).filter(x => x);
     }
 }
-
-/* export function parseVdM(data, genheaders = false, beamParameters, ip) {
-    let instance
-    if (beamParameters) instance = new VdM(toProperUnits(beamParameters, ip))
-    else instance = new VdM()
-
-    instance.parse(data, !genheaders)
-    return instance.structure
-}
-export function deparseVdM(objArr) {
-    let instance = new VdM();
-    instance.structure = objArr;
-    return instance.deparse()
-} */
