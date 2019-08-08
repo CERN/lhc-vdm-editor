@@ -286,10 +286,10 @@ export class VdMcommandObject {
         return true
     }
     simulateStep(sigma, trimRate, limit, prevCommand) {
-        if (this.command.includes('TRIM')) {
+        if (this.command.includes('TRIM') && this.isValid) {
             for (let i = 0; i < this.args.length; i += 5) {
                 let amount = Number(this.args[i + 3]);
-                if (this.args[i + 4] == 'MM') amount /= sigma;
+                if (this.args[i + 4] == 'SIGMA') amount = amount * sigma; // to meters
 
                 let dist;
                 if (this.command == 'RELATIVE_TRIM') {
@@ -581,5 +581,18 @@ export class VdM {
 
     luminocity(separation, crossing) {
         return calcLuminosity(separation, crossing, this.sigma, this.param.bunch_length, this.param.crossing_angle, this.param.intensity, this.param.bunch_pair_collisions)
+    }
+
+    toBeamGraph(beamNumber, sepVScross) {
+        return this.structure.map(line => {
+            if (line.type == "command")
+                return [{
+                    realTime: line.realTime,
+                    sequenceTime: line.sequenceTime
+                }, {
+                    mm: line.pos["BEAM" + beamNumber][sepVScross] * 1e3, // to mm
+                    sigma: line.pos["BEAM" + beamNumber][sepVScross] * 1e3 / this.sigma // to mm
+                }]
+        }).filter(x => x);
     }
 }
