@@ -48,6 +48,10 @@ export default class ChartsComponent extends HTMLElement {
         Array.from(this.root.querySelectorAll("#mmSigmaRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
             this.units = (this.root.querySelector("#mmRadio").checked ? "mm" : "sigma");
         }))
+
+        Array.from(this.root.querySelectorAll("#logLinearRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
+            this.scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
+        }))
     }
 
     /**
@@ -65,6 +69,14 @@ export default class ChartsComponent extends HTMLElement {
     set units(newUnits){
         this.separationChart.setUnits(newUnits);
         this.crossingChart.setUnits(newUnits);
+    }
+
+    /**
+     * @public
+     * @param {string} newScale
+     */
+    set scale(newScale){
+        this.luminosityChart.setScale(newScale)
     }
 
     /**
@@ -133,6 +145,18 @@ export default class ChartsComponent extends HTMLElement {
         <hr>
         <beam-position-chart id="separation-chart" title="Separation"></beam-position-chart>
         <beam-position-chart id="crossing-chart" title="Crossing"></beam-position-chart>
+        <hr>
+        <div id="logLinearRadio">
+            <span class="radio-description">Scale:</span>
+            <div class="option">
+                <input checked type="radio" name="logLinear" id="linearRadio" value="linear" />
+                <label for="linearRadio">Linear</label>
+            </div>
+            <div class="option">
+                <input type="radio" name="logLinear" id="logRadio" value="log" />
+                <label for="logRadio">Logarithmic</label>
+            </div>
+        </div>
         <luminosity-chart id="luminosity-chart"></luminosity-chart>
     `
     }
