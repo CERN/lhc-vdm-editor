@@ -326,7 +326,7 @@ export class VdMcommandObject {
             if (this.command == 'RELATIVE_TRIM') {
                 this.addPos(prevCommand.position);
             }
-            checkPosLim(this.position, limit * sigma);
+            //checkPosLim(this.position, limit * sigma);
         } else {
             this.addPos(prevCommand.position)
         }
