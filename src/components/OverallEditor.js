@@ -132,9 +132,10 @@ export default class OverallEditor extends HTMLElement {
 
         this.chartsComponent = this.root.querySelector("charts-component");
         this.fileBrowser = this.root.querySelector("file-browser");
+        this.currentEditorIndex = null;
 
         this.addListeners();
-        this.asyncConstrutor();
+        this.loadedPromise = this.asyncConstrutor();
     }
 
     async asyncConstrutor(){
@@ -216,7 +217,7 @@ export default class OverallEditor extends HTMLElement {
     makeWebWorkerParse() {
         this.errorWebWorker.postMessage({
             type: "text_change",
-            parseHeader: this.editor.headerlessParse || false,
+            hasHeaders: !(this.editor.headerlessParse || false),
             text: this.editor.headerlessParse ? addLineNumbers(this.editor.rawValue) : this.editor.value,
             beamParams: this.beamJSON
         })
@@ -341,6 +342,7 @@ export default class OverallEditor extends HTMLElement {
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
             this.filePath = null;
             this.beamJSON = null;
+            this.currentEditorIndex = null;
 
             this.updateFileNameUI(true, null);
             return;
@@ -416,8 +418,9 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {number} index
      */
-    switchToEditor(index, setValue = true) {
+    switchToEditor(index, setValue=true) {
         const previousEditor = this.editor;
+        this.currentEditorIndex = index;
 
         this.root.querySelector("switch-editor-buttons").setActiveButton(index);
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);

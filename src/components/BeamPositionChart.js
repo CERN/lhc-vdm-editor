@@ -61,6 +61,8 @@ export default class BeamPositionChart extends HTMLElement {
      * @param {number} newLimit
      */
     setLimits(newLimit){
+        if(this.maxTime == null) return;
+
         const putInUnit = (number) => {
             if(this.units == "sigma") return number;
             else return number * this.sigmaToMMFactor;
@@ -101,7 +103,12 @@ export default class BeamPositionChart extends HTMLElement {
         this.chart.series[0].setData(newData[0].map(x => this.theirDataPointToOurs(x)));
         this.chart.series[1].setData(newData[1].map(x => this.theirDataPointToOurs(x)));
 
-        this.maxTime = this.theirDataPointToOurs(newData[0].slice(-1)[0])[0]
+        if(newData[0].length != 0){
+            this.maxTime = this.theirDataPointToOurs(newData[0].slice(-1)[0])[0]
+        }
+        else{
+            this.maxTime = null;
+        }
 
         this.data = newData;
     }

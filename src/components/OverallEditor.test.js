@@ -2,6 +2,22 @@ import OverallEditor from "./OverallEditor.js";
 import GitLab from "../GitLab.js";
 
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
+const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n 1 END_SEQUENCE\n";
+
+async function getNewOverallEditor(){
+    const token = (await (await fetch("../secrets.json")).json()).token;
+    const gitlab = new GitLab(
+        token,
+        // NOTE: we need to commit to the test branch so we don't mess up master
+        "vdm-editor-test" 
+    );
+    let oe = new OverallEditor(gitlab);
+    oe.style.visibility = "hidden";
+    document.body.appendChild(oe);
+    await oe.loadedPromise;
+
+    return oe;
+}
 
 describe("OverallEditor", () => {
     /** @type {OverallEditor} */
@@ -29,15 +45,7 @@ describe("OverallEditor", () => {
     });
 
     beforeEach(async () => {
-        const token = (await (await fetch("../secrets.json")).json()).token;
-        const gitlab = new GitLab(
-            token,
-            // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test" 
-        );
-        oe = new OverallEditor(gitlab);
-        oe.style.visibility = "hidden";
-        document.body.appendChild(oe);
+        oe = await getNewOverallEditor();
     })
 
     afterEach(() => {
@@ -61,6 +69,39 @@ describe("OverallEditor", () => {
             expect(() => {
                 oe.setCurrentEditorContent(TEST_FILE);
             }).not.toThrow();
+        })
+
+        it("can load a file from no local storage", () => {
+            expect(() => {
+                oe.setCurrentEditorContent(TEST_FILE);
+            }).not.toThrow();
+        })
+    })
+
+    describe("Local storage loading", () => {
+        it("loads the same file from local storage", async () => {
+            oe.setCurrentEditorContent(TEST_FILE);
+
+            oe = await getNewOverallEditor();
+            await oe.loadedPromise;
+            console.log(fakeLocalStorage)
+            expect(oe.filePath).toBe(TEST_FILE);
+        })
+
+        it("loads the same content from local storage", async () => {
+            oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
+
+            oe = await getNewOverallEditor();
+            expect(oe.value).toBe(TEST_FILE_CONTENT);
+        })
+
+        it("saves the current open editor index", async () => {
+            oe.setCurrentEditorContent(TEST_FILE);
+            const editorToSwitchTo = Math.floor(Math.random() * 2);
+            oe.switchToEditor(editorToSwitchTo)
+
+            oe = await getNewOverallEditor();
+            expect(oe.currentEditorIndex).toBe(editorToSwitchTo);
         })
     })
 })
