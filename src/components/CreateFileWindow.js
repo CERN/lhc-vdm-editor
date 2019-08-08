@@ -171,7 +171,7 @@ export default class CreateFileWindow extends HTMLElement {
 
 
         let isOpen = false;
-        this.root.querySelector('#file-list-button').addEventListener('click', () => {
+        this.root.querySelector('#dropdown').addEventListener('click', () => {
             const triangle = this.root.querySelector('folder-triangle')
             if (isOpen) {
                 isOpen = false;
@@ -273,8 +273,10 @@ export default class CreateFileWindow extends HTMLElement {
                 </div>
                 <div id='file-list'>
                     <div id='file-list-button'>
+                    <span id="dropdown">
                         <folder-triangle></folder-triangle>
                         <div class="slightly-indented">choose files</div>
+                    </span>
                         <div id='file-list-content'></div>
                     </div>
                 </div>
