@@ -1,18 +1,13 @@
 import OverallEditor from "./OverallEditor.js";
 import GitLab from "../GitLab.js";
+import { wait } from "../HelperFunctions.js";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000000
 
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
 const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
 
-async function getNewOverallEditor(){
-    const token = (await (await fetch("../secrets.json")).json()).token;
-    const gitlab = new GitLab(
-        token,
-        // NOTE: we need to commit to the test branch so we don't mess up master
-        "vdm-editor-test" 
-    );
+async function getNewOverallEditor(gitlab){
     let oe = new OverallEditor(gitlab);
     oe.style.visibility = "hidden";
     document.body.appendChild(oe);
@@ -25,6 +20,18 @@ describe("OverallEditor", () => {
     /** @type {OverallEditor} */
     let oe;
     let fakeLocalStorage;
+    /** @type {GitLab} */
+    let gitlab;
+
+    beforeAll(async () => {
+        const token = (await (await fetch("../secrets.json")).json()).token;
+        gitlab = new GitLab(
+            token,
+            // NOTE: we need to commit to the test branch so we don't mess up master
+            "vdm-editor-test" 
+        );
+    })
+    
 
     beforeEach(() => {
         fakeLocalStorage = {};
@@ -47,7 +54,7 @@ describe("OverallEditor", () => {
     });
 
     beforeEach(async () => {
-        oe = await getNewOverallEditor();
+        oe = await getNewOverallEditor(gitlab);
     })
 
     afterEach(() => {
@@ -99,7 +106,6 @@ describe("OverallEditor", () => {
             
             const editorToSwitchTo = 0;
             oe.onSwitchEditorButtonPress(editorToSwitchTo);
-            console.log(fakeLocalStorage);
 
             oe = await getNewOverallEditor();
             expect(oe.currentEditorIndex).toBe(editorToSwitchTo);
@@ -117,13 +123,13 @@ describe("OverallEditor", () => {
         })
 
         it("reverts the current file", async () => {
-            spyOn(window, "confirm").and.callFake(_ => true)
             await oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
             oe.onSwitchEditorButtonPress(1/** The code editor */);
             oe.editor.rawValue += " ";
-            oe.tryToRevert();
+            spyOn(window, "confirm").and.callFake(_ => true)
+            await oe.tryToRevert();
 
-            expect(oe.value).toBe(TEST_FILE_CONTENT);
+            expect(oe.value).toBe(await gitlab.readFile(TEST_FILE));
             expect(oe.isCommitted).toBe(true);
         })
     })

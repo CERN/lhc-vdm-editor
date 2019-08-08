@@ -100,6 +100,32 @@ raw-editor{
 }
 `
 
+/**
+ * @param {string} campaignName
+ * @param {GitLab} [gitlab]
+ */
+async function getBeamJSON(campaignName, gitlab) {
+    // Caching this as we may be getting this multiple times
+    if (beamJSONCache.has(campaignName)) return beamJSONCache.get(campaignName);
+    else {
+        let beamJSONFile;
+
+        try {
+            beamJSONFile = JSON.parse(await gitlab.readFile(`${campaignName}/beam.json`));
+        }
+        catch (error) {
+            if (error instanceof NoPathExistsError) {
+                // TODO: actually display proper beams.json file here
+                alert(`Campaign ${campaignName} has no beams.json file, using the default file.`)
+                beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
+            } else throw error;
+        }
+
+        beamJSONCache.set(campaignName, beamJSONFile);
+        return beamJSONFile;
+    }
+}
+
 const BLANK_EDITOR_HTML = html`<div class="blank-editor">No File Selected</div>`;
 const EDITOR_TAG_NAMES = [
     "raw-editor",
@@ -152,7 +178,7 @@ export default class OverallEditor extends HTMLElement {
             this._isCommitted = newValue;
             this.fileBrowser.isCommitted = newValue;
 
-            this.updateFileNameUI(this._isCommitted, this.filePath);
+            this.updateFileNameUI(this.filePath);
         }
     }
 
@@ -168,29 +194,6 @@ export default class OverallEditor extends HTMLElement {
     get campaign() {
         if (this.filePath == null) return null
         else return this.filePath.split("/")[0];
-    }
-
-    async getCurrentBeamJSON() {
-        // Caching this as we may be getting this multiple times
-        if (beamJSONCache.has(this.campaign)) return beamJSONCache.get(this.campaign);
-        else {
-            let beamJSONFile;
-
-            try {
-                beamJSONFile = JSON.parse(await this.gitlabInterface.readFile(`${this.campaign}/beam.json`));
-            }
-            catch (error) {
-                if (error instanceof NoPathExistsError) {
-                    // TODO: actually display proper beams.json file here
-                    alert(`Campaign ${this.campaign} has no beams.json file, using the default file.`)
-                    beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
-                } else throw error;
-            }
-
-            beamJSONCache.set(this.campaign, beamJSONFile);
-            return beamJSONFile;
-        }
-
     }
 
     onWebWorkerMessage(message) {
@@ -258,7 +261,7 @@ export default class OverallEditor extends HTMLElement {
                 instance.deparse()
             );
 
-            this.updateFileNameUI(true, this.filePath);
+            this.isCommitted = true;
         }
         else {
             alert('Commit failed! Following errors encountered:\n\n' + instance.errors.map(x => x.message).join('\n'))
@@ -284,15 +287,15 @@ export default class OverallEditor extends HTMLElement {
         localStorage.setItem('open-tab', editorIndex.toString());
     }
 
-    tryToRevert(){
+    async tryToRevert(){
         if (this.filePath === null) return;
 
         if (!this.isCommitted) {
             if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
-                this.setCurrentEditorContent(this.filePath)
+                await this.setCurrentEditorContent(this.filePath)
             }
         } else {
-            this.setCurrentEditorContent(this.filePath)
+            await this.setCurrentEditorContent(this.filePath)
         }
     }
 
@@ -346,17 +349,18 @@ export default class OverallEditor extends HTMLElement {
         if(filePath == null){
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
             this.filePath = null;
+            this.updateFileNameUI(null);
             this.beamJSON = null;
             this.currentEditorIndex = null;
 
-            this.updateFileNameUI(true, null);
+            this.isCommitted = true
             return;
         }
-
+        
         if(showLoadingIndicator){
             this.loadingIndicator.style.display = "block";
         }
-
+        
         if (this.filePath == null) {
             // The filepath has been null and now isn't, so switch to the default editor.
             this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
@@ -368,15 +372,17 @@ export default class OverallEditor extends HTMLElement {
         if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()) {
             this.value = localFileChanges;
 
-            this.updateFileNameUI(false, filePath);
+            this.isCommitted = false;
         }
         else {
             this.value = fileContent;
-
-            this.updateFileNameUI(true, filePath);
+            
+            this.isCommitted = true;
         }
         this.filePath = filePath;
-        this.beamJSON = await this.getCurrentBeamJSON();
+        this.beamJSON = await getBeamJSON(this.campaign, this.gitlabInterface);
+        this.onEditorContentChange(this.value);
+        this.updateFileNameUI(filePath);
 
         this.makeWebWorkerParse();
 
@@ -389,10 +395,9 @@ export default class OverallEditor extends HTMLElement {
     }
 
     /**
-     * @param {boolean} isCommitted
      * @param {string | null} fileName NOTE: if this is null, the isCommitted attribute is ignored
      */
-    updateFileNameUI(isCommitted, fileName) {
+    updateFileNameUI(fileName) {
         if (fileName == null) {
             this.root.querySelector("#file-name").innerText = "-- NO FILE LOADED --";
             this.root.querySelector("#file-name").classList.add("uncommitted");
@@ -401,8 +406,7 @@ export default class OverallEditor extends HTMLElement {
             return;
         }
 
-        this.isCommitted = isCommitted;
-        if (isCommitted) {
+        if (this.isCommitted) {
             this.root.querySelector("#file-name").innerText = "./" + fileName + " (committed)";
             this.root.querySelector("#file-name").classList.remove("uncommitted");
         }
