@@ -63,16 +63,4 @@ xdescribe("Parser", () => {
         expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
             .toThrow(jasmine.any(Array))
     })
-    it('Faulty INITIALIZE_TRIM', () => {
-        expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
-            .toThrow(jasmine.any(Array))
-    })
-    it('Faulty INITIALIZE_TRIM', () => {
-        expect(function () { parseVdM('0 INITIALIZE_TRIM \n 1 END_SEQUENCE') })
-            .toThrow(jasmine.arrayContaining([jasmine.any(MySyntaxError)]))
-    })
-    it('Faulty file parse', () => {
-        expect(function () { parseVdM(faultyFile) })
-            .toThrow(jasmine.arrayWithExactContents(new Array(8).fill(jasmine.any(MySyntaxError))))
-    }) 
 })
