@@ -48,7 +48,7 @@ export function toProperUnits(beamParameters, IP) {
         "particle_mass": beamParameters.particle_mass, // GeV
         "emittance": beamParameters.emittance, // m
         "beta_star": beamParameters.beta_star[IP], // m
-        "crossing_angle": beamParameters.crossing_angle[IP] * 1e-6, // rad
+        "crossing_angle": beamParameters.crossing_angle[IP], // rad
         "scan_limits": beamParameters.scan_limits[IP], // sigma
         "trim_rate": beamParameters.trim_rate * 1e-3, // m/s
         "intensity": beamParameters.intensity, // particles per bunch
@@ -80,7 +80,7 @@ export class VdMSyntaxError extends Error {
 }
 
 
-export const lhc_constants = {
+const lhc_constants = {
     f_rev: 11245, // Hz
     crossing_plane: {
         'IP1': "V",
@@ -89,7 +89,7 @@ export const lhc_constants = {
         'IP8': "H"
     },
 }
-export const validArguments = {
+const validArguments = {
     IP: ['IP1', 'IP2', 'IP5', 'IP8'],
     BEAM: ['BEAM1', 'BEAM2'],
     PLANE: ['SEPARATION', 'CROSSING'],
@@ -343,7 +343,7 @@ export class VdMcommandObject {
 
 
 
-export const init_beam_param = { // these are parameters for IP1
+const init_beam_param = { // these are parameters for IP1
     "energy": 6500, // GeV
     "particle_mass": 0.938, // GeV
     "emittance": 3.5e-6, // m
@@ -356,8 +356,8 @@ export const init_beam_param = { // these are parameters for IP1
     "bunch_length": 0.0787 // m
 };
 export class VdM {
-    constructor(beamParameters = init_beam_param) {
-        this.param = beamParameters;
+    constructor(beamParameters, IP) {
+        this.param = beamParameters ? toProperUnits(beamParameters, IP) : init_beam_param;
         this.sigma = Math.sqrt((this.param.emittance / (this.param.energy / this.param.particle_mass)) * this.param.beta_star); // m
 
         this.structure = [];
@@ -508,7 +508,8 @@ export class VdM {
 
 
         // throw error-array if there are any
-        //if (this.errors.length > 0) throw this.errors;
+        // if (this.errors.length > 0) throw new VdMSyntaxError(this.errors, this.structure);
+        return this.structure
     }
     deparse() {
         let string = '';
@@ -604,19 +605,28 @@ export class VdM {
                     realTime: line.realTime,
                     sequenceTime: line.sequenceTime
                 }, {
-                    mm: line.pos["BEAM" + beamNumber][sepVScross] * 1e3, // to mm
-                    sigma: line.pos["BEAM" + beamNumber][sepVScross] * 1e3 / this.sigma // to mm
+                    mm: line.position["BEAM" + beamNumber][sepVScross] * 1e3, // to mm
+                    sigma: line.position["BEAM" + beamNumber][sepVScross] / this.sigma // to mm
                 }]
+        }).filter(x => x);
+    }
+
+    toLumiGraph() {
+        return this.structure.map(line => {
+            if (line.type == "command") return [{
+                realTime: line.realTime,
+                sequenceTime: line.sequenceTime
+            }, line.luminocity]
         }).filter(x => x);
     }
 }
 
-export function parseVdM(data, beamParameters){
+export function parseVdM(data, genheaders = false, beamParameters, ip) {
     let instance
-    if(beamParameters) instance = new VdM(toProperUnits(beamParameters))
+    if (beamParameters) instance = new VdM(toProperUnits(beamParameters, ip))
     else instance = new VdM()
 
-    instance.parse(data)
+    instance.parse(data, !genheaders)
     return instance.structure
 }
 export function deparseVdM(objArr) {
