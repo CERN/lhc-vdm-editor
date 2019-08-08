@@ -2,7 +2,7 @@ import OverallEditor from "./OverallEditor.js";
 import GitLab from "../GitLab.js";
 
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
-const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA) \n 1 END_SEQUENCE\n";
+const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n 1 END_SEQUENCE\n";
 
 async function getNewOverallEditor(){
     const token = (await (await fetch("../secrets.json")).json()).token;
@@ -57,11 +57,10 @@ describe("OverallEditor", () => {
             expect(() => {
                 spyOn(window, "alert").and.stub();
 
-                oe.onRevertButtonPress();
-                oe.onTrySwitchEditor(1);
-                oe.onTrySwitchEditor(0);
+                oe.tryToRevert();
+                oe.onSwitchEditorButtonPress(1);
+                oe.onSwitchEditorButtonPress(0);
                 oe.chartsComponent.timeType = "sequence";
-                oe.chartsComponent.scale = "log";
             }).not.toThrow();
         })
 
@@ -83,7 +82,6 @@ describe("OverallEditor", () => {
             oe.setCurrentEditorContent(TEST_FILE);
 
             oe = await getNewOverallEditor();
-            await oe.loadedPromise;
             console.log(fakeLocalStorage)
             expect(oe.filePath).toBe(TEST_FILE);
         })
@@ -98,10 +96,31 @@ describe("OverallEditor", () => {
         it("saves the current open editor index", async () => {
             oe.setCurrentEditorContent(TEST_FILE);
             const editorToSwitchTo = Math.floor(Math.random() * 2);
-            oe.switchToEditor(editorToSwitchTo)
+            oe.switchToEditor(editorToSwitchTo);
 
             oe = await getNewOverallEditor();
             expect(oe.currentEditorIndex).toBe(editorToSwitchTo);
+        })
+    })
+
+    describe("Reverting and committing works", () => {
+        it("commits to gitlab", async () => {
+            oe.setCurrentEditorContent(TEST_FILE);
+            oe.switchToEditor(1/** The code editor */);
+            oe.editor.rawValue += " ";
+
+            oe.tryToCommit("Test message");
+            expect(oe.isCommitted).toBe(true);
+        })
+
+        it("commits to gitlab", async () => {
+            oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
+            oe.switchToEditor(1/** The code editor */);
+            oe.editor.rawValue += " ";
+            oe.tryToRevert();
+
+            expect(oe.value).toBe(TEST_FILE_CONTENT);
+            expect(oe.isCommitted).toBe(true);
         })
     })
 })
