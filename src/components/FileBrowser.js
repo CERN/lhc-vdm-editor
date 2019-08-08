@@ -157,6 +157,7 @@ export default class FileBrowser extends HTMLElement {
     }
 
     tryRemoveContextMenu() {
+        console.log("try remove", this.myContextMenu);
         if (this.myContextMenu !== null) {
             this.root.removeChild(this.myContextMenu);
             this.myContextMenu = null;
@@ -181,22 +182,20 @@ export default class FileBrowser extends HTMLElement {
 
             deleteButton.addEventListener("click", () => {
                 (async () => {
-                    if (confirm(`Are you sure you want to delete the file ${filePath}?`)) {
-                        deleteButton.innerText = "Deleting...";
+                    try{
+                        if (confirm(`Are you sure you want to delete the file ${filePath}?`)) {
+                            deleteButton.innerText = "Deleting...";
 
-                        deleteButton.classList.add("disabled");
-                        renameButton.classList.add("disabled");
+                            deleteButton.classList.add("disabled");
+                            renameButton.classList.add("disabled");
 
-                        try{
                             if (element.classList.contains('folder')) {
                                 await this.gitlab.deleteFolder(filePath);
                             } else {
                                 await this.gitlab.deleteFile(filePath);
                             }
                         }
-                        finally{
-                            this.tryRemoveContextMenu();
-                        }
+                        
 
                         if(this.openFile == filePath){
                             this.dispatchEvent(new CustomEvent("open-file", {
@@ -208,52 +207,56 @@ export default class FileBrowser extends HTMLElement {
 
                         this.reloadFileUI();
                     }
+                    finally{
+                        this.tryRemoveContextMenu();
+                    }
                 })();
 
             })
 
             container.querySelector("#rename-button").addEventListener("click", () => {
-                if(!this.isCommitted){
-                    alert("Cannot rename a file without committing the current changes");
-                    return;
-                }
-
-                const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
-                if (newName !== null) {
-                    if (newName.includes(" ")) {
-                        alert("Invalid name, paths cannot contain spaces");
+                try{
+                    if(!this.isCommitted){
+                        alert("Cannot rename a file without committing the current changes");
+                        return;
                     }
-                    else {
-                        (async () => {
-                            container.querySelector("#delete-button").innerText = "Renaming ...";
 
-                            deleteButton.classList.add("disabled");
-                            renameButton.classList.add("disabled");
+                    const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
+                    if (newName !== null) {
+                        if (newName.includes(" ")) {
+                            alert("Invalid name, paths cannot contain spaces");
+                        }
+                        else {
+                            (async () => {
+                                container.querySelector("#delete-button").innerText = "Renaming ...";
 
-                            try{
-                                if (element.classList.contains('folder')) {
-                                    await this.gitlab.renameFolder(filePath, newName);
-                                } else {
-                                    await this.gitlab.renameFile(filePath, newName);
+                                deleteButton.classList.add("disabled");
+                                renameButton.classList.add("disabled");
+
+
+                                    if (element.classList.contains('folder')) {
+                                        await this.gitlab.renameFolder(filePath, newName);
+                                    } else {
+                                        await this.gitlab.renameFile(filePath, newName);
+                                    }
+
+                                if(this.openFile == filePath){
+                                    const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
+
+                                    this.dispatchEvent(new CustomEvent("open-file", {
+                                        detail: fullNewName
+                                    }));
+        
+                                    this.openFile = fullNewName;
                                 }
-                            }
-                            finally{
-                                this.tryRemoveContextMenu();
-                            }
 
-                            if(this.openFile == filePath){
-                                const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
-
-                                this.dispatchEvent(new CustomEvent("open-file", {
-                                    detail: fullNewName
-                                }));
-    
-                                this.openFile = fullNewName;
-                            }
-
-                            this.reloadFileUI();
-                        })()
+                                this.reloadFileUI();
+                            })()
+                        }
                     }
+                }
+                finally{
+                    this.tryRemoveContextMenu();
                 }
             })
 
