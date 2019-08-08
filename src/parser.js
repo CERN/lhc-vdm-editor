@@ -123,7 +123,7 @@ export function testArgs(argsObj) {
  * @param {Array} args
  */
 export function checkTrimArgs(args) {
-    if (args.length == 0) { throw 'Command has to include arguments: IP BEAM PLANE AMOUNT UNIT' };
+    if (args.length == 0 || args.length % 5 != 0) throw 'Command has to include arguments: IP BEAM PLANE AMOUNT UNIT';
     for (let i = 0; i < args.length; i += 5) {
         const currentArgs = {
             IP: args[i],
