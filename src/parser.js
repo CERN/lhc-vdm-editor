@@ -1,22 +1,69 @@
 // NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
 
+export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb) {
+    // s - separation in separation plane - m
+    // c - separation in crossing plane - m
+    // sigma - m
+    // alpha - crossing_angle - rad
+    // sigmaZ - this.param.bunch_length - m
+    // nbb - bunch_pair_collisions.IP1
+    // intensity - nuclei per bunch
 
-/**
- * @param {any[]} arr1
- * @param {any[]} arr2
- */
-function isSubsetOf(arr1, arr2) {
+    const s2 = sigma ** 2;
+    const sz2 = sigmaZ ** 2;
+    const cos2 = Math.cos(alpha / 2) ** 2;
+    const sin2 = Math.sin(alpha / 2) ** 2;
+
+    const SigmaCross = Math.sqrt(2 * (s2 * cos2 + sz2 * sin2)); // effective size in crossing plane - m
+    const SigmaSep = Math.sqrt(2 * s2); // effective size in separation plane - m
+
+    const Ssep = Math.exp((-1 / 2) * (sep / SigmaSep) ** 2); // separation factor in separation plane
+    const Scross = Math.exp((-1 / 2) * (cross / SigmaCross) ** 2); // separation factor in crossing plane
+    const Lbb = lhc_constants.f_rev * cos2 * intensity ** 2 / (2 * Math.PI * SigmaCross * SigmaSep) * Ssep * Scross; // luminosity per bunch pair in Hz/m^2
+
+    const L = nbb * Lbb; // luminosity in Hz/m^2
+    return L;
+}
+export function isSubsetOf(arr1, arr2) {
     // returns true iff arr1 is a subset of arr2
+    arr1 = typeof arr1 == 'string' ? [arr1] : Array.from(arr1);
+    arr2 = typeof arr2 == 'string' ? [arr2] : Array.from(arr2);
     return arr1.every(x => arr2.includes(x))
+}
+/**
+ * @param {string} str
+ * @param {string} key
+ * @returns {Array}
+ */
+export function getInnerBracket(str, key) {
+    const match = str.match(new RegExp('^' + key + '\\((.*)\\)$'));
+    if (!match) {
+        throw `Expected ${key}(...) but got ${str}`
+    }
+    return match[1].split(',');
+}
+export function toProperUnits(beamParameters, IP) {
+    return {
+        "energy": beamParameters.energy, // GeV
+        "particle_mass": beamParameters.particle_mass, // GeV
+        "emittance": beamParameters.emittance, // m
+        "beta_star": beamParameters.beta_star[IP], // m
+        "crossing_angle": beamParameters.crossing_angle[IP] * 1e-6, // rad
+        "scan_limits": beamParameters.scan_limits[IP], // sigma
+        "trim_rate": beamParameters.trim_rate * 1e-3, // m/s
+        "intensity": beamParameters.intensity, // particles per bunch
+        "bunch_pair_collisions": beamParameters.bunch_pair_collisions[IP],
+        "bunch_length": beamParameters.bunch_length * 1e-3 // m
+    };
 }
 export class MySyntaxError extends Error {
     /**
-     * @param {number} line
+     * @param {number} linenumber
      * @param {string} message
      */
-    constructor(line, message) {
+    constructor(linenumber, message) {
         super();
-        this.line = line;
+        this.line = linenumber;
         this.message = message;
     }
 }
@@ -32,47 +79,9 @@ export class VdMSyntaxError extends Error {
     }
 }
 
-export function parseVdM(data, genHeaders=false, init_beam_param=undefined) {
-    return (new VdM(init_beam_param)).parseVdM(data, genHeaders)
-}
-export function deparseVdM(structure, init_beam_param=undefined) {
-    return (new VdM(init_beam_param)).deparseVdM(structure)
-}
 
-const init_beam_param = { // IP1
-    "energy": 6500,
-    "particle_mass": 0.938,
-    "emittance": 3.5e-6,
-    "beta_star": {
-        "IP1": 20,
-        "IP2": 21,
-        "IP5": 20,
-        "IP8": 23
-    },
-    "crossing_angle": {
-        "IP1": 0,
-        "IP2": 200e-6,
-        "IP5": 0,
-        "IP8": 200e-6
-    },
-    "scan_limits": {
-        "IP1": 6,
-        "IP2": 4,
-        "IP5": 6,
-        "IP8": 4
-    },
-    "trim_rate": 0.1,
-    "intensity": 1e11,
-    "bunch_pair_collisions": {
-        "IP1": 50,
-        "IP2": 50,
-        "IP5": 50,
-        "IP8": 50
-    },
-    "bunch_length": 80
-}
-const lhc_constants = {
-    f_rev: 11245,
+export const lhc_constants = {
+    f_rev: 11245, // Hz
     crossing_plane: {
         'IP1': "V",
         'IP2': "V",
@@ -80,311 +89,433 @@ const lhc_constants = {
         'IP8': "H"
     },
 }
+export const validArguments = {
+    IP: ['IP1', 'IP2', 'IP5', 'IP8'],
+    BEAM: ['BEAM1', 'BEAM2'],
+    PLANE: ['SEPARATION', 'CROSSING'],
+    UNITS: ['SIGMA', 'MM'],
+    FIT_TYPE: ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT']
+}
+/**
+ * @param {Object} argsObj
+ */
+export function testArgs(argsObj) {
+    /* expects:
+    arrgsObj = {
+        IP: [],
+        BEAM: [],
+        PLANE: [],
+        UNITS: []
+    } */
+    for (const [key, value] of Object.entries(argsObj)) {
+        if (!isSubsetOf(value, validArguments[key])) {
+            throw `Invalid ${key} argument. Expected subset of {${validArguments[key]}} but got {${value}}`
+        }
+    }
+    return true
+}
 
-class VdM {
-    constructor(param = init_beam_param) {
-        this.sigma = Math.sqrt((param.emittance / (param.energy / param.particle_mass)) * param.beta_star.IP1) * 1e3; // mm
-        this.param = param;
-        this.scan_limit = param.scan_limits.IP1 * this.sigma; // mm
-        this.state = {};
+
+
+
+/**
+ * @param {Array} args
+ */
+export function checkTrimArgs(args) {
+    if (args.length == 0) { throw 'Command has to include arguments: IP BEAM PLANE AMOUNT UNIT' };
+    for (let i = 0; i < args.length; i += 5) {
+        const currentArgs = {
+            IP: args[i],
+            BEAM: args[i + 1],
+            PLANE: args[i + 2],
+            UNITS: args[i + 4]
+        };
+        testArgs(currentArgs);
+        if (!isFinite(Number(args[i + 3]))) {
+            throw 'Amount has to be finite but got ' + args[i + 3]
+        };
+    }
+    return true
+}
+export function addPos(pos1, pos2) {
+    pos1['BEAM1']['SEPARATION'] += pos2['BEAM1']['SEPARATION'];
+    pos1['BEAM1']['CROSSING'] += pos2['BEAM1']['CROSSING'];
+    pos1['BEAM2']['SEPARATION'] += pos2['BEAM2']['SEPARATION'];
+    pos1['BEAM2']['CROSSING'] += pos2['BEAM2']['CROSSING'];
+}
+export function checkPosLim(pos, limit) {
+    let errArr = []
+    if (pos['BEAM1']['SEPARATION'] > limit) errArr.push('* Beam1, separation, ' + pos['BEAM1']['SEPARATION']);
+    if (pos['BEAM1']['CROSSING'] > limit) errArr.push('* Beam1, crossing, ' + pos['BEAM1']['CROSSING']);
+    if (pos['BEAM2']['SEPARATION'] > limit) errArr.push('* Beam2, separation, ' + pos['BEAM2']['SEPARATION']);
+    if (pos['BEAM2']['CROSSING'] > limit) errArr.push('* Beam2, crossing, ' + pos['BEAM2']['CROSSING']);
+    if (errArr.length > 0) throw errArr.join('\n');
+
+    return true
+}
+
+export class VdMcommandObject {
+    constructor(commandLine) {
+        const line = commandLine.split(/ +/);
+
+        this.isValid = false;
+        this.type = 'command';
+        this.index = line[0];
+        this.command = line[1];
+        this.args = line.slice(2);
+
+        this.realTime = 0;
+        this.sequenceTime = 0;
+        this.position = {
+            'BEAM1': {
+                'SEPARATION': 0,
+                'CROSSING': 0,
+            },
+            'BEAM2': {
+                'SEPARATION': 0,
+                'CROSSING': 0,
+            }
+        }
 
         this.commandHandler = {
             'INITIALIZE_TRIM':
                 /**
-                 * @param {{ args: any[]; }} obj
+                 * @param {Array} args
                  */
-                (obj) => {
-                    if (this.state.currentLineNum != 0) {
-                        throw 'Invalid INITIALIZE_TRIM command. Must occur on line zero'
+                (args) => {
+                    try {
+                        if (this.index != 0) {
+                            throw 'May only appear at line 0. Encountered at ' + this.index
+                        }
+                        if (args.length != 4) {
+                            throw 'Expected exactly four arguments: IP(...) BEAM(...) PLANE(...) UNITS(...), but got : ' + args.join(' ')
+                        }
+                        const initArgs = {
+                            IP: getInnerBracket(args[0], 'IP'),
+                            BEAM: getInnerBracket(args[1], 'BEAM'),
+                            PLANE: getInnerBracket(args[2], 'PLANE'),
+                            UNITS: getInnerBracket(args[3], 'UNITS'),
+                        }
+                        if (initArgs.IP.length != 1) {
+                            throw 'IP argument can contain at most one valid IP'
+                        }
+                        testArgs(initArgs);
                     }
-                    if (obj.args.length != 4) {
-                        throw 'Invalid INITIALIZE_TRIM command. Must have exactly four arguments: IP(...) BEAM(...) PLANE(...) UNITS(...), but got ' + obj.args
+                    catch (error) {
+                        throw 'Invalid INITIALIZE_TRIM command. ' + error
                     }
-                    const IPs = this.getInnerBracket(obj.args[0], 'IP');
-                    const beams = this.getInnerBracket(obj.args[1], 'BEAM');
-                    const planes = this.getInnerBracket(obj.args[2], 'PLANE');
-                    const units = this.getInnerBracket(obj.args[3], 'UNITS');
-
-                    if (IPs.length == 1 && isSubsetOf(IPs, this.state.IPs)) { this.state.IPs = IPs; }
-                    else { throw 'Invalid INITIALIZE_TRIM command. Expected exactly one of ' + this.state.IPs + ' but got ' + IPs }
-
-                    if (isSubsetOf(beams, this.state.beams)) { this.state.beams = beams; }
-                    else { throw 'Invalid BEAM argument. Expected subset of ' + this.state.beams + ' but got ' + beams }
-
-                    if (isSubsetOf(planes, this.state.planes)) {
-                        this.state.planes = planes;
-                        this.state.planesContainer = planes;
-                    }
-                    else { throw 'Invalid PLANE argument. Expected subset of ' + this.state.planes + ' but got ' + planes }
-
-                    if (isSubsetOf(units, this.state.units)) { this.state.units = units; }
-                    else { throw 'Invalid UNITS argument. Expected subset of ' + this.state.units + ' but got ' + units }
                 },
             'SECONDS_WAIT':
                 /**
-                 * @param {{ args: string[]; }} obj
+                 * @param {Array} args
                  */
-                (obj) => {
-                    if (obj.args.length != 1) {
-                        throw 'Invalid SECONDS_WAIT command. Expected exactly one argument but got ' + obj.args
+                (args) => {
+                    if (args.length != 1) {
+                        throw `Invalid SECONDS_WAIT command. Expected exactly one argument but got {${args}}`
                     }
-                    if (isFinite(Number(obj.args[0])) && Number(obj.args[0]) >= 0) {
-                        this.state.sequenceTime += Number(obj.args[0]);
-                        this.state.realTime += Number(obj.args[0]);
+                    if (isFinite(Number(args[0])) && Number(args[0]) >= 0) {
+                        this.sequenceTime = Number(args[0]);
+                        this.realTime = Number(args[0]);
                     } else {
-                        throw 'Invalid SECONDS_WAIT command. Argument must be a finite positive number but got ' + obj.args
+                        throw `Invalid SECONDS_WAIT command. Argument must be a finite positive number but got ${args}`
                     }
                 },
             'RELATIVE_TRIM':
                 /**
-                 * @param {any} obj
+                 * @param {Array} args
                  */
-                (obj) => {
+                (args) => {
                     // Check syntax
-                    this.checkTrim(obj)
-                    // Update this.state simulation
-                    for (let i = 0; i < obj.args.length; i += 5) {
-                        try {
-                            const amount = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
-                            this.state.pos[obj.args[i + 1]][obj.args[i + 2]] += amount;
-                            this.state.realTime += Math.abs(amount) * this.param.trim_rate;
-                            const pos = this.state.pos[obj.args[i + 1]][obj.args[i + 2]];
-                            if (Math.abs(pos) > this.scan_limit) {
-                                throw 'Beam position: ' + pos + 'mm exceeds the maximally allowed distance from zero of ' + this.scan_limit + 'mm'
-                            }
-                        }
-                        catch (err) {
-                            throw err
-                        }
+                    try {
+                        checkTrimArgs(args)
+                    }
+                    catch (error) {
+                        throw 'Invalid RELATIVE_TRIM command. ' + error;
                     }
                 },
             'ABSOLUTE_TRIM':
                 /**
-                 * @param {any} obj
+                 * @param {Array} args
                  */
-                (obj) => {
+                (args) => {
                     // Check syntax
-                    this.checkTrim(obj)
-                    // Update this.state simulation
-                    for (let i = 0; i < obj.args.length; i += 5) {
-                        try {
-                            const pos = obj.args[i + 4] == 'MM' ? Number(obj.args[i + 3]) : Number(obj.args[i + 3]) * this.sigma;
-                            const dist = Math.abs(this.state.pos[obj.args[i + 1]][obj.args[i + 2]] - pos);
-                            this.state.pos[obj.args[i + 1]][obj.args[i + 2]] = pos;
-                            this.state.realTime += dist * this.param.trim_rate;
-                            if (Math.abs(pos) > this.scan_limit) {
-                                throw 'Beam position ' + pos + 'mm exceeds the maximally allowed distance to zero of ' + this.scan_limit + 'mm'
-                            }
-                        } catch (err) {
-                            throw (err)
-                        }
+                    try {
+                        checkTrimArgs(args)
+                    }
+                    catch (error) {
+                        throw 'Invalid ABSOLUTE_TRIM command. ' + error;
                     }
                 },
             'START_FIT':
                 /**
-                 * @param {{ args: string | any[]; }} obj
+                 * @param {Array} args
                  */
-                (obj) => {
+                (args) => {
                     try {
-                        if (this.state.isFitting) {
-                            throw 'Invalid START_FIT command. Previous fit command not teminated'
-                        }
-                        if (obj.args.length == 2) {
-                            if (!this.state.planes.includes(obj.args[0])) {
-                                throw 'Invalid START_FIT command. Expected plane in ' + this.state.planes + ' but got ' + obj.args[0]
+                        if (args.length == 2) {
+                            if (!validArguments.PLANE.includes(args[0])) {
+                                throw 'Expected plane in ' + validArguments.PLANE + ' but got ' + args[0]
                             }
-                            if (!this.state.fitTypes.includes(obj.args[1])) {
-                                throw 'Invalid START_FIT command. Expected fit type in ' + this.state.fitTypes + ' but got ' + obj.args[1]
+                            if (!validArguments.FIT_TYPE.includes(args[1])) {
+                                throw 'Expected fit type in ' + validArguments.FIT_TYPE + ' but got ' + args[1]
                             }
-                            this.state.planes = [obj.args[0]];
                         } else {
-                            throw 'Invalid START_FIT command. Expected exactly two arguments "PLANE FIT_TYPE" but got ' + obj.args
+                            throw 'Expected exactly two arguments "PLANE FIT_TYPE" but got "' + args.join(' ') + '"'
                         }
-                    } finally { this.state.isFitting = true }
+                    }
+                    catch (error) {
+                        throw 'Invalid START_FIT command. ' + error
+                    }
                 },
             'END_FIT':
                 /**
-                 * @param {{ args: string; }} obj
+                 * @param {Array} args
                  */
-                (obj) => {
-                    try {
-                        if (!this.state.isFitting) {
-                            throw 'Invalid END_FIT command. Missing START_FIT command'
-                        }
-                        if (obj.args.length != 0) {
-                            throw 'Invalid END_FIT command. No arguments allowed but got ' + obj.args
-                        }
-                    } finally {
-                        this.state.planes = this.state.planesContainer;
-                        this.state.isFitting = false;
+                (args) => {
+                    if (args.length != 0) {
+                        throw 'Invalid END_FIT command. No arguments allowed but got ' + args
                     }
                 },
             'END_SEQUENCE':
-                /**
-                 * @param {{ args: string; }} obj
-                 */
-                (obj) => {
-                    this.state.hasEnded = true;
-                    if (obj.args.length != 0) {
-                        throw 'Invalid END_SEQUENCE command. No arguments allowed but got ' + obj.args
+                (args) => {
+                    if (args.length != 0) {
+                        throw 'Invalid END_SEQUENCE command. No arguments allowed but got ' + args
                     }
                 },
             'MESSAGE':
-                /**
-                 * @param {any} obj
-                 */
-                (obj) => {
+                (args) => {
                     // Do nothing
                 }
         }
     }
-    calcLuminosity(beamSeparation) {
-        const d = beamSeparation; // separation in separation plane in mm
-        const sigma = this.sigma; // mm
-        const alpha = this.param.crossing_angle.IP1; // rad
-        const sigmaz = this.param.bunch_length; // mm
-        const nbb = this.param.bunch_pair_collisions.IP1;
 
-        const Sx = 2 * ((sigma * Math.cos(alpha / 2)) ** 2 + (sigmaz * Math.sin(alpha / 2)) ** 2); // effective area x-size in mm
-        const Sy = 2 * (sigma ** 2); // effective area y-size in mm
-        const S = Math.sqrt(2) * sigma / Sx; // geometric factor
-        const F = Math.exp((d / Sy) ** 2 / -2); // separation factor
-        const Lbb = lhc_constants.f_rev * ((this.param.intensity * Math.cos(alpha / 2) / sigma) ** 2) * S * F / (4 * Math.PI); // luminosity per bunch pair in Hz/mm^2
-        const L = nbb * Lbb; // luminosity in Hz/mm^2
-        return L;
-    }
-    /**
-     * @param {object[]} objArr
-     */
-    genInitTrimArgs(objArr) {
-        let argArr = [
-            { 'type': 'IP', 'values': new Set([]) },
-            { 'type': 'BEAM', 'values': new Set([]) },
-            { 'type': 'PLANE', 'values': new Set([]) },
-            { 'type': 'UNITS', 'values': new Set([]) },
-        ];
-        for (let obj of objArr) {
-            if (obj.type == 'command' && obj.command.match(/(?:TRIM)$/)) {
-                for (let i = 0; i < obj.args.length; i += 5) {
-                    argArr[0].values.add(obj.args[i + 0]);
-                    argArr[1].values.add(obj.args[i + 1]);
-                    argArr[2].values.add(obj.args[i + 2]);
-                    argArr[3].values.add(obj.args[i + 4]);
-                }
-            }
-        }
-        for (let type of argArr) {
-            if (type.values.size < 1) {
-                console.log('Missing ' + type.type + ' argument to generate INITIALIZE_TRIM command, returning default INITIALIZE_TRIM')
-            }
-        }
-        return argArr.map(x => x.type + '(' + Array.from(x.values).join(',').trim() + ')');
-    }
-    /**
-     * @param {object[]} objArr
-     */
-    addHeaders(objArr) {
-        let res = objArr;
-        res.unshift({
-            'type': 'command',
-            'command': 'INITIALIZE_TRIM',
-            'args': this.genInitTrimArgs(objArr),
-            'realTime': 0,
-            'sequenceTime': 0,
-            'pos': {
-                'BEAM1': {
-                    'SEPARATION': 0,
-                    'CROSSING': 0,
-                },
-                'BEAM2': {
-                    'SEPARATION': 0,
-                    'CROSSING': 0,
-                }
-            },
-            'luminosity': 0
-        });
-        res.push({
-            'type': 'command',
-            'command': 'END_SEQUENCE',
-            'args': [],
-            'realTime': objArr.filter(x => x.type == "command").pop().realTime,
-            'sequenceTime': objArr.filter(x => x.type == "command").pop().sequenceTime,
-            'pos': {
-                'BEAM1': {
-                    'SEPARATION': 0,
-                    'CROSSING': 0,
-                },
-                'BEAM2': {
-                    'SEPARATION': 0,
-                    'CROSSING': 0,
-                }
-            },
-            'luminosity': 0
-        });
-        return res;
-    }
-    /**
-     * @param {string} str
-     * @param {string} type
-     */
-    getInnerBracket(str, type) {
-        const match = str.match(new RegExp('^' + type + '\\((.*)\\)$'));
-        if (!match) {
-            throw 'Invalid INITIALIZE_TRIM command. Expected "' + type + '(...)" but got ' + str
-        }
-        return match[1].split(',');
-    }
-    /**
-     * @param {{ args: string[]; }} obj
-     */
-    checkTrim(obj) {
-        if (obj.args.length == 0) { throw 'Invalid TRIM command. Command has to include arguments: IP BEAM PLANE AMOUNT UNIT' }
-        for (let i = 0; i < obj.args.length; i += 5) {
-            if (!this.state.IPs.includes(obj.args[i])) {
-                throw 'Invalid TRIM command. Expected IP to be' + this.state.IPs + ' but got ' + obj.args[i]
-            }
-            if (!this.state.beams.includes(obj.args[i + 1])) {
-                throw 'Invalid TRIM command. Expected beam in [' + this.state.beams + '] but got ' + obj.args[i + 1]
-            }
-            if (!this.state.planes.includes(obj.args[i + 2])) {
-                throw 'Invalid TRIM command. Expected plane in [' + this.state.planes + '] but got ' + obj.args[i + 2]
-            }
-            if (!isFinite(Number(obj.args[i + 3]))) {
-                throw 'Invalid TRIM command. Amount has to be finite but got ' + obj.args[i + 3]
-            }
-            if (!this.state.units.includes(obj.args[i + 4])) {
-                throw 'Invalid TRIM command. Expected unit in [' + this.state.units + '] but got ' + obj.args[i + 4]
-            }
-        }
-    }
-
-    /**
-     * @param {{ command?: any; }} obj
-     */
-    validateArgs(obj) {
-        if (this.commandHandler[obj.command]) {
-            this.commandHandler[obj.command](obj);
+    checkSyntax() {
+        if (this.commandHandler[this.command]) {
+            this.commandHandler[this.command](this.args);
         }
         else {
-            throw 'Unknown command "' + obj.command + '" encountered'
+            throw `Unknown command "${this.command}" encountered`
         }
+        this.isValid = true;
+        return true
+    }
+    simulateStep(sigma, trimRate, limit, prevCommand) {
+        if (this.command.includes('TRIM') && this.isValid) {
+            for (let i = 0; i < this.args.length; i += 5) {
+                let amount = Number(this.args[i + 3]);
+                if (this.args[i + 4] == 'SIGMA') amount = amount * sigma; // to meters
+
+                let dist;
+                if (this.command == 'RELATIVE_TRIM') {
+                    this.position[this.args[i + 1]][this.args[i + 2]] += amount;
+                    dist = Math.abs(amount);
+                } else if (this.command == 'ABSOLUTE_TRIM') {
+                    this.position[this.args[i + 1]][this.args[i + 2]] = amount;
+                    dist = Math.abs(amount - prevCommand.position[this.args[i + 1]][this.args[i + 2]]);
+                } else throw new Error('Unknown trim command')
+
+                this.realTime += dist / trimRate;
+            }
+            if (this.command == 'RELATIVE_TRIM') {
+                this.addPos(prevCommand.position);
+            }
+            checkPosLim(this.position, limit * sigma);
+        } else {
+            this.addPos(prevCommand.position)
+        }
+
+        this.realTime += prevCommand.realTime;
+        this.sequenceTime += prevCommand.sequenceTime;
+    }
+
+    addPos(pos) {
+        addPos(this.position, pos)
+    }
+    stringify() {
+        return `${this.index} ${this.command} ${this.args.join(' ')}`.trim()
+    }
+}
+
+
+
+
+
+
+
+
+export const init_beam_param = { // these are parameters for IP1
+    "energy": 6500, // GeV
+    "particle_mass": 0.938, // GeV
+    "emittance": 3.5e-6, // m
+    "beta_star": 20, // m
+    "crossing_angle": 300e-6, // rad
+    "scan_limits": 6, // sigma
+    "trim_rate": 1e-4, // m/s
+    "intensity": 1e11, // particles per bunch
+    "bunch_pair_collisions": 50,
+    "bunch_length": 0.0787 // m
+};
+export class VdM {
+    constructor(beamParameters = init_beam_param) {
+        this.param = beamParameters;
+        this.sigma = Math.sqrt((this.param.emittance / (this.param.energy / this.param.particle_mass)) * this.param.beta_star); // m
+
+        this.structure = [];
+        this.errors = [];
     }
 
     /**
-     * @param {Array} struct
+     * @param {string} file
      */
-    deparseVdM(struct) {
+    parse(file, includesHeader = false) {
+        this.structure = [];
+        this.errors = [];
+        let state = {
+            fitPlanes: [],
+            isFitting: false,
+            hasEnded: false,
+            currentLineNum: includesHeader ? -1 : 0
+        }
+        const lineArr = file.split(/\n/).map(x => x.trim());
+
+        for (let [index, line] of lineArr.entries()) {
+            let obj;
+            try {
+                if (!line.match(/^(?:[1-9][0-9]*|0) /)) {
+                    // Line type is NOT a command line (not initialised with integer)
+                    if (line == '') {
+                        obj = {
+                            type: 'empty'
+                        };
+                    } else if (line[0] == '#') {
+                        obj = {
+                            type: 'comment',
+                            comment: line.slice(1).trim()
+                        }
+                    } else {
+                        throw new MySyntaxError(index, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
+                    }
+                }
+                else {
+                    // Line type is a command line. Check line syntax:
+                    try {
+                        state.currentLineNum++;
+                        obj = new VdMcommandObject(line);
+                        obj.checkSyntax();
+
+                        if (state.hasEnded) {
+                            throw 'Encountered command line "' + line + '" after the END_SEQUENCE command'
+                        }
+                        if (line.length < 2) {
+                            throw 'Valid command is missing. Lines initiated with an integer cannot be empty.'
+                        }
+                        if (includesHeader && state.currentLineNum == 0 && obj.command != 'INITIALIZE_TRIM') {
+                            throw 'Expected first command to be INITIALIZE_TRIM but got ' + line
+                        }
+                        if (obj.command == 'END_SEQUENCE') {
+                            state.hasEnded = true;
+                        }
+                        if (obj.command == 'START_FIT') {
+                            if (state.isFitting) {
+                                throw 'Invalid START_FIT command. Previous fit not teminated'
+                            }
+                            state.fitPlanes = obj.args[0];
+                            state.isFitting = true;
+                        }
+                        if (obj.command == 'END_FIT') {
+                            if (!state.isFitting) {
+                                throw 'Invalid END_FIT command. Missing START_FIT command'
+                            }
+                            state.fitPlanes = [];
+                            state.isFitting = false;
+                        }
+                        if (state.isFitting && obj.command.includes('TRIM')) {
+                            for (let i = 0; i < obj.args.length; i += 5) {
+                                if (!state.fitPlanes.includes(obj.args[i + 2])) {
+                                    throw `Invalid TRIM command. Invalid PLANE argument. Expected in {${state.fitPlanes}} but got ${obj.args[i + 2]}`
+                                }
+                            }
+                        }
+                    }
+                    catch (error) {
+                        if (typeof error == 'string') throw new MySyntaxError(index, error);
+                        else throw error;
+                    }
+
+                    // Check line numbering
+                    if (parseInt(line.match(/^(?:[1-9][0-9]*|0) /)[0]) != state.currentLineNum) {
+                        throw new MySyntaxError(index, 'Incorrect line numbering. Expected ' + state.currentLineNum + '... but got ' + line)
+                    }
+                }
+            }
+            catch (error) {
+                if (error instanceof MySyntaxError) this.errors.push(error)
+                else throw error;
+            }
+            finally {
+                this.structure.push(obj);
+            }
+        }
+
+        // Command termination tests
+        if (state.isFitting) {
+            this.errors.push(new MySyntaxError(this.structure.length, 'Missing command END_FIT'))
+        }
+        // check initialize trim command line
+        let genInitTrimObj;
+        try {
+            genInitTrimObj = new VdMcommandObject(this.getInitTrim());
+            genInitTrimObj.checkSyntax();
+        }
+        catch (error) {
+            genInitTrimObj = new VdMcommandObject('0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()')
+
+            if (Array.isArray(error)) this.errors = this.errors.concat(error)
+            else if (typeof error == 'string') this.errors.push(new MySyntaxError(0, error))
+            else throw error
+        }
+
+        if (includesHeader) {
+            if (!state.hasEnded) {
+                this.errors.push(new MySyntaxError(this.structure.length, 'Missing command END_SEQUENCE'))
+            }
+
+            let initTrimObj = this.structure.find(x => x.command == 'INITIALIZE_TRIM');
+            if (initTrimObj) {
+                if (this.errors.length == 0 && initTrimObj.stringify() != genInitTrimObj.stringify()) {
+                    this.errors.push(new MySyntaxError(0, `Invalid INITIALIZE_TRIM command. Expected "${genInitTrimObj.stringify()}" but got "${initTrimObj.stringify()}"`))
+                }
+            }
+        }
+        else {
+            // Add initialize trim obj
+            this.structure.unshift(genInitTrimObj);
+            // Add end sequence obj
+            let commandIndex = 1 + parseInt(this.structure.slice().reverse().find(x => x.type == 'command').index);
+            let endSeqObj = new VdMcommandObject(commandIndex + ' END_SEQUENCE');
+            endSeqObj.checkSyntax();
+            this.structure.push(endSeqObj);
+        }
+
+        // simulation of beam position and luminosity
+        try {
+            this.simulateBeam()
+        }
+        catch (error) {
+            if (Array.isArray(error)) this.errors = this.errors.concat(error)
+            else throw error
+        }
+
+
+        // throw error-array if there are any
+        //if (this.errors.length > 0) throw this.errors;
+    }
+    deparse() {
         let string = '';
-        let currentLineNum = 0;
-        for (let i = 0; i < struct.length; i++) {
-            const obj = struct[i]
+        for (let [i, obj] of this.structure.entries()) {
             let line = '';
             if (obj.type == 'command') {
-                line += currentLineNum + ' ';
-                line += obj.command + ' ';
-                line += obj.args.join(' ');
-                line = line.trim();
-                currentLineNum++;
+                line += obj.stringify();
             } else if (obj.type == 'empty') {
                 // Line stays empty
             } else if (obj.type == 'comment') {
@@ -397,131 +528,95 @@ class VdM {
         }
         return string.trim() + '\n';
     }
-    /**
-     * @param {string} data
-     * @param {boolean} genHeaders
-     */
-    parseVdM(data, genHeaders = false) {
-        this.state = {
-            // Allowed arguments
-            'IPs': ['IP1', 'IP2', 'IP5', 'IP8'],
-            'beams': ['BEAM1', 'BEAM2'],
-            'planes': ['SEPARATION', 'CROSSING'],
-            'units': ['SIGMA', 'MM'],
-            'fitTypes': ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'],
-            // Variables used during parsing
-            'planesContainer': ['SEPARATION', 'CROSSING'],
-            'isFitting': false,
-            'hasEnded': false,
-            'currentLineNum': genHeaders ? 1 : 0,
-            // Variables used when simulating
-            'realTime': 0,
-            'sequenceTime': 0,
-            'pos': {
-                'BEAM1': {
-                    'SEPARATION': 0,
-                    'CROSSING': 0,
-                },
-                'BEAM2': {
-                    'SEPARATION': 0,
-                    'CROSSING': 0,
-                }
-            }
-        }
-        // Split data into array containing each line
-        const lineArr = data.split(/\n/).map(x => x.trim());
-        // Array to be filled and then returned as the VdM structure + array to contain possible line errors
-        let objArr = [];
+
+    simulateBeam() {
         let errArr = [];
-        for (let i = 0; i < lineArr.length; i++) {
-            // Object to be created and pushed to the structure
-            let obj = {};
+        for (let [i, command] of this.structure.entries()) {
             try {
-                // Deconstruct string into arguments by spaces
-                const line = lineArr[i].split(/ +/);
-                // Check syntax line by line
-                if (!line[0].match(/^(?:[1-9][0-9]*|0)$/)) {
-                    // Line type is NOT a command line (not initialised with integer)
-                    if (line[0] == '') {
-                        obj.type = 'empty';
-                    } else if (line[0].charAt(0) == '#') {
-                        obj.type = 'comment';
-                        obj.comment = lineArr[i].slice(1).trim();
-                    } else {
-                        throw new MySyntaxError(i, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
+                if (command.type == 'command') {
+                    // Simulate beam movement
+                    const prevCommand = this.structure.find(x => x.index == command.index - 1)
+                    if (prevCommand) {
+                        command.simulateStep(this.sigma, this.param.trim_rate, this.param.scan_limits, prevCommand);
                     }
-                } else {
-                    // Line type is a command line (initialised with integer)! Check syntax:
-                    try {
-                        if (this.state.hasEnded) {
-                            throw new MySyntaxError(i, 'Encountered command line "' + lineArr[i] + '" after the END_SEQUENCE command')
-                        }
-                        if (line.length < 2) {
-                            throw new MySyntaxError(i, 'Lines initiated with an integer cannot be empty. Missing a valid command')
-                        }
-                        if (this.state.currentLineNum == 0 && line[1] != 'INITIALIZE_TRIM' && !genHeaders) {
-                            throw new MySyntaxError(i, 'Expected first command to be INITIALIZE_TRIM but got ' + lineArr[i])
-                        }
 
-                        // Add object values and check validity of arguments
-                        obj.type = 'command';
-                        obj.command = line[1];
-                        obj.args = line.slice(2);
-                        try { this.validateArgs(obj) }
-                        catch (err) {
-                            if (typeof err == "string") throw new MySyntaxError(i, err)
-                            else throw err;
-                        }
-                        finally {
-                            obj.realTime = this.state.realTime;
-                            obj.sequenceTime = this.state.sequenceTime;
-                            obj.pos = JSON.parse(JSON.stringify(this.state.pos));
-                            
-                            let dist = Math.abs(obj.pos.BEAM1.SEPARATION - obj.pos.BEAM2.SEPARATION);
-                            obj.luminosity = this.calcLuminosity(dist);
-                        }
-                        // Check line numbering.
-                        // Must be executed last for command terminations to be detected beforehand
-                        if (parseInt(line[0]) != this.state.currentLineNum) {
-                            throw new MySyntaxError(i, 'Incorrect line numbering. Expected ' + this.state.currentLineNum + ' but got ' + line[0])
-                        }
-                    } finally { this.state.currentLineNum++; }
+                    // Simulate luminocity
+                    let pos = command.position;
+                    let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']) * this.sigma; // in m
+                    let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']) * this.sigma; // in m
+                    command.luminocity = this.luminocity(sep, cross); // Hz/m^2
                 }
-            } catch (err) {
-                if (err instanceof MySyntaxError) errArr.push(err)
-                else throw err
-            } finally {
-                objArr.push(obj);
+            } catch (error) {
+                if (typeof error == 'string') errArr.push(new MySyntaxError(i, error))
+                else throw error
             }
         }
-
-        // Command termination tests + header generation
-        if (this.state.isFitting) {
-            errArr.push(new MySyntaxError(objArr.length, 'Missing command END_FIT'))
-        }
-        if (genHeaders) {
-            if (this.state.hasEnded) {
-                const index = objArr.findIndex(x => x.command == 'END_SEQUENCE');
-                errArr.push(new MySyntaxError(index, 'Command END_SEQUENCE not allowed. It is being generated!'))
-            }
-            if (errArr.length == 0) {
-                try {
-                    objArr = this.addHeaders(objArr);
-                    this.state.currentLineNum = 0;
-                    this.validateArgs(objArr[0]);
-                } catch (err) {
-                    if(typeof err == "string"){
-                        errArr.push(new MySyntaxError(-1, 'Encountered problem while generating INITIALIZE_TRIM command:\n' + err))
-                    }
-                    else throw err;
-                }
-            }
-        } else if (!this.state.hasEnded) {
-            errArr.push(new MySyntaxError(objArr.length, 'Missing command END_SEQUENCE'))
-        }
-
-        // Return finished structure or throw error array
-        if (errArr.length == 0) { return objArr }
-        else throw new VdMSyntaxError(errArr, objArr)
+        if (errArr.length > 0) throw errArr
     }
+
+    getInitTrim() {
+        let argArr = {
+            IP: new Set([]),
+            BEAM: new Set([]),
+            PLANE: new Set([]),
+            UNITS: new Set([])
+        };
+        let errArr = [];
+
+        for (let [index, obj] of this.structure.entries()) {
+            if (obj.type == 'command' && obj.command.match(/^(R|A).*(?:TRIM)$/) && obj.isValid) {
+                for (let i = 0; i < obj.args.length; i += 5) {
+                    if (argArr.IP.has(obj.args[i + 0])) {
+                        // do nothing
+                    }
+                    else if (argArr.IP.size > 0) {
+                        errArr.push(new MySyntaxError(index, `File can have at most one IP. Expected ${Array.from(argArr.IP)[0]} but got ${obj.args[i + 0]}`))
+                    }
+                    else argArr.IP.add(obj.args[i + 0]);
+
+                    argArr.BEAM.add(obj.args[i + 1]);
+                    argArr.PLANE.add(obj.args[i + 2]);
+                    argArr.UNITS.add(obj.args[i + 4]);
+                }
+            }
+        }
+        for (let [type, set] of Object.entries(argArr)) {
+            if (set.size < 1) {
+                errArr.push(new MySyntaxError(0, 'Missing ' + type + ' argument to generate INITIALIZE_TRIM command'))
+            }
+            if (!isSubsetOf(set, validArguments[type])) {
+                errArr.push(new MySyntaxError(0, `Expected subset of {${validArguments[type]}} but got {${Array.from(set)}}`))
+            }
+        }
+        if (errArr.length > 0) throw errArr;
+
+        return '0 INITIALIZE_TRIM ' + Object.entries(argArr).map(x => x[0] + '(' + Array.from(x[1]).join(',').trim() + ')').join(' ');
+    }
+
+    luminocity(separation, crossing) {
+        return calcLuminosity(separation, crossing, this.sigma, this.param.bunch_length, this.param.crossing_angle, this.param.intensity, this.param.bunch_pair_collisions)
+    }
+
+    toBeamGraph(beamNumber, sepVScross) {
+        return this.structure.map(line => {
+            if (line.type == "command")
+                return [{
+                    realTime: line.realTime,
+                    sequenceTime: line.sequenceTime
+                }, {
+                    mm: line.pos["BEAM" + beamNumber][sepVScross] * 1e3, // to mm
+                    sigma: line.pos["BEAM" + beamNumber][sepVScross] * 1e3 / this.sigma // to mm
+                }]
+        }).filter(x => x);
+    }
+}
+
+export function parseVdM(data, beamParameters){
+    if(beamParameters) return (new VdM(properUnits(beamParameters))).parse(data).structure
+    else return (new VdM()).parse(data).structure
+}
+export function deparseVdM(objArr) {
+    let instance = new VdM();
+    instance.structure = objArr;
+    return instance.deparse()
 }
