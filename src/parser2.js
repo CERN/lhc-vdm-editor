@@ -612,7 +612,7 @@ export class VdM {
 }
 
 export function parseVdM(data, beamParameters){
-    if(beamParameters) return (new VdM(beamParameters)).parse(data).structure
+    if(beamParameters) return (new VdM(properUnits(beamParameters))).parse(data).structure
     else return (new VdM()).parse(data).structure
 }
 export function deparseVdM(objArr) {
