@@ -42,6 +42,20 @@ export function getInnerBracket(str, key) {
     }
     return match[1].split(',');
 }
+export function toProperUnits(beamParameters, IP) {
+    return {
+        "energy": beamParameters.energy, // GeV
+        "particle_mass": beamParameters.particle_mass, // GeV
+        "emittance": beamParameters.emittance, // m
+        "beta_star": beamParameters.beta_star[IP], // m
+        "crossing_angle": beamParameters.crossing_angle[IP] * 1e-6, // rad
+        "scan_limits": beamParameters.scan_limits[IP], // sigma
+        "trim_rate": beamParameters.trim_rate * 1e-3, // m/s
+        "intensity": beamParameters.intensity, // particles per bunch
+        "bunch_pair_collisions": beamParameters.bunch_pair_collisions[IP],
+        "bunch_length": beamParameters.bunch_length * 1e-3 // m
+    };
+}
 export class MySyntaxError extends Error {
     /**
      * @param {number} linenumber
@@ -305,7 +319,7 @@ export class VdMcommandObject {
             if (this.command == 'RELATIVE_TRIM') {
                 this.addPos(prevCommand.position);
             }
-            checkPosLim(this.position, limit);
+            checkPosLim(this.position, limit * sigma);
         } else {
             this.addPos(prevCommand.position)
         }
@@ -595,4 +609,14 @@ export class VdM {
                 }]
         }).filter(x => x);
     }
+}
+
+export function parseVdM(data, beamParameters){
+    if(beamParameters) return (new VdM(beamParameters)).parse(data).structure
+    else return (new VdM()).parse(data).structure
+}
+export function deparseVdM(objArr) {
+    let instance = new VdM();
+    instance.structure = objArr;
+    return instance.deparse()
 }
