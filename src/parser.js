@@ -56,7 +56,7 @@ export function toProperUnits(beamParameters, IP) {
         "bunch_length": beamParameters.bunch_length * 1e-3 // m
     };
 }
-export class MySyntaxError extends Error {
+export class VdMSyntaxError extends Error {
     /**
      * @param {number} linenumber
      * @param {string} message
@@ -65,17 +65,6 @@ export class MySyntaxError extends Error {
         super();
         this.line = linenumber;
         this.message = message;
-    }
-}
-export class VdMSyntaxError extends Error {
-    /**
-     * @param {MySyntaxError[]} errArr
-     * @param {Object[]} structure
-     */
-    constructor(errArr, structure) {
-        super()
-        this.errors = errArr;
-        this.dataStructure = structure;
     }
 }
 
@@ -217,10 +206,7 @@ export class VdMcommandObject {
                     if (args.length != 1) {
                         throw `Invalid SECONDS_WAIT command. Expected exactly one argument but got {${args}}`
                     }
-                    if (isFinite(Number(args[0])) && Number(args[0]) >= 0) {
-                        this.sequenceTime = Number(args[0]);
-                        this.realTime = Number(args[0]);
-                    } else {
+                    if (!isFinite(Number(args[0])) || Number(args[0]) < 0) {
                         throw `Invalid SECONDS_WAIT command. Argument must be a finite positive number but got ${args}`
                     }
                 },
@@ -305,7 +291,15 @@ export class VdMcommandObject {
         this.isValid = true;
         return true
     }
-    simulateStep(sigma, trimRate, limit, prevCommand) {
+    simulateStep(sigma, trimRate, prevCommand) {
+        this.addPos(prevCommand.position)
+        this.realTime += prevCommand.realTime;
+        this.sequenceTime += prevCommand.sequenceTime;
+
+        if (this.command == 'SECONDS_WAIT') {
+            this.sequenceTime = Number(this.args[0]);
+            this.realTime = Number(this.args[0]);
+        }
         if (this.command.includes('TRIM') && this.isValid) {
             for (let i = 0; i < this.args.length; i += 5) {
                 let amount = Number(this.args[i + 3]);
@@ -323,17 +317,7 @@ export class VdMcommandObject {
 
                 this.realTime += dist / trimRate;
             }
-            if (this.command == 'RELATIVE_TRIM') {
-                this.addPos(prevCommand.position);
-            }
-        } else {
-            this.addPos(prevCommand.position)
         }
-
-        this.realTime += prevCommand.realTime;
-        this.sequenceTime += prevCommand.sequenceTime;
-        // Check pos limit must be last. It might throw an error and everything above is not expected to.
-        checkPosLim(this.position, limit * sigma);
     }
 
     stringify() {
@@ -341,6 +325,10 @@ export class VdMcommandObject {
     }
     addPos(pos) {
         addPos(this.position, pos)
+    }
+    checkLimit(limit) {
+        // Limit in meters
+        checkPosLim(this.position, limit);
     }
 }
 
@@ -402,7 +390,10 @@ export default class VdM {
                             comment: line.slice(1).trim()
                         }
                     } else {
-                        throw new MySyntaxError(index, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
+                        obj = {
+                            type: 'error'
+                        };
+                        throw new VdMSyntaxError(index, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
                     }
                 }
                 else {
@@ -420,6 +411,9 @@ export default class VdM {
                         }
                         if (includesHeader && state.currentLineNum == 0 && obj.command != 'INITIALIZE_TRIM') {
                             throw 'Expected first command to be INITIALIZE_TRIM but got ' + line
+                        }
+                        if (!includesHeader && obj.command == 'INITIALIZE_TRIM') {
+                            throw 'Unexpected INITIALIZE_TRIM command encountered'
                         }
                         if (obj.command == 'END_SEQUENCE') {
                             state.hasEnded = true;
@@ -447,18 +441,18 @@ export default class VdM {
                         }
                     }
                     catch (error) {
-                        if (typeof error == 'string') throw new MySyntaxError(index, error);
+                        if (typeof error == 'string') throw new VdMSyntaxError(index, error);
                         else throw error;
                     }
 
                     // Check line numbering
                     if (parseInt(line.match(/^(?:[1-9][0-9]*|0) /)[0]) != state.currentLineNum) {
-                        throw new MySyntaxError(index, 'Incorrect line numbering. Expected ' + state.currentLineNum + '... but got ' + line)
+                        throw new VdMSyntaxError(index, 'Incorrect line numbering. Expected ' + state.currentLineNum + '... but got ' + line)
                     }
                 }
             }
             catch (error) {
-                if (error instanceof MySyntaxError) this.errors.push(error)
+                if (error instanceof VdMSyntaxError) this.errors.push(error)
                 else throw error;
             }
             finally {
@@ -466,33 +460,27 @@ export default class VdM {
             }
         }
 
+        // Generate initialize trim command line
+        let genInitTrimObj
+        let genInitTrimLine = this.getInitTrim();
+        if (genInitTrimLine) {
+            genInitTrimObj = new VdMcommandObject(genInitTrimLine)
+            genInitTrimObj.checkSyntax(); // Should be redundant but is an extra safety measure
+        } else genInitTrimObj = new VdMcommandObject('0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()')
+
         // Command termination tests
         if (state.isFitting) {
-            this.errors.push(new MySyntaxError(this.structure.length, 'Missing command END_FIT'))
+            this.errors.push(new VdMSyntaxError(this.structure.length, 'Missing command END_FIT'))
         }
-        // check initialize trim command line
-        let genInitTrimObj;
-        try {
-            genInitTrimObj = new VdMcommandObject(this.getInitTrim());
-            genInitTrimObj.checkSyntax();
-        }
-        catch (error) {
-            genInitTrimObj = new VdMcommandObject('0 INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()')
-
-            if (Array.isArray(error)) this.errors = this.errors.concat(error)
-            else if (typeof error == 'string') this.errors.push(new MySyntaxError(0, error))
-            else throw error
-        }
-
         if (includesHeader) {
             if (!state.hasEnded) {
-                this.errors.push(new MySyntaxError(this.structure.length, 'Missing command END_SEQUENCE'))
+                this.errors.push(new VdMSyntaxError(this.structure.length, 'Missing command END_SEQUENCE'))
             }
 
             let initTrimObj = this.structure.find(x => x.command == 'INITIALIZE_TRIM');
             if (initTrimObj) {
                 if (this.errors.length == 0 && initTrimObj.stringify() != genInitTrimObj.stringify()) {
-                    this.errors.push(new MySyntaxError(0, `Invalid INITIALIZE_TRIM command. Expected "${genInitTrimObj.stringify()}" but got "${initTrimObj.stringify()}"`))
+                    this.errors.push(new VdMSyntaxError(0, `Invalid INITIALIZE_TRIM command. Expected "${genInitTrimObj.stringify()}" but got "${initTrimObj.stringify()}"`))
                 }
             }
         }
@@ -500,25 +488,18 @@ export default class VdM {
             // Add initialize trim obj
             this.structure.unshift(genInitTrimObj);
             // Add end sequence obj
-            let commandIndex = 1 + parseInt(this.structure.slice().reverse().find(x => x.type == 'command').index);
-            let endSeqObj = new VdMcommandObject(commandIndex + ' END_SEQUENCE');
-            endSeqObj.checkSyntax();
+            let endTrimIndex = 1 + parseInt(this.structure.slice().reverse().find(x => x.type == 'command').index);
+            let endSeqObj = new VdMcommandObject(endTrimIndex + ' END_SEQUENCE');
+            endSeqObj.checkSyntax(); // Should be redundant but is an extra safety measure
             this.structure.push(endSeqObj);
         }
 
         // simulation of beam position and luminosity
-        try {
-            this.simulateBeam()
-        }
-        catch (error) {
-            if (Array.isArray(error)) this.errors = this.errors.concat(error)
-            else throw error
-        }
-
-
+        this.simulateBeam()
+        this.checkBeamPositionLimits()
 
         this.isValid = this.errors.length == 0 ? true : false;
-        return this.structure
+        return this
     }
     deparse() {
         let string = '';
@@ -540,30 +521,34 @@ export default class VdM {
     }
 
     simulateBeam() {
-        let errArr = [];
         for (let [i, command] of this.structure.entries()) {
-            try {
-                if (command.type == 'command') {
-                    // Simulate beam movement
-                    const prevCommand = this.structure.find(x => x.index == command.index - 1)
-                    if (prevCommand) {
-                        command.simulateStep(this.sigma, this.param.trim_rate, this.param.scan_limits, prevCommand);
-                    }
-
-                    // Simulate luminosity
-                    let pos = command.position;
-                    let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']); // in m
-                    let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']); // in m
-                    command.luminosity = this.luminosity(sep, cross); // Hz/m^2
+            if (command.type == 'command') {
+                // Simulate beam movement
+                const prevCommand = this.structure.find(x => x.index == command.index - 1)
+                if (prevCommand) {
+                    command.simulateStep(this.sigma, this.param.trim_rate, prevCommand);
                 }
-            } catch (error) {
-                if (typeof error == 'string') errArr.push(new MySyntaxError(i-1, error))
-                else throw error
+
+                // Simulate luminosity
+                let pos = command.position;
+                let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']); // in m
+                let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']); // in m
+                command.luminosity = this.luminosity(sep, cross); // Hz/m^2
             }
         }
-        if (errArr.length > 0) throw errArr
     }
-
+    checkBeamPositionLimits() {
+        for (let [i, command] of this.structure.entries()) {
+            if (command.type == 'command') {
+                try {
+                    command.checkLimit(this.param.scan_limits * this.sigma);
+                } catch (error) {
+                    if (typeof error == 'string') this.errors.push(new VdMSyntaxError(i - 1, error))
+                    else throw error
+                }
+            }
+        }
+    }
     getInitTrim() {
         let argArr = {
             IP: new Set([]),
@@ -580,7 +565,7 @@ export default class VdM {
                         // do nothing
                     }
                     else if (argArr.IP.size > 0) {
-                        errArr.push(new MySyntaxError(index, `File can have at most one IP. Expected ${Array.from(argArr.IP)[0]} but got ${obj.args[i + 0]}`))
+                        errArr.push(new VdMSyntaxError(index, `File can have at most one IP. Expected ${Array.from(argArr.IP)[0]} but got ${obj.args[i + 0]}`))
                     }
                     else argArr.IP.add(obj.args[i + 0]);
 
@@ -592,15 +577,14 @@ export default class VdM {
         }
         for (let [type, set] of Object.entries(argArr)) {
             if (set.size < 1) {
-                errArr.push(new MySyntaxError(0, 'Missing ' + type + ' argument to generate INITIALIZE_TRIM command'))
+                errArr.push(new VdMSyntaxError(0, 'Missing ' + type + ' argument to generate INITIALIZE_TRIM command'))
             }
             if (!isSubsetOf(set, validArguments[type])) {
-                errArr.push(new MySyntaxError(0, `Expected subset of {${validArguments[type]}} but got {${Array.from(set)}}`))
+                errArr.push(new VdMSyntaxError(0, `Expected subset of {${validArguments[type]}} but got {${Array.from(set)}}`))
             }
         }
-        if (errArr.length > 0) throw errArr;
-
-        return '0 INITIALIZE_TRIM ' + Object.entries(argArr).map(x => x[0] + '(' + Array.from(x[1]).join(',').trim() + ')').join(' ');
+        if (errArr.length == 0) return '0 INITIALIZE_TRIM ' + Object.entries(argArr).map(x => x[0] + '(' + Array.from(x[1]).join(',').trim() + ')').join(' ');
+        else this.errors = this.errors.concat(errArr);
     }
 
     luminosity(separation, crossing) {
@@ -627,5 +611,10 @@ export default class VdM {
                 sequenceTime: line.sequenceTime
             }, line.luminosity]
         }).filter(x => x);
+    }
+
+    checkSyntax() {
+        if (this.isValid) return true
+        else throw this.errors
     }
 }
