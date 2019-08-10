@@ -9,10 +9,9 @@ function randomItem(arr) {
 }
 function checkCausality(item, index, array) {
     if (index == 0) {
-        if (item.sequenceTime != 0 || item.realTime != 0) return false
+        return (item.sequenceTime == 0 && item.realTime == 0)
     }
-    else if (item.sequenceTime < array[index - 1].sequenceTime || item.realTime < array[index - 1].realTime) return false
-    else return true
+    else return !(item.sequenceTime < array[index - 1].sequenceTime || item.realTime < array[index - 1].realTime)
 }
 
 const file = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)
@@ -45,7 +44,12 @@ const simpleHead = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNIT
 const noHeader = '1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA'
 const empty = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
 const comment = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
-const largeTrim = '1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 30 SIGMA \n 2 RELATIVE_TRIM IP1 BEAM1 SEPARATION -60 SIGMA \n 3 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION 30 SIGMA\n 4 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION -30 SIGMA'
+const largeTrim = `1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 30 SIGMA
+2 SECONDS_WAIT 10
+3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -60 SIGMA
+4 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION 30 SIGMA
+5 SECONDS_WAIT 10
+6 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION -30 SIGMA`
 const faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
 1 START_FIT SEPARATION GAUSSIAN
@@ -172,10 +176,10 @@ describe("Parser", () => {
     })
     it('Test causality (simulated times)', () => {
         let commandArray = inst.parse(file, true).structure.filter(x => x.type == 'command');
-        expect(() => commandArray.every(checkCausality)).toBeTruthy()
+        expect(commandArray.every(checkCausality)).toBeTruthy()
 
         commandArray = inst.parse(largeTrim).structure.filter(x => x.type == 'command');
-        expect(() => commandArray.every(checkCausality)).toBeTruthy()
+        expect(commandArray.every(checkCausality)).toBeTruthy()
         let lastpos = inst.structure.slice(-1)[0].position;
         expect(lastpos.BEAM1).toEqual(lastpos.BEAM2)
     })
