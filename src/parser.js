@@ -297,8 +297,8 @@ export class VdMcommandObject {
         this.sequenceTime += prevCommand.sequenceTime;
 
         if (this.command == 'SECONDS_WAIT') {
-            this.sequenceTime = Number(this.args[0]);
-            this.realTime = Number(this.args[0]);
+            this.sequenceTime += Number(this.args[0]);
+            this.realTime += Number(this.args[0]);
         }
         if (this.command.includes('TRIM') && this.isValid) {
             for (let i = 0; i < this.args.length; i += 5) {
@@ -599,7 +599,7 @@ export default class VdM {
                     sequenceTime: line.sequenceTime
                 }, {
                     mm: line.position["BEAM" + beamNumber][sepVScross] * 1e3, // to mm
-                    sigma: line.position["BEAM" + beamNumber][sepVScross] / this.sigma // to mm
+                    sigma: line.position["BEAM" + beamNumber][sepVScross] / this.sigma // to sima
                 }]
         }).filter(x => x);
     }
