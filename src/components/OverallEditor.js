@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html, addLineNumbers, getSigmaToMMFactor, DEFAULT_BEAM_PARAMS, deepCopy } from "../HelperFunctions.js"
+import { css, html, addLineNumbers, DEFAULT_BEAM_PARAMS, deepCopy } from "../HelperFunctions.js"
 import "./RawEditor.js"
 import "./CodeEditor.js"
 import "./SwitchEditorButtons.js"
@@ -201,9 +201,9 @@ export default class OverallEditor extends HTMLElement {
             if (typeof this.editor.setCurrentParsedResult == "function") {
                 this.editor.setCurrentParsedResult(message.data)
             }
-
-            const sigmaToMMFactor = getSigmaToMMFactor(this.beamJSON, this.ip);
-            this.chartsComponent.sigmaToMMFactor = sigmaToMMFactor;
+            
+            const sigmaInMM = this.VdM.sigma * 1e3;
+            this.chartsComponent.passInValues(sigmaInMM);
 
             this.chartsComponent.updateData(
                 message.data.beamSeparationData,
@@ -222,7 +222,8 @@ export default class OverallEditor extends HTMLElement {
             type: "text_change",
             hasHeaders: !(this.editor.headerlessParse || false),
             text: this.editor.headerlessParse ? addLineNumbers(this.editor.rawValue) : this.editor.value,
-            beamParams: this.beamJSON
+            beamParams: this.beamJSON,
+            ip: this.ip
         })
     }
 
@@ -250,21 +251,19 @@ export default class OverallEditor extends HTMLElement {
     tryToCommit(commitMessage){
         if (this.filePath === null) return;
 
-        //let instance = new VdM(beamParameters, openIP);
-        let instance = new VdM()
-        instance.parse(this.value, true);
-
-        if (instance.isValid) {
+        //this.VdM = new VdM(this.beamJSON, this.ip)
+        this.VdM.parse(this.value, true);
+        if (this.VdM.isValid) {
             this.gitlabInterface.writeFile(
                 this.filePath,
                 commitMessage,
-                instance.deparse()
+                this.VdM.deparse()
             );
 
             this.isCommitted = true;
         }
         else {
-            alert('Commit failed! Following errors encountered:\n\n' + instance.errors.map(x => x.message).join('\n'))
+            alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'))
         }
     }
 
@@ -325,7 +324,7 @@ export default class OverallEditor extends HTMLElement {
         // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
         // want to only call passInValues once)
         await this.fileBrowser.passInValues(this.gitlabInterface, this.filePath);
-
+        
         if (this.filePath != null) {
             if (localStorage.getItem('open-tab') !== null) {
                 const buttonIndex = parseInt(localStorage.getItem('open-tab'));
@@ -351,6 +350,7 @@ export default class OverallEditor extends HTMLElement {
             this.filePath = null;
             this.updateFileNameUI(null);
             this.beamJSON = null;
+            this.VdM = null;
             this.currentEditorIndex = null;
 
             this.isCommitted = true
@@ -381,6 +381,9 @@ export default class OverallEditor extends HTMLElement {
         }
         this.filePath = filePath;
         this.beamJSON = await getBeamJSON(this.campaign, this.gitlabInterface);
+        this.VdM = new VdM(this.beamJSON, this.ip);
+        this.editor.VdM = this.VdM;
+
         this.onEditorContentChange(this.value);
         this.updateFileNameUI(filePath);
 

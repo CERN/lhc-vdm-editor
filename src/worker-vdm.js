@@ -22,13 +22,13 @@ async function getParser(){
                 type: "lint"
             }
 
-            let instance = new parser.VdM(message.data.beamParams, 'IP1');
-            let parsedResult = instance.parse(message.data.text, message.data.hasHeaders);
-            const result = instance.deparse(parsedResult);
+            let VdMinstance = new parser.VdM(message.data.beamParams, message.data.ip)
+                .parse(message.data.text, message.data.hasHeaders);;
+            const result = VdMinstance.deparse();
             messageToSend.header = result.split("\n")[0];
 
-            if (instance.errors.length > 0) {
-                messageToSend.errors = instance.errors.map(error => ({
+            if (VdMinstance.errors.length > 0) {
+                messageToSend.errors = VdMinstance.errors.map(error => ({
                     row: error.line,
                     column: 0,
                     text: error.message,
@@ -37,16 +37,16 @@ async function getParser(){
             }
 
             messageToSend.beamSeparationData = [
-                instance.toBeamGraph(1, "SEPARATION"),
-                instance.toBeamGraph(2, "SEPARATION")
+                VdMinstance.toBeamGraph(1, "SEPARATION"),
+                VdMinstance.toBeamGraph(2, "SEPARATION")
             ]
 
             messageToSend.beamCrossingData = [
-                instance.toBeamGraph(1, "CROSSING"),
-                instance.toBeamGraph(2, "CROSSING")
+                VdMinstance.toBeamGraph(1, "CROSSING"),
+                VdMinstance.toBeamGraph(2, "CROSSING")
             ]
 
-            messageToSend.luminosityData = instance.toLumiGraph();
+            messageToSend.luminosityData = VdMinstance.toLumiGraph();
 
             postMessage(messageToSend);
         }

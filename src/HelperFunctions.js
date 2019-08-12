@@ -287,14 +287,6 @@ export const DEFAULT_BEAM_PARAMS = {
 }
 
 /**
- * @param {typeof DEFAULT_BEAM_PARAMS} params
- * @param {string} ip
- */
-export function getSigmaToMMFactor(params, ip){
-    return Math.sqrt((params.emittance / (params.energy / params.particle_mass)) * params.beta_star[ip]) * 1e3;
-}
-
-/**
  * @template T
  * @param {T[]} arr
  * @param {(element: T) => any} func

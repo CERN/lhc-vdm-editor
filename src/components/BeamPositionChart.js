@@ -19,7 +19,7 @@ export default class BeamPositionChart extends HTMLElement {
 
         this.limits = 0;
         this.data = null;
-        this.sigmaToMMFactor = 0.10050641005198852; // NOTE: this needs to be changed later
+        this.sigmaInMM = 0.10050641005198852; // NOTE: this needs to be changed later
 
         this.attachChart();
     }
@@ -65,7 +65,7 @@ export default class BeamPositionChart extends HTMLElement {
 
         const putInUnit = (number) => {
             if(this.units == "sigma") return number;
-            else return number * this.sigmaToMMFactor;
+            else return number * this.sigmaInMM;
         }
 
         this.chart.series[2].setData(

@@ -184,6 +184,7 @@ export default class CodeEditor extends HTMLElement {
         this.tooltip = new token_tooltip.TokenTooltip(this.editor, value => commandHints[value]);
         // NOTE: this is to tell OverallEditor to parse the header
         this.headerlessParse = true;
+        this.VdM = null;
 
         this.preventAutocompleteClosing();
 
@@ -481,17 +482,16 @@ export default class CodeEditor extends HTMLElement {
 
     get value() {
         const editorValue = this.rawValue;
-        //let instance = new VdM(beamParameters, openIP);
-        let instance = new VdM();
 
-        instance.parse(addLineNumbers(editorValue));
-        if (!instance.isValid) return this.noParseValue;
+        //this.VdM = new VdM()
+        this.VdM.parse(addLineNumbers(editorValue));
+        if (!this.VdM.isValid) return this.noParseValue;
         else {
             const commentsAboveHeader = this.topLineEditor.getValue().split("\n")
                 .slice(0, this.topLineHeaderPosition).join("\n");
             // Add the headers (we don't know if this.lastHeader is stale
             return (commentsAboveHeader == "" ? "" : (commentsAboveHeader + '\n'))
-                + instance.deparse();
+                + this.VdM.deparse();
         }
     }
 
