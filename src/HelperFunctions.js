@@ -146,7 +146,7 @@ export async function awaitArray(array){
     return newArray;
 }
 
-export const preventResizeCSS = `
+export const preventSelectCSS = `
 -webkit-touch-callout: none;
 -webkit-user-select: none;
 -khtml-user-select: none;

@@ -1,13 +1,1944 @@
-/*! (c) Andrea Giammarchi (ISC) */var hyperHTML=function(w){"use strict";
-/*! (c) Andrea Giammarchi - ISC */var t={};try{t.WeakMap=WeakMap}catch(e){t.WeakMap=function(t,e){var n=e.defineProperty,r=e.hasOwnProperty,i=a.prototype;return i.delete=function(e){return this.has(e)&&delete e[this._]},i.get=function(e){return this.has(e)?e[this._]:void 0},i.has=function(e){return r.call(e,this._)},i.set=function(e,t){return n(e,this._,{configurable:!0,value:t}),this},a;function a(e){n(this,"_",{value:"_@ungap/weakmap"+t++}),e&&e.forEach(o,this)}function o(e){this.set(e[0],e[1])}}(Math.random(),Object)}var u=t.WeakMap,i={};
-/*! (c) Andrea Giammarchi - ISC */try{i.WeakSet=WeakSet}catch(e){!function(e,t){var n=r.prototype;function r(){t(this,"_",{value:"_@ungap/weakmap"+e++})}n.add=function(e){return this.has(e)||t(e,this._,{value:!0,configurable:!0}),this},n.has=function(e){return this.hasOwnProperty.call(e,this._)},n.delete=function(e){return this.has(e)&&delete e[this._]},i.WeakSet=r}(Math.random(),Object.defineProperty)}var e=i.WeakSet,n={};
-/*! (c) Andrea Giammarchi - ISC */try{n.Map=Map}catch(e){n.Map=function(){var n=0,i=[],a=[];return{delete:function(e){var t=r(e);return t&&(i.splice(n,1),a.splice(n,1)),t},forEach:function(n,r){i.forEach(function(e,t){n.call(r,a[t],e,this)},this)},get:function(e){return r(e)?a[n]:void 0},has:function(e){return r(e)},set:function(e,t){return a[r(e)?n:i.push(e)-1]=t,this}};function r(e){return-1<(n=i.indexOf(e))}}}function m(e,t,n,r,i,a){for(var o=("selectedIndex"in t),u=-1;r<i;){var s=e(n[r],1);o&&u<0&&s.selected&&(u=r),t.insertBefore(s,a),r++}o&&-1<u&&(t.selectedIndex=u)}function y(e,t){return e==t}function b(e){return e}function N(e,t,n,r,i,a,o){var u=a-i;if(u<1)return-1;for(;u<=n-t;){for(var s=t,l=i;s<n&&l<a&&o(e[s],r[l]);)s++,l++;if(l===a)return t;t=s+1}return-1}function E(e,t,n,r,i){return n<r?e(t[n],0):0<n?e(t[n-1],-0).nextSibling:i}function x(e,t,n,r,i){if(i-r<2)t.removeChild(e(n[r],-1));else{var a=t.ownerDocument.createRange();a.setStartBefore(e(n[r],-1)),a.setEndAfter(e(n[i-1],-1)),a.deleteContents()}}function C(e,t,n,r,i,a,o,u,s,l,c,f,h){!function(e,t,n,r,i,a,o,u,s){for(var l=new k,c=e.length,f=o,h=0;h<c;)switch(e[h++]){case 0:i++,f++;break;case 1:l.set(r[i],1),m(t,n,r,i++,i,f<u?t(a[f],0):s);break;case-1:f++}for(h=0;h<c;)switch(e[h++]){case 0:o++;break;case-1:l.has(a[o])?o++:x(t,n,a,o++,o)}}(function(e,t,n,r,i,a,o){var u,s,l,c,f,h,d,v=n+a,p=[];e:for(u=0;u<=v;u++){if(50<u)return null;for(d=u-1,f=u?p[u-1]:[0,0],h=p[u]=[],s=-u;s<=u;s+=2){for(l=(c=s===-u||s!==u&&f[d+s-1]<f[d+s+1]?f[d+s+1]:f[d+s-1]+1)-s;c<a&&l<n&&o(r[i+c],e[t+l]);)c++,l++;if(c===a&&l===n)break e;h[u+s]=c}}var g=Array(u/2+v/2),m=g.length-1;for(u=p.length-1;0<=u;u--){for(;0<c&&0<l&&o(r[i+c-1],e[t+l-1]);)g[m--]=0,c--,l--;if(!u)break;d=u-1,f=u?p[u-1]:[0,0],(s=c-l)===-u||s!==u&&f[d+s-1]<f[d+s+1]?(l--,g[m--]=1):(c--,g[m--]=-1)}return g}(n,r,a,o,u,l,f)||function(e,t,n,r,i,a,o,u){var s=0,l=r<u?r:u,c=Array(l++),f=Array(l);f[0]=-1;for(var h=1;h<l;h++)f[h]=o;for(var d=new k,v=a;v<o;v++)d.set(i[v],v);for(var p=t;p<n;p++){var g=d.get(e[p]);null!=g&&-1<(s=A(f,l,g))&&(f[s]=g,c[s]={newi:p,oldi:g,prev:c[s-1]})}for(s=--l,--o;f[s]>o;)--s;l=u+r-s;var m=Array(l),y=c[s];for(--n;y;){for(var b=y,w=b.newi,N=b.oldi;w<n;)m[--l]=1,--n;for(;N<o;)m[--l]=-1,--o;m[--l]=0,--n,--o,y=y.prev}for(;t<=n;)m[--l]=1,--n;for(;a<=o;)m[--l]=-1,--o;return m}(n,r,i,a,o,u,s,l),e,t,n,r,o,u,c,h)}function s(e,t,n,r){for(var i=(r=r||{}).compare||y,a=r.node||b,o=null==r.before?null:a(r.before,0),u=t.length,s=u,l=0,c=n.length,f=0;l<s&&f<c&&i(t[l],n[f]);)l++,f++;for(;l<s&&f<c&&i(t[s-1],n[c-1]);)s--,c--;var h=l===s,d=f===c;if(h&&d)return n;if(h&&f<c)return m(a,e,n,f,c,E(a,t,l,u,o)),n;if(d&&l<s)return x(a,e,t,l,s),n;var v=s-l,p=c-f,g=-1;if(v<p){if(-1<(g=N(n,f,c,t,l,s,i)))return m(a,e,n,f,g,a(t[l],0)),m(a,e,n,g+v,c,E(a,t,s,u,o)),n}else if(p<v&&-1<(g=N(t,l,s,n,f,c,i)))return x(a,e,t,l,g),x(a,e,t,g+p,s),n;return v<2||p<2?(m(a,e,n,f,c,a(t[l],0)),x(a,e,t,l,s)):v==p&&function(e,t,n,r,i,a){for(;r<i&&a(n[r],e[t-1]);)r++,t--;return 0===t}(n,c,t,l,s,i)?m(a,e,n,f,c,E(a,t,s,u,o)):C(a,e,n,f,c,p,t,l,s,v,u,i,o),n}var r,k=n.Map,A=function(e,t,n){for(var r=1,i=t;r<i;){var a=(r+i)/2>>>0;n<e[a]?i=a:r=1+a}return r},a={};function o(e,t){t=t||{};var n=w.createEvent("CustomEvent");return n.initCustomEvent(e,!!t.bubbles,!!t.cancelable,t.detail),n}a.CustomEvent="function"==typeof CustomEvent?CustomEvent:(o[r="prototype"]=new o("").constructor[r],o);var l=a.CustomEvent;function c(){return this}function f(e,t){var n="_"+e+"$";return{get:function(){return this[n]||h(this,n,t.call(this,e))},set:function(e){h(this,n,e)}}}var h=function(e,t,n){return Object.defineProperty(e,t,{configurable:!0,value:"function"==typeof n?function(){return e._wire$=n.apply(this,arguments)}:n})[t]};Object.defineProperties(c.prototype,{ELEMENT_NODE:{value:1},nodeType:{value:-1}});var d,v,p,g,S,T,M={},_={},O=[],j=_.hasOwnProperty,L=0,D={attributes:M,define:function(e,t){e.indexOf("-")<0?(e in _||(L=O.push(e)),_[e]=t):M[e]=t},invoke:function(e,t){for(var n=0;n<L;n++){var r=O[n];if(j.call(e,r))return _[r](e[r],t)}}},P=Array.isArray||(v=(d={}.toString).call([]),function(e){return d.call(e)===v}),$=(p=w,g="fragment",T="content"in R(S="template")?function(e){var t=R(S);return t.innerHTML=e,t.content}:function(e){var t=R(g),n=R(S),r=null;if(/^[^\S]*?<(col(?:group)?|t(?:head|body|foot|r|d|h))/i.test(e)){var i=RegExp.$1;n.innerHTML="<table>"+e+"</table>",r=n.querySelectorAll(i)}else n.innerHTML=e,r=n.childNodes;return W(t,r),t},function(e,t){return("svg"===t?function(e){var t=R(g),n=R("div");return n.innerHTML='<svg xmlns="http://www.w3.org/2000/svg">'+e+"</svg>",W(t,n.firstChild.childNodes),t}:T)(e)});function W(e,t){for(var n=t.length;n--;)e.appendChild(t[0])}function R(e){return e===g?p.createDocumentFragment():p.createElementNS("http://www.w3.org/1999/xhtml",e)}
-/*! (c) Andrea Giammarchi - ISC */
-var F,H,z,I,Z,B,V,G,q,J,K=(H="appendChild",z="cloneNode",I="createTextNode",B=(Z="importNode")in(F=w),(V=F.createDocumentFragment())[H](F[I]("g")),V[H](F[I]("")),(B?F[Z](V,!0):V[z](!0)).childNodes.length<2?function e(t,n){for(var r=t[z](),i=t.childNodes||[],a=i.length,o=0;n&&o<a;o++)r[H](e(i[o],n));return r}:B?F[Z]:function(e,t){return e[z](!!t)}),Q="".trim||function(){return String(this).replace(/^\s+|\s+/g,"")},U="-"+Math.random().toFixed(6)+"%";try{G=w.createElement("template"),J="tabindex",(q="content")in G&&(G.innerHTML="<p "+J+'="'+U+'"></p>',G[q].childNodes[0].getAttribute(J)==U)||(U="_dt: "+U.slice(1,-1)+";",!0)}catch(e){}var X="\x3c!--"+U+"--\x3e",Y=8,ee=1,te=3,ne=/^(?:style|textarea)$/i,re=/^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;var ie=" \\f\\n\\r\\t",ae="[^"+ie+"\\/>\"'=]+",oe="["+ie+"]+"+ae,ue="<([A-Za-z]+[A-Za-z0-9:._-]*)((?:",se="(?:\\s*=\\s*(?:'[^']*?'|\"[^\"]*?\"|<[^>]*?>|"+ae.replace("\\/","")+"))?)",le=new RegExp(ue+oe+se+"+)(["+ie+"]*/?>)","g"),ce=new RegExp(ue+oe+se+"*)(["+ie+"]*/>)","g"),fe=new RegExp("("+oe+"\\s*=\\s*)(['\"]?)"+X+"\\2","gi");function he(e,t,n,r){return"<"+t+n.replace(fe,de)+r}function de(e,t,n){return t+(n||'"')+U+(n||'"')}function ve(e,t,n){return re.test(t)?e:"<"+t+n+"></"+t+">"}function pe(e,t){for(var n=t.length,r=0;r<n;)e=e.childNodes[t[r++]];return e}function ge(e,t,n,r){for(var i=new k,a=e.attributes,o=[],u=o.slice.call(a,0),s=u.length,l=0;l<s;){var c,f=u[l++],h=f.value===U;if(h||1<(c=f.value.split(X)).length){var d=f.name;if(!i.has(d)){var v=n.shift().replace(h?/^(?:|[\S\s]*?\s)(\S+?)\s*=\s*('|")?$/:new RegExp("^(?:|[\\S\\s]*?\\s)("+d+")\\s*=\\s*('|\")","i"),"$1"),p=a[v]||a[v.toLowerCase()];if(i.set(d,p),h)t.push(me(p,r,v,null));else{for(var g=c.length-2;g--;)n.shift();t.push(me(p,r,v,c))}}o.push(f)}}for(s=o.length,l=0;l<s;){var m=o[l++];/^id$/i.test(m.name)?e.removeAttribute(m.name):e.removeAttributeNode(m)}var y=e.nodeName;if(/^script$/i.test(y)){var b=w.createElement(y);for(s=a.length,l=0;l<s;)b.setAttributeNode(a[l++].cloneNode(!0));b.textContent=e.textContent,e.parentNode.replaceChild(b,e)}}function me(e,t,n,r){return{type:"attr",node:e,path:t,name:n,sparse:r}}function ye(e,t){return{type:"text",node:e,path:t}}var be=new u,we=new u;function Ne(o,f){var e=
-    /*! (c) Andrea Giammarchi - ISC */
-    function(e){return e.join(X).replace(ce,ve).replace(le,he)}(f),t=o.transform;t&&(e=t(e));var n=$(e,o.type);!function(e){var t=e.childNodes,n=t.length;for(;n--;){var r=t[n];1!==r.nodeType&&0===Q.call(r.textContent).length&&e.removeChild(r)}}
-    /*! (c) Andrea Giammarchi - ISC */(n);var u=[];!function e(t,n,r,i){for(var a,o,u=t.childNodes,s=u.length,l=0;l<s;){var c=u[l];switch(c.nodeType){case ee:var f=i.concat(l);ge(c,n,r,f),e(c,n,r,f);break;case Y:var h=c.textContent;if(h===U)r.shift(),n.push(ne.test(t.nodeName)?ye(t,i):(a=c,o=i.concat(l),{type:"any",node:a,path:o}));else switch(h.slice(0,2)){case"/*":if("*/"!==h.slice(-2))break;case"👻":t.removeChild(c),l--,s--}break;case te:ne.test(t.nodeName)&&Q.call(c.textContent)===X&&(r.shift(),n.push(ye(t,i)))}l++}}(n,u,f.slice(0),[]);var r={content:n,updates:function(s){for(var l=[],c=u.length,e=0,t=0;e<c;){var n=u[e++],r=pe(s,n.path);switch(n.type){case"any":l.push({fn:o.any(r,[]),sparse:!1});break;case"attr":var i=n.sparse,a=o.attribute(r,n.name,n.node);null===i?l.push({fn:a,sparse:!1}):(t+=i.length-2,l.push({fn:a,sparse:!0,values:i}));break;case"text":l.push({fn:o.text(r),sparse:!1}),r.textContent=""}}return c+=t,function(){var e=arguments.length;if(c!==e-1)throw new Error(e-1+" values instead of "+c+"\n"+f.join("${value}"));for(var t=1,n=1;t<e;){var r=l[t-n];if(r.sparse){var i=r.values,a=i[0],o=1,u=i.length;for(n+=u-2;o<u;)a+=arguments[t++]+i[o++];r.fn(a)}else r.fn(arguments[t++])}return s}}};return be.set(f,r),r}function Ee(n){return function(e){var t=we.get(n);return null!=t&&t.template===e||(t=function(e,t){var n=be.get(t)||Ne(e,t),r=K.call(w,n.content,!0),i={content:r,template:t,updates:n.updates(r)};return we.set(e,i),i}(n,e)),t.updates.apply(null,arguments),t.content}}var xe,Ce,ke=(xe=/acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/i,Ce=/([^A-Z])([A-Z]+)/g,function(e,t){return"ownerSVGElement"in e?function(e,t){var n;return(n=t?t.cloneNode(!0):(e.setAttribute("style","--hyper:style;"),e.getAttributeNode("style"))).value="",e.setAttributeNode(n),Se(n,!0)}(e,t):Se(e.style,!1)});
-    /*! (c) Andrea Giammarchi - ISC */function Ae(e,t,n){return t+"-"+n.toLowerCase()}function Se(a,o){var u,s;return function(e){var t,n,r,i;switch(typeof e){case"object":if(e){if("object"===u){if(!o&&s!==e)for(n in s)n in e||(a[n]="")}else o?a.value="":a.cssText="";for(n in t=o?{}:a,e)r="number"!=typeof(i=e[n])||xe.test(n)?i:i+"px",!o&&/^--/.test(n)?t.setProperty(n,r):t[n]=r;u="object",o?a.value=function(e){var t,n=[];for(t in e)n.push(t.replace(Ce,Ae),":",e[t],";");return n.join("")}(s=t):s=e;break}default:s!=e&&(u="string",s=e,o?a.value=e||"":a.cssText=e||"")}}}var Te,Me,_e=(Te=[].slice,(Me=Oe.prototype).ELEMENT_NODE=1,Me.nodeType=111,Me.remove=function(e){var t=this.childNodes,n=this.firstChild,r=this.lastChild;if(this._=null,e&&2===t.length)r.parentNode.removeChild(r);else{var i=this.ownerDocument.createRange();i.setStartBefore(e?t[1]:n),i.setEndAfter(r),i.deleteContents()}return n},Me.valueOf=function(e){var t=this._,n=null==t;if(n&&(t=this._=this.ownerDocument.createDocumentFragment()),n||e)for(var r=this.childNodes,i=0,a=r.length;i<a;i++)t.appendChild(r[i]);return t},Oe);function Oe(e){var t=this.childNodes=Te.call(e,0);this.firstChild=t[0],this.lastChild=t[t.length-1],this.ownerDocument=t[0].ownerDocument,this._=null}function je(e){return{html:e}}function Le(e,t){switch(e.nodeType){case Be:return 1/t<0?t?e.remove(!0):e.lastChild:t?e.valueOf(!0):e.firstChild;case Ze:return Le(e.render(),t);default:return e}}function De(e,t){t(e.placeholder),"text"in e?Promise.resolve(e.text).then(String).then(t):"any"in e?Promise.resolve(e.any).then(t):"html"in e?Promise.resolve(e.html).then(je).then(t):Promise.resolve(D.invoke(e,t)).then(t)}function Pe(e){return null!=e&&"then"in e}var $e,We,Re,Fe,He,ze="ownerSVGElement",Ie="connected",Ze=c.prototype.nodeType,Be=_e.prototype.nodeType,Ve=(We=($e={Event:l,WeakSet:e}).Event,Re=$e.WeakSet,Fe=!0,He=null,function(e){return Fe&&(Fe=!Fe,He=new Re,function(t){var i=new Re,a=new Re;try{new MutationObserver(u).observe(t,{subtree:!0,childList:!0})}catch(e){var n=0,r=[],o=function(e){r.push(e),clearTimeout(n),n=setTimeout(function(){u(r.splice(n=0,r.length))},0)};t.addEventListener("DOMNodeRemoved",function(e){o({addedNodes:[],removedNodes:[e.target]})},!0),t.addEventListener("DOMNodeInserted",function(e){o({addedNodes:[e.target],removedNodes:[]})},!0)}function u(e){for(var t,n=e.length,r=0;r<n;r++)s((t=e[r]).removedNodes,"disconnected",a,i),s(t.addedNodes,"connected",i,a)}function s(e,t,n,r){for(var i,a=new We(t),o=e.length,u=0;u<o;1===(i=e[u++]).nodeType&&l(i,a,t,n,r));}function l(e,t,n,r,i){He.has(e)&&!r.has(e)&&(i.delete(e),r.add(e),e.dispatchEvent(t));for(var a=e.children||[],o=a.length,u=0;u<o;l(a[u++],t,n,r,i));}}(e.ownerDocument)),He.add(e),e}),Ge=/^(?:form|list)$/i,qe=[].slice;function Je(e){return this.type=e,Ee(this)}var Ke=!(Je.prototype={attribute:function(n,r,e){var i,t=ze in n;if("style"===r)return ke(n,e,t);if(/^on/.test(r)){var a=r.slice(2);return a===Ie||"disconnected"===a?Ve(n):r.toLowerCase()in n&&(a=a.toLowerCase()),function(e){i!==e&&(i&&n.removeEventListener(a,i,!1),(i=e)&&n.addEventListener(a,e,!1))}}if("data"===r||!t&&r in n&&!Ge.test(r))return function(e){i!==e&&(i=e,n[r]!==e&&null==e?(n[r]="",n.removeAttribute(r)):n[r]=e)};if(r in D.attributes)return function(e){var t=D.attributes[r](n,e);i!==t&&(null==(i=t)?n.removeAttribute(r):n.setAttribute(r,t))};var o=!1,u=e.cloneNode(!0);return function(e){i!==e&&(i=e,u.value!==e&&(null==e?(o&&(o=!1,n.removeAttributeNode(u)),u.value=e):(u.value=e,o||(o=!0,n.setAttributeNode(u)))))}},any:function(n,r){var i,a={node:Le,before:n},o=ze in n?"svg":"html",u=!1;return function e(t){switch(typeof t){case"string":case"number":case"boolean":u?i!==t&&(i=t,r[0].textContent=t):(u=!0,i=t,r=s(n.parentNode,r,[function(e,t){return e.ownerDocument.createTextNode(t)}(n,t)],a));break;case"function":e(t(n));break;case"object":case"undefined":if(null==t){u=!1,r=s(n.parentNode,r,[],a);break}default:if(u=!1,P(i=t))if(0===t.length)r.length&&(r=s(n.parentNode,r,[],a));else switch(typeof t[0]){case"string":case"number":case"boolean":e({html:t});break;case"object":if(P(t[0])&&(t=t.concat.apply([],t)),Pe(t[0])){Promise.all(t).then(e);break}default:r=s(n.parentNode,r,t,a)}else!function(e){return"ELEMENT_NODE"in e}(t)?Pe(t)?t.then(e):"placeholder"in t?De(t,e):"text"in t?e(String(t.text)):"any"in t?e(t.any):"html"in t?r=s(n.parentNode,r,qe.call($([].concat(t.html).join(""),o).childNodes),a):e("length"in t?qe.call(t):D.invoke(t,e)):r=s(n.parentNode,r,11===t.nodeType?qe.call(t.childNodes):[t],a)}}},text:function(r){var i;return function e(t){if(i!==t){var n=typeof(i=t);"object"==n&&t?Pe(t)?t.then(e):"placeholder"in t?De(t,e):e("text"in t?String(t.text):"any"in t?t.any:"html"in t?[].concat(t.html).join(""):"length"in t?qe.call(t).join(""):D.invoke(t,e)):"function"==n?e(t(r)):r.textContent=null==t?"":t}}}}),Qe=function(e){var t,n=(t=(w.defaultView.navigator||{}).userAgent,/(Firefox|Safari)\/(\d+)/.test(t)&&!/(Chrom|Android)\/(\d+)/.test(t)),r=!("raw"in e)||e.propertyIsEnumerable("raw")||!Object.isFrozen(e.raw);if(n||r){var i={},a=function(e){for(var t=".",n=0;n<e.length;n++)t+=e[n].length+"."+e[n];return i[t]||(i[t]=e)};if(r)Qe=a;else{var o=new u;Qe=function(e){return o.get(e)||function(e,t){return o.set(e,t),t}(e,a(e))}}}else Ke=!0;return Ue(e)};function Ue(e){return Ke?e:Qe(e)}function Xe(e){for(var t=arguments.length,n=[Ue(e)],r=1;r<t;)n.push(arguments[r++]);return n}var Ye=new u,et=function(t){var n,r,i;return function(){var e=Xe.apply(null,arguments);return i!==e[0]?(i=e[0],r=new Je(t),n=nt(r.apply(r,e))):r.apply(r,e),n}},tt=function(e,t){var n=t.indexOf(":"),r=Ye.get(e),i=t;return-1<n&&(i=t.slice(n+1),t=t.slice(0,n)||"html"),r||Ye.set(e,r={}),r[i]||(r[i]=et(t))},nt=function(e){var t=e.childNodes,n=t.length;return 1===n?t[0]:n?new _e(t):e},rt=new u;function it(){var e=rt.get(this),t=Xe.apply(null,arguments);return e&&e.template===t[0]?e.tagger.apply(null,t):function(e){var t=new Je(ze in this?"svg":"html");rt.set(this,{tagger:t,template:e}),this.textContent="",this.appendChild(t.apply(null,arguments))}
-    /*! (c) Andrea Giammarchi (ISC) */.apply(this,t),this}var at,ot,ut,st,lt=D.define,ct=Je.prototype;function ft(e){return arguments.length<2?null==e?et("html"):"string"==typeof e?ft.wire(null,e):"raw"in e?et("html")(e):"nodeType"in e?ft.bind(e):tt(e,"html"):("raw"in e?et("html"):ft.wire).apply(null,arguments)}return ft.Component=c,ft.bind=function(e){return it.bind(e)},ft.define=lt,ft.diff=s,(ft.hyper=ft).observe=Ve,ft.tagger=ct,ft.wire=function(e,t){return null==e?et(t||"html"):tt(e,t||"html")},ft._={WeakMap:u,WeakSet:e},at=et,ot=new u,ut=Object.create,st=function(e,t){var n={w:null,p:null};return t.set(e,n),n},Object.defineProperties(c,{for:{configurable:!0,value:function(e,t){return function(e,t,n,r){var i=t.get(e)||st(e,t);switch(typeof r){case"object":case"function":var a=i.w||(i.w=new u);return a.get(r)||function(e,t,n){return e.set(t,n),n}(a,r,new e(n));default:var o=i.p||(i.p=ut(null));return o[r]||(o[r]=new e(n))}}(this,ot.get(e)||function(e){var t=new k;return ot.set(e,t),t}(e),e,null==t?"default":t)}}}),Object.defineProperties(c.prototype,{handleEvent:{value:function(e){var t=e.currentTarget;this["getAttribute"in t&&t.getAttribute("data-call")||"on"+e.type](e)}},html:f("html",at),svg:f("svg",at),state:f("state",function(){return this.defaultState}),defaultState:{get:function(){return{}}},dispatch:{value:function(e,t){var n=this._wire$;if(n){var r=new l(e,{bubbles:!0,cancelable:!0,detail:t});return r.component=this,(n.dispatchEvent?n:n.firstChild).dispatchEvent(r)}return!1}},setState:{value:function(e,t){var n=this.state,r="function"==typeof e?e.call(this,n):e;for(var i in r)n[i]=r[i];return!1!==t&&this.render(),this}}}),ft}(document);
-    export default hyperHTML;
-    export const {Component, bind, define, diff, hyper, wire} = hyperHTML;
+var hyperHTML = (function (document) {
+  'use strict';
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var self = null ||
+  /* istanbul ignore next */
+  {};
+
+  try {
+    self.WeakMap = WeakMap;
+  } catch (WeakMap) {
+    // this could be better but 90% of the time
+    // it's everything developers need as fallback
+    self.WeakMap = function (id, Object) {
+
+      var dP = Object.defineProperty;
+      var hOP = Object.hasOwnProperty;
+      var proto = WeakMap.prototype;
+
+      proto["delete"] = function (key) {
+        return this.has(key) && delete key[this._];
+      };
+
+      proto.get = function (key) {
+        return this.has(key) ? key[this._] : void 0;
+      };
+
+      proto.has = function (key) {
+        return hOP.call(key, this._);
+      };
+
+      proto.set = function (key, value) {
+        dP(key, this._, {
+          configurable: true,
+          value: value
+        });
+        return this;
+      };
+
+      return WeakMap;
+
+      function WeakMap(iterable) {
+        dP(this, '_', {
+          value: '_@ungap/weakmap' + id++
+        });
+        if (iterable) iterable.forEach(add, this);
+      }
+
+      function add(pair) {
+        this.set(pair[0], pair[1]);
+      }
+    }(Math.random(), Object);
+  }
+
+  var WeakMap$1 = self.WeakMap;
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var self$1 = null ||
+  /* istanbul ignore next */
+  {};
+
+  try {
+    self$1.WeakSet = WeakSet;
+  } catch (WeakSet) {
+    (function (id, dP) {
+      var proto = WeakSet.prototype;
+
+      proto.add = function (object) {
+        if (!this.has(object)) dP(object, this._, {
+          value: true,
+          configurable: true
+        });
+        return this;
+      };
+
+      proto.has = function (object) {
+        return this.hasOwnProperty.call(object, this._);
+      };
+
+      proto["delete"] = function (object) {
+        return this.has(object) && delete object[this._];
+      };
+
+      self$1.WeakSet = WeakSet;
+
+      function WeakSet() {
+
+        dP(this, '_', {
+          value: '_@ungap/weakmap' + id++
+        });
+      }
+    })(Math.random(), Object.defineProperty);
+  }
+
+  var WeakSet$1 = self$1.WeakSet;
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var self$2 = null ||
+  /* istanbul ignore next */
+  {};
+
+  try {
+    self$2.Map = Map;
+  } catch (Map) {
+    self$2.Map = function Map() {
+      var i = 0;
+      var k = [];
+      var v = [];
+      return {
+        "delete": function _delete(key) {
+          var had = contains(key);
+
+          if (had) {
+            k.splice(i, 1);
+            v.splice(i, 1);
+          }
+
+          return had;
+        },
+        forEach: function forEach(callback, context) {
+          k.forEach(function (key, i) {
+            callback.call(context, v[i], key, this);
+          }, this);
+        },
+        get: function get(key) {
+          return contains(key) ? v[i] : void 0;
+        },
+        has: function has(key) {
+          return contains(key);
+        },
+        set: function set(key, value) {
+          v[contains(key) ? i : k.push(key) - 1] = value;
+          return this;
+        }
+      };
+
+      function contains(v) {
+        i = k.indexOf(v);
+        return -1 < i;
+      }
+    };
+  }
+
+  var Map$1 = self$2.Map;
+
+  var append = function append(get, parent, children, start, end, before) {
+    var isSelect = 'selectedIndex' in parent;
+    var selectedIndex = -1;
+
+    while (start < end) {
+      var child = get(children[start], 1);
+      if (isSelect && selectedIndex < 0 && child.selected) selectedIndex = start;
+      parent.insertBefore(child, before);
+      start++;
+    }
+
+    if (isSelect && -1 < selectedIndex) parent.selectedIndex = selectedIndex;
+  };
+  var eqeq = function eqeq(a, b) {
+    return a == b;
+  };
+  var identity = function identity(O) {
+    return O;
+  };
+  var indexOf = function indexOf(moreNodes, moreStart, moreEnd, lessNodes, lessStart, lessEnd, compare) {
+    var length = lessEnd - lessStart;
+    /* istanbul ignore if */
+
+    if (length < 1) return -1;
+
+    while (moreEnd - moreStart >= length) {
+      var m = moreStart;
+      var l = lessStart;
+
+      while (m < moreEnd && l < lessEnd && compare(moreNodes[m], lessNodes[l])) {
+        m++;
+        l++;
+      }
+
+      if (l === lessEnd) return moreStart;
+      moreStart = m + 1;
+    }
+
+    return -1;
+  };
+  var isReversed = function isReversed(futureNodes, futureEnd, currentNodes, currentStart, currentEnd, compare) {
+    while (currentStart < currentEnd && compare(currentNodes[currentStart], futureNodes[futureEnd - 1])) {
+      currentStart++;
+      futureEnd--;
+    }
+    return futureEnd === 0;
+  };
+  var next = function next(get, list, i, length, before) {
+    return i < length ? get(list[i], 0) : 0 < i ? get(list[i - 1], -0).nextSibling : before;
+  };
+  var remove = function remove(get, parent, children, start, end) {
+    if (end - start < 2) parent.removeChild(get(children[start], -1));else {
+      var range = parent.ownerDocument.createRange();
+      range.setStartBefore(get(children[start], -1));
+      range.setEndAfter(get(children[end - 1], -1));
+      range.deleteContents();
+    }
+  }; // - - - - - - - - - - - - - - - - - - -
+  // diff related constants and utilities
+  // - - - - - - - - - - - - - - - - - - -
+
+  var DELETION = -1;
+  var INSERTION = 1;
+  var SKIP = 0;
+  var SKIP_OND = 50;
+
+  var HS = function HS(futureNodes, futureStart, futureEnd, futureChanges, currentNodes, currentStart, currentEnd, currentChanges) {
+    var k = 0;
+    /* istanbul ignore next */
+
+    var minLen = futureChanges < currentChanges ? futureChanges : currentChanges;
+    var link = Array(minLen++);
+    var tresh = Array(minLen);
+    tresh[0] = -1;
+
+    for (var i = 1; i < minLen; i++) {
+      tresh[i] = currentEnd;
+    }
+
+    var keymap = new Map$1();
+
+    for (var _i = currentStart; _i < currentEnd; _i++) {
+      keymap.set(currentNodes[_i], _i);
+    }
+
+    for (var _i2 = futureStart; _i2 < futureEnd; _i2++) {
+      var idxInOld = keymap.get(futureNodes[_i2]);
+
+      if (idxInOld != null) {
+        k = findK(tresh, minLen, idxInOld);
+        /* istanbul ignore else */
+
+        if (-1 < k) {
+          tresh[k] = idxInOld;
+          link[k] = {
+            newi: _i2,
+            oldi: idxInOld,
+            prev: link[k - 1]
+          };
+        }
+      }
+    }
+
+    k = --minLen;
+    --currentEnd;
+
+    while (tresh[k] > currentEnd) {
+      --k;
+    }
+
+    minLen = currentChanges + futureChanges - k;
+    var diff = Array(minLen);
+    var ptr = link[k];
+    --futureEnd;
+
+    while (ptr) {
+      var _ptr = ptr,
+          newi = _ptr.newi,
+          oldi = _ptr.oldi;
+
+      while (futureEnd > newi) {
+        diff[--minLen] = INSERTION;
+        --futureEnd;
+      }
+
+      while (currentEnd > oldi) {
+        diff[--minLen] = DELETION;
+        --currentEnd;
+      }
+
+      diff[--minLen] = SKIP;
+      --futureEnd;
+      --currentEnd;
+      ptr = ptr.prev;
+    }
+
+    while (futureEnd >= futureStart) {
+      diff[--minLen] = INSERTION;
+      --futureEnd;
+    }
+
+    while (currentEnd >= currentStart) {
+      diff[--minLen] = DELETION;
+      --currentEnd;
+    }
+
+    return diff;
+  }; // this is pretty much the same petit-dom code without the delete map part
+  // https://github.com/yelouafi/petit-dom/blob/bd6f5c919b5ae5297be01612c524c40be45f14a7/src/vdom.js#L556-L561
+
+
+  var OND = function OND(futureNodes, futureStart, rows, currentNodes, currentStart, cols, compare) {
+    var length = rows + cols;
+    var v = [];
+    var d, k, r, c, pv, cv, pd;
+
+    outer: for (d = 0; d <= length; d++) {
+      /* istanbul ignore if */
+      if (d > SKIP_OND) return null;
+      pd = d - 1;
+      /* istanbul ignore next */
+
+      pv = d ? v[d - 1] : [0, 0];
+      cv = v[d] = [];
+
+      for (k = -d; k <= d; k += 2) {
+        if (k === -d || k !== d && pv[pd + k - 1] < pv[pd + k + 1]) {
+          c = pv[pd + k + 1];
+        } else {
+          c = pv[pd + k - 1] + 1;
+        }
+
+        r = c - k;
+
+        while (c < cols && r < rows && compare(currentNodes[currentStart + c], futureNodes[futureStart + r])) {
+          c++;
+          r++;
+        }
+
+        if (c === cols && r === rows) {
+          break outer;
+        }
+
+        cv[d + k] = c;
+      }
+    }
+
+    var diff = Array(d / 2 + length / 2);
+    var diffIdx = diff.length - 1;
+
+    for (d = v.length - 1; d >= 0; d--) {
+      while (c > 0 && r > 0 && compare(currentNodes[currentStart + c - 1], futureNodes[futureStart + r - 1])) {
+        // diagonal edge = equality
+        diff[diffIdx--] = SKIP;
+        c--;
+        r--;
+      }
+
+      if (!d) break;
+      pd = d - 1;
+      /* istanbul ignore next */
+
+      pv = d ? v[d - 1] : [0, 0];
+      k = c - r;
+
+      if (k === -d || k !== d && pv[pd + k - 1] < pv[pd + k + 1]) {
+        // vertical edge = insertion
+        r--;
+        diff[diffIdx--] = INSERTION;
+      } else {
+        // horizontal edge = deletion
+        c--;
+        diff[diffIdx--] = DELETION;
+      }
+    }
+
+    return diff;
+  };
+
+  var applyDiff = function applyDiff(diff, get, parentNode, futureNodes, futureStart, currentNodes, currentStart, currentLength, before) {
+    var live = new Map$1();
+    var length = diff.length;
+    var currentIndex = currentStart;
+    var i = 0;
+
+    while (i < length) {
+      switch (diff[i++]) {
+        case SKIP:
+          futureStart++;
+          currentIndex++;
+          break;
+
+        case INSERTION:
+          // TODO: bulk appends for sequential nodes
+          live.set(futureNodes[futureStart], 1);
+          append(get, parentNode, futureNodes, futureStart++, futureStart, currentIndex < currentLength ? get(currentNodes[currentIndex], 0) : before);
+          break;
+
+        case DELETION:
+          currentIndex++;
+          break;
+      }
+    }
+
+    i = 0;
+
+    while (i < length) {
+      switch (diff[i++]) {
+        case SKIP:
+          currentStart++;
+          break;
+
+        case DELETION:
+          // TODO: bulk removes for sequential nodes
+          if (live.has(currentNodes[currentStart])) currentStart++;else remove(get, parentNode, currentNodes, currentStart++, currentStart);
+          break;
+      }
+    }
+  };
+
+  var findK = function findK(ktr, length, j) {
+    var lo = 1;
+    var hi = length;
+
+    while (lo < hi) {
+      var mid = (lo + hi) / 2 >>> 0;
+      if (j < ktr[mid]) hi = mid;else lo = mid + 1;
+    }
+
+    return lo;
+  };
+
+  var smartDiff = function smartDiff(get, parentNode, futureNodes, futureStart, futureEnd, futureChanges, currentNodes, currentStart, currentEnd, currentChanges, currentLength, compare, before) {
+    applyDiff(OND(futureNodes, futureStart, futureChanges, currentNodes, currentStart, currentChanges, compare) || HS(futureNodes, futureStart, futureEnd, futureChanges, currentNodes, currentStart, currentEnd, currentChanges), get, parentNode, futureNodes, futureStart, currentNodes, currentStart, currentLength, before);
+  };
+
+  /*! (c) 2018 Andrea Giammarchi (ISC) */
+
+  var domdiff = function domdiff(parentNode, // where changes happen
+  currentNodes, // Array of current items/nodes
+  futureNodes, // Array of future items/nodes
+  options // optional object with one of the following properties
+  //  before: domNode
+  //  compare(generic, generic) => true if same generic
+  //  node(generic) => Node
+  ) {
+    if (!options) options = {};
+    var compare = options.compare || eqeq;
+    var get = options.node || identity;
+    var before = options.before == null ? null : get(options.before, 0);
+    var currentLength = currentNodes.length;
+    var currentEnd = currentLength;
+    var currentStart = 0;
+    var futureEnd = futureNodes.length;
+    var futureStart = 0; // common prefix
+
+    while (currentStart < currentEnd && futureStart < futureEnd && compare(currentNodes[currentStart], futureNodes[futureStart])) {
+      currentStart++;
+      futureStart++;
+    } // common suffix
+
+
+    while (currentStart < currentEnd && futureStart < futureEnd && compare(currentNodes[currentEnd - 1], futureNodes[futureEnd - 1])) {
+      currentEnd--;
+      futureEnd--;
+    }
+
+    var currentSame = currentStart === currentEnd;
+    var futureSame = futureStart === futureEnd; // same list
+
+    if (currentSame && futureSame) return futureNodes; // only stuff to add
+
+    if (currentSame && futureStart < futureEnd) {
+      append(get, parentNode, futureNodes, futureStart, futureEnd, next(get, currentNodes, currentStart, currentLength, before));
+      return futureNodes;
+    } // only stuff to remove
+
+
+    if (futureSame && currentStart < currentEnd) {
+      remove(get, parentNode, currentNodes, currentStart, currentEnd);
+      return futureNodes;
+    }
+
+    var currentChanges = currentEnd - currentStart;
+    var futureChanges = futureEnd - futureStart;
+    var i = -1; // 2 simple indels: the shortest sequence is a subsequence of the longest
+
+    if (currentChanges < futureChanges) {
+      i = indexOf(futureNodes, futureStart, futureEnd, currentNodes, currentStart, currentEnd, compare); // inner diff
+
+      if (-1 < i) {
+        append(get, parentNode, futureNodes, futureStart, i, get(currentNodes[currentStart], 0));
+        append(get, parentNode, futureNodes, i + currentChanges, futureEnd, next(get, currentNodes, currentEnd, currentLength, before));
+        return futureNodes;
+      }
+    }
+    /* istanbul ignore else */
+    else if (futureChanges < currentChanges) {
+        i = indexOf(currentNodes, currentStart, currentEnd, futureNodes, futureStart, futureEnd, compare); // outer diff
+
+        if (-1 < i) {
+          remove(get, parentNode, currentNodes, currentStart, i);
+          remove(get, parentNode, currentNodes, i + futureChanges, currentEnd);
+          return futureNodes;
+        }
+      } // common case with one replacement for many nodes
+    // or many nodes replaced for a single one
+
+    /* istanbul ignore else */
+
+
+    if (currentChanges < 2 || futureChanges < 2) {
+      append(get, parentNode, futureNodes, futureStart, futureEnd, get(currentNodes[currentStart], 0));
+      remove(get, parentNode, currentNodes, currentStart, currentEnd);
+      return futureNodes;
+    } // the half match diff part has been skipped in petit-dom
+    // https://github.com/yelouafi/petit-dom/blob/bd6f5c919b5ae5297be01612c524c40be45f14a7/src/vdom.js#L391-L397
+    // accordingly, I think it's safe to skip in here too
+    // if one day it'll come out like the speediest thing ever to do
+    // then I might add it in here too
+    // Extra: before going too fancy, what about reversed lists ?
+    //        This should bail out pretty quickly if that's not the case.
+
+
+    if (currentChanges === futureChanges && isReversed(futureNodes, futureEnd, currentNodes, currentStart, currentEnd, compare)) {
+      append(get, parentNode, futureNodes, futureStart, futureEnd, next(get, currentNodes, currentEnd, currentLength, before));
+      return futureNodes;
+    } // last resort through a smart diff
+
+
+    smartDiff(get, parentNode, futureNodes, futureStart, futureEnd, futureChanges, currentNodes, currentStart, currentEnd, currentChanges, currentLength, compare, before);
+    return futureNodes;
+  };
+
+  
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var self$3 = null ||
+  /* istanbul ignore next */
+  {};
+  self$3.CustomEvent = typeof CustomEvent === 'function' ? CustomEvent : function (__p__) {
+    CustomEvent[__p__] = new CustomEvent('').constructor[__p__];
+    return CustomEvent;
+
+    function CustomEvent(type, init) {
+      if (!init) init = {};
+      var e = document.createEvent('CustomEvent');
+      e.initCustomEvent(type, !!init.bubbles, !!init.cancelable, init.detail);
+      return e;
+    }
+  }('prototype');
+  var CustomEvent$1 = self$3.CustomEvent;
+
+  // able to create Custom Elements like components
+  // including the ability to listen to connect/disconnect
+  // events via onconnect/ondisconnect attributes
+  // Components can be created imperatively or declaratively.
+  // The main difference is that declared components
+  // will not automatically render on setState(...)
+  // to simplify state handling on render.
+
+  function Component() {
+    return this; // this is needed in Edge !!!
+  } // Component is lazily setup because it needs
+  // wire mechanism as lazy content
+
+  function setup(content) {
+    // there are various weakly referenced variables in here
+    // and mostly are to use Component.for(...) static method.
+    var children = new WeakMap$1();
+    var create = Object.create;
+
+    var createEntry = function createEntry(wm, id, component) {
+      wm.set(id, component);
+      return component;
+    };
+
+    var get = function get(Class, info, context, id) {
+      var relation = info.get(Class) || relate(Class, info);
+
+      switch (typeof(id)) {
+        case 'object':
+        case 'function':
+          var wm = relation.w || (relation.w = new WeakMap$1());
+          return wm.get(id) || createEntry(wm, id, new Class(context));
+
+        default:
+          var sm = relation.p || (relation.p = create(null));
+          return sm[id] || (sm[id] = new Class(context));
+      }
+    };
+
+    var relate = function relate(Class, info) {
+      var relation = {
+        w: null,
+        p: null
+      };
+      info.set(Class, relation);
+      return relation;
+    };
+
+    var set = function set(context) {
+      var info = new Map$1();
+      children.set(context, info);
+      return info;
+    }; // The Component Class
+
+
+    Object.defineProperties(Component, {
+      // Component.for(context[, id]) is a convenient way
+      // to automatically relate data/context to children components
+      // If not created yet, the new Component(context) is weakly stored
+      // and after that same instance would always be returned.
+      "for": {
+        configurable: true,
+        value: function value(context, id) {
+          return get(this, children.get(context) || set(context), context, id == null ? 'default' : id);
+        }
+      }
+    });
+    Object.defineProperties(Component.prototype, {
+      // all events are handled with the component as context
+      handleEvent: {
+        value: function value(e) {
+          var ct = e.currentTarget;
+          this['getAttribute' in ct && ct.getAttribute('data-call') || 'on' + e.type](e);
+        }
+      },
+      // components will lazily define html or svg properties
+      // as soon as these are invoked within the .render() method
+      // Such render() method is not provided by the base class
+      // but it must be available through the Component extend.
+      // Declared components could implement a
+      // render(props) method too and use props as needed.
+      html: lazyGetter('html', content),
+      svg: lazyGetter('svg', content),
+      // the state is a very basic/simple mechanism inspired by Preact
+      state: lazyGetter('state', function () {
+        return this.defaultState;
+      }),
+      // it is possible to define a default state that'd be always an object otherwise
+      defaultState: {
+        get: function get() {
+          return {};
+        }
+      },
+      // dispatch a bubbling, cancelable, custom event
+      // through the first known/available node
+      dispatch: {
+        value: function value(type, detail) {
+          var _wire$ = this._wire$;
+
+          if (_wire$) {
+            var event = new CustomEvent$1(type, {
+              bubbles: true,
+              cancelable: true,
+              detail: detail
+            });
+            event.component = this;
+            return (_wire$.dispatchEvent ? _wire$ : _wire$.firstChild).dispatchEvent(event);
+          }
+
+          return false;
+        }
+      },
+      // setting some property state through a new object
+      // or a callback, triggers also automatically a render
+      // unless explicitly specified to not do so (render === false)
+      setState: {
+        value: function value(state, render) {
+          var target = this.state;
+          var source = typeof state === 'function' ? state.call(this, target) : state;
+
+          for (var key in source) {
+            target[key] = source[key];
+          }
+
+          if (render !== false) this.render();
+          return this;
+        }
+      }
+    });
+  } // instead of a secret key I could've used a WeakMap
+  // However, attaching a property directly will result
+  // into better performance with thousands of components
+  // hanging around, and less memory pressure caused by the WeakMap
+
+  var lazyGetter = function lazyGetter(type, fn) {
+    var secret = '_' + type + '$';
+    return {
+      get: function get() {
+        return this[secret] || setValue(this, secret, fn.call(this, type));
+      },
+      set: function set(value) {
+        setValue(this, secret, value);
+      }
+    };
+  }; // shortcut to set value on get or set(value)
+
+
+  var setValue = function setValue(self, secret, value) {
+    return Object.defineProperty(self, secret, {
+      configurable: true,
+      value: typeof value === 'function' ? function () {
+        return self._wire$ = value.apply(this, arguments);
+      } : value
+    })[secret];
+  };
+
+  Object.defineProperties(Component.prototype, {
+    // used to distinguish better than instanceof
+    ELEMENT_NODE: {
+      value: 1
+    },
+    nodeType: {
+      value: -1
+    }
+  });
+
+  var attributes = {};
+  var intents = {};
+  var keys = [];
+  var hasOwnProperty = intents.hasOwnProperty;
+  var length = 0;
+  var Intent = {
+    // used to invoke right away hyper:attributes
+    attributes: attributes,
+    // hyperHTML.define('intent', (object, update) => {...})
+    // can be used to define a third parts update mechanism
+    // when every other known mechanism failed.
+    // hyper.define('user', info => info.name);
+    // hyper(node)`<p>${{user}}</p>`;
+    define: function define(intent, callback) {
+      if (intent.indexOf('-') < 0) {
+        if (!(intent in intents)) {
+          length = keys.push(intent);
+        }
+
+        intents[intent] = callback;
+      } else {
+        attributes[intent] = callback;
+      }
+    },
+    // this method is used internally as last resort
+    // to retrieve a value out of an object
+    invoke: function invoke(object, callback) {
+      for (var i = 0; i < length; i++) {
+        var key = keys[i];
+
+        if (hasOwnProperty.call(object, key)) {
+          return intents[key](object[key], callback);
+        }
+      }
+    }
+  };
+
+  var isArray = Array.isArray || function (toString) {
+    var $ = toString.call([]);
+    return function isArray(object) {
+      return toString.call(object) === $;
+    };
+  }({}.toString);
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var createContent = function (document) {
+
+    var FRAGMENT = 'fragment';
+    var TEMPLATE = 'template';
+    var HAS_CONTENT = 'content' in create(TEMPLATE);
+    var createHTML = HAS_CONTENT ? function (html) {
+      var template = create(TEMPLATE);
+      template.innerHTML = html;
+      return template.content;
+    } : function (html) {
+      var content = create(FRAGMENT);
+      var template = create(TEMPLATE);
+      var childNodes = null;
+
+      if (/^[^\S]*?<(col(?:group)?|t(?:head|body|foot|r|d|h))/i.test(html)) {
+        var selector = RegExp.$1;
+        template.innerHTML = '<table>' + html + '</table>';
+        childNodes = template.querySelectorAll(selector);
+      } else {
+        template.innerHTML = html;
+        childNodes = template.childNodes;
+      }
+
+      append(content, childNodes);
+      return content;
+    };
+    return function createContent(markup, type) {
+      return (type === 'svg' ? createSVG : createHTML)(markup);
+    };
+
+    function append(root, childNodes) {
+      var length = childNodes.length;
+
+      while (length--) {
+        root.appendChild(childNodes[0]);
+      }
+    }
+
+    function create(element) {
+      return element === FRAGMENT ? document.createDocumentFragment() : document.createElementNS('http://www.w3.org/1999/xhtml', element);
+    } // it could use createElementNS when hasNode is there
+    // but this fallback is equally fast and easier to maintain
+    // it is also battle tested already in all IE
+
+
+    function createSVG(svg) {
+      var content = create(FRAGMENT);
+      var template = create('div');
+      template.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg">' + svg + '</svg>';
+      append(content, template.firstChild.childNodes);
+      return content;
+    }
+  }(document);
+
+  /*! (c) Andrea Giammarchi */
+  function disconnected(poly) {
+
+    var Event = poly.Event;
+    var WeakSet = poly.WeakSet;
+    var notObserving = true;
+    var observer = null;
+    return function observe(node) {
+      if (notObserving) {
+        notObserving = !notObserving;
+        observer = new WeakSet();
+        startObserving(node.ownerDocument);
+      }
+
+      observer.add(node);
+      return node;
+    };
+
+    function startObserving(document) {
+      var connected = new WeakSet();
+      var disconnected = new WeakSet();
+
+      try {
+        new MutationObserver(changes).observe(document, {
+          subtree: true,
+          childList: true
+        });
+      } catch (o_O) {
+        var timer = 0;
+        var records = [];
+
+        var reschedule = function reschedule(record) {
+          records.push(record);
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            changes(records.splice(timer = 0, records.length));
+          }, 0);
+        };
+
+        document.addEventListener('DOMNodeRemoved', function (event) {
+          reschedule({
+            addedNodes: [],
+            removedNodes: [event.target]
+          });
+        }, true);
+        document.addEventListener('DOMNodeInserted', function (event) {
+          reschedule({
+            addedNodes: [event.target],
+            removedNodes: []
+          });
+        }, true);
+      }
+
+      function changes(records) {
+        for (var record, length = records.length, i = 0; i < length; i++) {
+          record = records[i];
+          dispatchAll(record.removedNodes, 'disconnected', disconnected, connected);
+          dispatchAll(record.addedNodes, 'connected', connected, disconnected);
+        }
+      }
+
+      function dispatchAll(nodes, type, wsin, wsout) {
+        for (var node, event = new Event(type), length = nodes.length, i = 0; i < length; (node = nodes[i++]).nodeType === 1 && dispatchTarget(node, event, type, wsin, wsout)) {
+        }
+      }
+
+      function dispatchTarget(node, event, type, wsin, wsout) {
+        if (observer.has(node) && !wsin.has(node)) {
+          wsout["delete"](node);
+          wsin.add(node);
+          node.dispatchEvent(event);
+          /*
+          // The event is not bubbling (perf reason: should it?),
+          // hence there's no way to know if
+          // stop/Immediate/Propagation() was called.
+          // Should DOM Level 0 work at all?
+          // I say it's a YAGNI case for the time being,
+          // and easy to implement in user-land.
+          if (!event.cancelBubble) {
+            var fn = node['on' + type];
+            if (fn)
+              fn.call(node, event);
+          }
+          */
+        }
+
+        for (var // apparently is node.children || IE11 ... ^_^;;
+        // https://github.com/WebReflection/disconnected/issues/1
+        children = node.children || [], length = children.length, i = 0; i < length; dispatchTarget(children[i++], event, type, wsin, wsout)) {
+        }
+      }
+    }
+  }
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var importNode = function (document, appendChild, cloneNode, createTextNode, importNode) {
+    var _native = importNode in document; // IE 11 has problems with cloning templates:
+    // it "forgets" empty childNodes. This feature-detects that.
+
+
+    var fragment = document.createDocumentFragment();
+    fragment[appendChild](document[createTextNode]('g'));
+    fragment[appendChild](document[createTextNode](''));
+    var content = _native ? document[importNode](fragment, true) : fragment[cloneNode](true);
+    return content.childNodes.length < 2 ? function importNode(node, deep) {
+      var clone = node[cloneNode]();
+
+      for (var childNodes = node.childNodes || [], length = childNodes.length, i = 0; deep && i < length; i++) {
+        clone[appendChild](importNode(childNodes[i], deep));
+      }
+
+      return clone;
+    } : _native ? document[importNode] : function (node, deep) {
+      return node[cloneNode](!!deep);
+    };
+  }(document, 'appendChild', 'cloneNode', 'createTextNode', 'importNode');
+
+  var trim = ''.trim || function () {
+    return String(this).replace(/^\s+|\s+/g, '');
+  };
+
+  /*! (c) Andrea Giammarchi - ISC */
+  // Custom
+  var UID = '-' + Math.random().toFixed(6) + '%'; //                           Edge issue!
+
+  var UID_IE = false;
+
+  try {
+    if (!function (template, content, tabindex) {
+      return content in template && (template.innerHTML = '<p ' + tabindex + '="' + UID + '"></p>', template[content].childNodes[0].getAttribute(tabindex) == UID);
+    }(document.createElement('template'), 'content', 'tabindex')) {
+      UID = '_dt: ' + UID.slice(1, -1) + ';';
+      UID_IE = true;
+    }
+  } catch (meh) {}
+
+  var UIDC = '<!--' + UID + '-->'; // DOM
+
+  var COMMENT_NODE = 8;
+  var ELEMENT_NODE = 1;
+  var TEXT_NODE = 3;
+  var SHOULD_USE_TEXT_CONTENT = /^(?:style|textarea)$/i;
+  var VOID_ELEMENTS = /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;
+
+  /*! (c) Andrea Giammarchi - ISC */
+  function sanitize (template) {
+    return template.join(UIDC).replace(selfClosing, fullClosing).replace(attrSeeker, attrReplacer);
+  }
+  var spaces = ' \\f\\n\\r\\t';
+  var almostEverything = '[^' + spaces + '\\/>"\'=]+';
+  var attrName = '[' + spaces + ']+' + almostEverything;
+  var tagName = '<([A-Za-z]+[A-Za-z0-9:._-]*)((?:';
+  var attrPartials = '(?:\\s*=\\s*(?:\'[^\']*?\'|"[^"]*?"|<[^>]*?>|' + almostEverything.replace('\\/', '') + '))?)';
+  var attrSeeker = new RegExp(tagName + attrName + attrPartials + '+)([' + spaces + ']*/?>)', 'g');
+  var selfClosing = new RegExp(tagName + attrName + attrPartials + '*)([' + spaces + ']*/>)', 'g');
+  var findAttributes = new RegExp('(' + attrName + '\\s*=\\s*)([\'"]?)' + UIDC + '\\2', 'gi');
+
+  function attrReplacer($0, $1, $2, $3) {
+    return '<' + $1 + $2.replace(findAttributes, replaceAttributes) + $3;
+  }
+
+  function replaceAttributes($0, $1, $2) {
+    return $1 + ($2 || '"') + UID + ($2 || '"');
+  }
+
+  function fullClosing($0, $1, $2) {
+    return VOID_ELEMENTS.test($1) ? $0 : '<' + $1 + $2 + '></' + $1 + '>';
+  }
+
+  function find(node, path) {
+    var length = path.length;
+    var i = 0;
+
+    while (i < length) {
+      node = node.childNodes[path[i++]];
+    }
+
+    return node;
+  }
+
+  function parse(node, holes, parts, path) {
+    var childNodes = node.childNodes;
+    var length = childNodes.length;
+    var i = 0;
+
+    while (i < length) {
+      var child = childNodes[i];
+
+      switch (child.nodeType) {
+        case ELEMENT_NODE:
+          var childPath = path.concat(i);
+          parseAttributes(child, holes, parts, childPath);
+          parse(child, holes, parts, childPath);
+          break;
+
+        case COMMENT_NODE:
+          var textContent = child.textContent;
+
+          if (textContent === UID) {
+            parts.shift();
+            holes.push( // basicHTML or other non standard engines
+            // might end up having comments in nodes
+            // where they shouldn't, hence this check.
+            SHOULD_USE_TEXT_CONTENT.test(node.nodeName) ? Text(node, path) : Any(child, path.concat(i)));
+          } else {
+            switch (textContent.slice(0, 2)) {
+              case '/*':
+                if (textContent.slice(-2) !== '*/') break;
+
+              case "\uD83D\uDC7B":
+                // ghost
+                node.removeChild(child);
+                i--;
+                length--;
+            }
+          }
+
+          break;
+
+        case TEXT_NODE:
+          // the following ignore is actually covered by browsers
+          // only basicHTML ends up on previous COMMENT_NODE case
+          // instead of TEXT_NODE because it knows nothing about
+          // special style or textarea behavior
+
+          /* istanbul ignore if */
+          if (SHOULD_USE_TEXT_CONTENT.test(node.nodeName) && trim.call(child.textContent) === UIDC) {
+            parts.shift();
+            holes.push(Text(node, path));
+          }
+
+          break;
+      }
+
+      i++;
+    }
+  }
+
+  function parseAttributes(node, holes, parts, path) {
+    var cache = new Map$1();
+    var attributes = node.attributes;
+    var remove = [];
+    var array = remove.slice.call(attributes, 0);
+    var length = array.length;
+    var i = 0;
+
+    while (i < length) {
+      var attribute = array[i++];
+      var direct = attribute.value === UID;
+      var sparse;
+
+      if (direct || 1 < (sparse = attribute.value.split(UIDC)).length) {
+        var name = attribute.name; // the following ignore is covered by IE
+        // and the IE9 double viewBox test
+
+        /* istanbul ignore else */
+
+        if (!cache.has(name)) {
+          var realName = parts.shift().replace(direct ? /^(?:|[\S\s]*?\s)(\S+?)\s*=\s*('|")?$/ : new RegExp('^(?:|[\\S\\s]*?\\s)(' + name + ')\\s*=\\s*(\'|")', 'i'), '$1');
+          var value = attributes[realName] || // the following ignore is covered by browsers
+          // while basicHTML is already case-sensitive
+
+          /* istanbul ignore next */
+          attributes[realName.toLowerCase()];
+          cache.set(name, value);
+          if (direct) holes.push(Attr(value, path, realName, null));else {
+            var skip = sparse.length - 2;
+
+            while (skip--) {
+              parts.shift();
+            }
+
+            holes.push(Attr(value, path, realName, sparse));
+          }
+        }
+
+        remove.push(attribute);
+      }
+    }
+
+    length = remove.length;
+    i = 0;
+
+    while (i < length) {
+      // Edge HTML bug #16878726
+      var attr = remove[i++];
+      if (/^id$/i.test(attr.name)) node.removeAttribute(attr.name); // standard browsers would work just fine here
+      else node.removeAttributeNode(attr);
+    } // This is a very specific Firefox/Safari issue
+    // but since it should be a not so common pattern,
+    // it's probably worth patching regardless.
+    // Basically, scripts created through strings are death.
+    // You need to create fresh new scripts instead.
+    // TODO: is there any other node that needs such nonsense?
+
+
+    var nodeName = node.nodeName;
+
+    if (/^script$/i.test(nodeName)) {
+      // this used to be like that
+      // var script = createElement(node, nodeName);
+      // then Edge arrived and decided that scripts created
+      // through template documents aren't worth executing
+      // so it became this ... hopefully it won't hurt in the wild
+      var script = document.createElement(nodeName);
+      length = attributes.length;
+      i = 0;
+
+      while (i < length) {
+        script.setAttributeNode(attributes[i++].cloneNode(true));
+      }
+
+      script.textContent = node.textContent;
+      node.parentNode.replaceChild(script, node);
+    }
+  }
+
+  function Any(node, path) {
+    return {
+      type: 'any',
+      node: node,
+      path: path
+    };
+  }
+
+  function Attr(node, path, name, sparse) {
+    return {
+      type: 'attr',
+      node: node,
+      path: path,
+      name: name,
+      sparse: sparse
+    };
+  }
+
+  function Text(node, path) {
+    return {
+      type: 'text',
+      node: node,
+      path: path
+    };
+  }
+
+  // globals
+  var parsed = new WeakMap$1();
+  var referenced = new WeakMap$1();
+
+  function createInfo(options, template) {
+    var markup = sanitize(template);
+    var transform = options.transform;
+    if (transform) markup = transform(markup);
+    var content = createContent(markup, options.type);
+    cleanContent(content);
+    var holes = [];
+    parse(content, holes, template.slice(0), []);
+    var info = {
+      content: content,
+      updates: function updates(content) {
+        var updates = [];
+        var len = holes.length;
+        var i = 0;
+        var off = 0;
+
+        while (i < len) {
+          var info = holes[i++];
+          var node = find(content, info.path);
+
+          switch (info.type) {
+            case 'any':
+              updates.push({
+                fn: options.any(node, []),
+                sparse: false
+              });
+              break;
+
+            case 'attr':
+              var sparse = info.sparse;
+              var fn = options.attribute(node, info.name, info.node);
+              if (sparse === null) updates.push({
+                fn: fn,
+                sparse: false
+              });else {
+                off += sparse.length - 2;
+                updates.push({
+                  fn: fn,
+                  sparse: true,
+                  values: sparse
+                });
+              }
+              break;
+
+            case 'text':
+              updates.push({
+                fn: options.text(node),
+                sparse: false
+              });
+              node.textContent = '';
+              break;
+          }
+        }
+
+        len += off;
+        return function () {
+          var length = arguments.length;
+
+          if (len !== length - 1) {
+            throw new Error(length - 1 + ' values instead of ' + len + '\n' + template.join('${value}'));
+          }
+
+          var i = 1;
+          var off = 1;
+
+          while (i < length) {
+            var update = updates[i - off];
+
+            if (update.sparse) {
+              var values = update.values;
+              var value = values[0];
+              var j = 1;
+              var l = values.length;
+              off += l - 2;
+
+              while (j < l) {
+                value += arguments[i++] + values[j++];
+              }
+
+              update.fn(value);
+            } else update.fn(arguments[i++]);
+          }
+
+          return content;
+        };
+      }
+    };
+    parsed.set(template, info);
+    return info;
+  }
+
+  function createDetails(options, template) {
+    var info = parsed.get(template) || createInfo(options, template);
+    var content = importNode.call(document, info.content, true);
+    var details = {
+      content: content,
+      template: template,
+      updates: info.updates(content)
+    };
+    referenced.set(options, details);
+    return details;
+  }
+
+  function domtagger(options) {
+    return function (template) {
+      var details = referenced.get(options);
+      if (details == null || details.template !== template) details = createDetails(options, template);
+      details.updates.apply(null, arguments);
+      return details.content;
+    };
+  }
+
+  function cleanContent(fragment) {
+    var childNodes = fragment.childNodes;
+    var i = childNodes.length;
+
+    while (i--) {
+      var child = childNodes[i];
+
+      if (child.nodeType !== 1 && trim.call(child.textContent).length === 0) {
+        fragment.removeChild(child);
+      }
+    }
+  }
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var hyperStyle = function () {
+
+    var IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/i;
+    var hyphen = /([^A-Z])([A-Z]+)/g;
+    return function hyperStyle(node, original) {
+      return 'ownerSVGElement' in node ? svg(node, original) : update(node.style, false);
+    };
+
+    function ized($0, $1, $2) {
+      return $1 + '-' + $2.toLowerCase();
+    }
+
+    function svg(node, original) {
+      var style;
+      if (original) style = original.cloneNode(true);else {
+        node.setAttribute('style', '--hyper:style;');
+        style = node.getAttributeNode('style');
+      }
+      style.value = '';
+      node.setAttributeNode(style);
+      return update(style, true);
+    }
+
+    function toStyle(object) {
+      var key,
+          css = [];
+
+      for (key in object) {
+        css.push(key.replace(hyphen, ized), ':', object[key], ';');
+      }
+
+      return css.join('');
+    }
+
+    function update(style, isSVG) {
+      var oldType, oldValue;
+      return function (newValue) {
+        var info, key, styleValue, value;
+
+        switch (typeof(newValue)) {
+          case 'object':
+            if (newValue) {
+              if (oldType === 'object') {
+                if (!isSVG) {
+                  if (oldValue !== newValue) {
+                    for (key in oldValue) {
+                      if (!(key in newValue)) {
+                        style[key] = '';
+                      }
+                    }
+                  }
+                }
+              } else {
+                if (isSVG) style.value = '';else style.cssText = '';
+              }
+
+              info = isSVG ? {} : style;
+
+              for (key in newValue) {
+                value = newValue[key];
+                styleValue = typeof value === 'number' && !IS_NON_DIMENSIONAL.test(key) ? value + 'px' : value;
+                if (!isSVG && /^--/.test(key)) info.setProperty(key, styleValue);else info[key] = styleValue;
+              }
+
+              oldType = 'object';
+              if (isSVG) style.value = toStyle(oldValue = info);else oldValue = newValue;
+              break;
+            }
+
+          default:
+            if (oldValue != newValue) {
+              oldType = 'string';
+              oldValue = newValue;
+              if (isSVG) style.value = newValue || '';else style.cssText = newValue || '';
+            }
+
+            break;
+        }
+      };
+    }
+  }();
+
+  /*! (c) Andrea Giammarchi - ISC */
+  var Wire = function (slice, proto) {
+    proto = Wire.prototype;
+    proto.ELEMENT_NODE = 1;
+    proto.nodeType = 111;
+
+    proto.remove = function (keepFirst) {
+      var childNodes = this.childNodes;
+      var first = this.firstChild;
+      var last = this.lastChild;
+      this._ = null;
+
+      if (keepFirst && childNodes.length === 2) {
+        last.parentNode.removeChild(last);
+      } else {
+        var range = this.ownerDocument.createRange();
+        range.setStartBefore(keepFirst ? childNodes[1] : first);
+        range.setEndAfter(last);
+        range.deleteContents();
+      }
+
+      return first;
+    };
+
+    proto.valueOf = function (forceAppend) {
+      var fragment = this._;
+      var noFragment = fragment == null;
+      if (noFragment) fragment = this._ = this.ownerDocument.createDocumentFragment();
+
+      if (noFragment || forceAppend) {
+        for (var n = this.childNodes, i = 0, l = n.length; i < l; i++) {
+          fragment.appendChild(n[i]);
+        }
+      }
+
+      return fragment;
+    };
+
+    return Wire;
+
+    function Wire(childNodes) {
+      var nodes = this.childNodes = slice.call(childNodes, 0);
+      this.firstChild = nodes[0];
+      this.lastChild = nodes[nodes.length - 1];
+      this.ownerDocument = nodes[0].ownerDocument;
+      this._ = null;
+    }
+  }([].slice);
+
+  // Node.CONSTANTS
+  var DOCUMENT_FRAGMENT_NODE = 11; // SVG related constants
+
+  var OWNER_SVG_ELEMENT = 'ownerSVGElement'; // Custom Elements / MutationObserver constants
+
+  var CONNECTED = 'connected';
+  var DISCONNECTED = 'dis' + CONNECTED;
+
+  var componentType = Component.prototype.nodeType;
+  var wireType = Wire.prototype.nodeType;
+  var observe = disconnected({
+    Event: CustomEvent$1,
+    WeakSet: WeakSet$1
+  });
+
+  var asHTML = function asHTML(html) {
+    return {
+      html: html
+    };
+  }; // returns nodes from wires and components
+
+
+  var asNode = function asNode(item, i) {
+    switch (item.nodeType) {
+      case wireType:
+        // in the Wire case, the content can be
+        // removed, post-pended, inserted, or pre-pended and
+        // all these cases are handled by domdiff already
+
+        /* istanbul ignore next */
+        return 1 / i < 0 ? i ? item.remove(true) : item.lastChild : i ? item.valueOf(true) : item.firstChild;
+
+      case componentType:
+        return asNode(item.render(), i);
+
+      default:
+        return item;
+    }
+  }; // returns true if domdiff can handle the value
+
+
+  var canDiff = function canDiff(value) {
+    return 'ELEMENT_NODE' in value;
+  }; // when a Promise is used as interpolation value
+  // its result must be parsed once resolved.
+  // This callback is in charge of understanding what to do
+  // with a returned value once the promise is resolved.
+
+
+  var invokeAtDistance = function invokeAtDistance(value, callback) {
+    callback(value.placeholder);
+
+    if ('text' in value) {
+      Promise.resolve(value.text).then(String).then(callback);
+    } else if ('any' in value) {
+      Promise.resolve(value.any).then(callback);
+    } else if ('html' in value) {
+      Promise.resolve(value.html).then(asHTML).then(callback);
+    } else {
+      Promise.resolve(Intent.invoke(value, callback)).then(callback);
+    }
+  }; // quick and dirty way to check for Promise/ish values
+
+
+  var isPromise_ish = function isPromise_ish(value) {
+    return value != null && 'then' in value;
+  }; // list of attributes that should not be directly assigned
+
+
+  var readOnly = /^(?:form|list)$/i; // reused every slice time
+
+  var slice = [].slice; // simplifies text node creation
+
+  var text = function text(node, _text) {
+    return node.ownerDocument.createTextNode(_text);
+  };
+
+  function Tagger(type) {
+    this.type = type;
+    return domtagger(this);
+  }
+
+  Tagger.prototype = {
+    // there are four kind of attributes, and related behavior:
+    //  * events, with a name starting with `on`, to add/remove event listeners
+    //  * special, with a name present in their inherited prototype, accessed directly
+    //  * regular, accessed through get/setAttribute standard DOM methods
+    //  * style, the only regular attribute that also accepts an object as value
+    //    so that you can style=${{width: 120}}. In this case, the behavior has been
+    //    fully inspired by Preact library and its simplicity.
+    attribute: function attribute(node, name, original) {
+      var isSVG = OWNER_SVG_ELEMENT in node;
+      var oldValue; // if the attribute is the style one
+      // handle it differently from others
+
+      if (name === 'style') return hyperStyle(node, original, isSVG); // the name is an event one,
+      // add/remove event listeners accordingly
+      else if (/^on/.test(name)) {
+          var type = name.slice(2);
+
+          if (type === CONNECTED || type === DISCONNECTED) {
+            observe(node);
+          } else if (name.toLowerCase() in node) {
+            type = type.toLowerCase();
+          }
+
+          return function (newValue) {
+            if (oldValue !== newValue) {
+              if (oldValue) node.removeEventListener(type, oldValue, false);
+              oldValue = newValue;
+              if (newValue) node.addEventListener(type, newValue, false);
+            }
+          };
+        } // the attribute is special ('value' in input)
+        // and it's not SVG *or* the name is exactly data,
+        // in this case assign the value directly
+        else if (name === 'data' || !isSVG && name in node && !readOnly.test(name)) {
+            return function (newValue) {
+              if (oldValue !== newValue) {
+                oldValue = newValue;
+
+                if (node[name] !== newValue && newValue == null) {
+                  // cleanup on null to avoid silly IE/Edge bug
+                  node[name] = '';
+                  node.removeAttribute(name);
+                } else node[name] = newValue;
+              }
+            };
+          } else if (name in Intent.attributes) {
+            return function (any) {
+              var newValue = Intent.attributes[name](node, any);
+
+              if (oldValue !== newValue) {
+                oldValue = newValue;
+                if (newValue == null) node.removeAttribute(name);else node.setAttribute(name, newValue);
+              }
+            };
+          } // in every other case, use the attribute node as it is
+          // update only the value, set it as node only when/if needed
+          else {
+              var owner = false;
+              var attribute = original.cloneNode(true);
+              return function (newValue) {
+                if (oldValue !== newValue) {
+                  oldValue = newValue;
+
+                  if (attribute.value !== newValue) {
+                    if (newValue == null) {
+                      if (owner) {
+                        owner = false;
+                        node.removeAttributeNode(attribute);
+                      }
+
+                      attribute.value = newValue;
+                    } else {
+                      attribute.value = newValue;
+
+                      if (!owner) {
+                        owner = true;
+                        node.setAttributeNode(attribute);
+                      }
+                    }
+                  }
+                }
+              };
+            }
+    },
+    // in a hyper(node)`<div>${content}</div>` case
+    // everything could happen:
+    //  * it's a JS primitive, stored as text
+    //  * it's null or undefined, the node should be cleaned
+    //  * it's a component, update the content by rendering it
+    //  * it's a promise, update the content once resolved
+    //  * it's an explicit intent, perform the desired operation
+    //  * it's an Array, resolve all values if Promises and/or
+    //    update the node with the resulting list of content
+    any: function any(node, childNodes) {
+      var diffOptions = {
+        node: asNode,
+        before: node
+      };
+      var nodeType = OWNER_SVG_ELEMENT in node ?
+      /* istanbul ignore next */
+      'svg' : 'html';
+      var fastPath = false;
+      var oldValue;
+
+      var anyContent = function anyContent(value) {
+        switch (typeof(value)) {
+          case 'string':
+          case 'number':
+          case 'boolean':
+            if (fastPath) {
+              if (oldValue !== value) {
+                oldValue = value;
+                childNodes[0].textContent = value;
+              }
+            } else {
+              fastPath = true;
+              oldValue = value;
+              childNodes = domdiff(node.parentNode, childNodes, [text(node, value)], diffOptions);
+            }
+
+            break;
+
+          case 'function':
+            anyContent(value(node));
+            break;
+
+          case 'object':
+          case 'undefined':
+            if (value == null) {
+              fastPath = false;
+              childNodes = domdiff(node.parentNode, childNodes, [], diffOptions);
+              break;
+            }
+
+          default:
+            fastPath = false;
+            oldValue = value;
+
+            if (isArray(value)) {
+              if (value.length === 0) {
+                if (childNodes.length) {
+                  childNodes = domdiff(node.parentNode, childNodes, [], diffOptions);
+                }
+              } else {
+                switch (typeof(value[0])) {
+                  case 'string':
+                  case 'number':
+                  case 'boolean':
+                    anyContent({
+                      html: value
+                    });
+                    break;
+
+                  case 'object':
+                    if (isArray(value[0])) {
+                      value = value.concat.apply([], value);
+                    }
+
+                    if (isPromise_ish(value[0])) {
+                      Promise.all(value).then(anyContent);
+                      break;
+                    }
+
+                  default:
+                    childNodes = domdiff(node.parentNode, childNodes, value, diffOptions);
+                    break;
+                }
+              }
+            } else if (canDiff(value)) {
+              childNodes = domdiff(node.parentNode, childNodes, value.nodeType === DOCUMENT_FRAGMENT_NODE ? slice.call(value.childNodes) : [value], diffOptions);
+            } else if (isPromise_ish(value)) {
+              value.then(anyContent);
+            } else if ('placeholder' in value) {
+              invokeAtDistance(value, anyContent);
+            } else if ('text' in value) {
+              anyContent(String(value.text));
+            } else if ('any' in value) {
+              anyContent(value.any);
+            } else if ('html' in value) {
+              childNodes = domdiff(node.parentNode, childNodes, slice.call(createContent([].concat(value.html).join(''), nodeType).childNodes), diffOptions);
+            } else if ('length' in value) {
+              anyContent(slice.call(value));
+            } else {
+              anyContent(Intent.invoke(value, anyContent));
+            }
+
+            break;
+        }
+      };
+
+      return anyContent;
+    },
+    // style or textareas don't accept HTML as content
+    // it's pointless to transform or analyze anything
+    // different from text there but it's worth checking
+    // for possible defined intents.
+    text: function text(node) {
+      var oldValue;
+
+      var textContent = function textContent(value) {
+        if (oldValue !== value) {
+          oldValue = value;
+
+          var type = typeof(value);
+
+          if (type === 'object' && value) {
+            if (isPromise_ish(value)) {
+              value.then(textContent);
+            } else if ('placeholder' in value) {
+              invokeAtDistance(value, textContent);
+            } else if ('text' in value) {
+              textContent(String(value.text));
+            } else if ('any' in value) {
+              textContent(value.any);
+            } else if ('html' in value) {
+              textContent([].concat(value.html).join(''));
+            } else if ('length' in value) {
+              textContent(slice.call(value).join(''));
+            } else {
+              textContent(Intent.invoke(value, textContent));
+            }
+          } else if (type === 'function') {
+            textContent(value(node));
+          } else {
+            node.textContent = value == null ? '' : value;
+          }
+        }
+      };
+
+      return textContent;
+    }
+  };
+
+  var isNoOp = false;
+
+  var _templateLiteral = function templateLiteral(tl) {
+    var RAW = 'raw';
+
+    var isBroken = function isBroken(UA) {
+      return /(Firefox|Safari)\/(\d+)/.test(UA) && !/(Chrom|Android)\/(\d+)/.test(UA);
+    };
+
+    var broken = isBroken((document.defaultView.navigator || {}).userAgent);
+    var FTS = !(RAW in tl) || tl.propertyIsEnumerable(RAW) || !Object.isFrozen(tl[RAW]);
+
+    if (broken || FTS) {
+      var forever = {};
+
+      var foreverCache = function foreverCache(tl) {
+        for (var key = '.', i = 0; i < tl.length; i++) {
+          key += tl[i].length + '.' + tl[i];
+        }
+
+        return forever[key] || (forever[key] = tl);
+      }; // Fallback TypeScript shenanigans
+
+
+      if (FTS) _templateLiteral = foreverCache; // try fast path for other browsers:
+      // store the template as WeakMap key
+      // and forever cache it only when it's not there.
+      // this way performance is still optimal,
+      // penalized only when there are GC issues
+      else {
+          var wm = new WeakMap$1();
+
+          var set = function set(tl, unique) {
+            wm.set(tl, unique);
+            return unique;
+          };
+
+          _templateLiteral = function templateLiteral(tl) {
+            return wm.get(tl) || set(tl, foreverCache(tl));
+          };
+        }
+    } else {
+      isNoOp = true;
+    }
+
+    return TL(tl);
+  };
+
+  function TL(tl) {
+    return isNoOp ? tl : _templateLiteral(tl);
+  }
+
+  function tta (template) {
+    var length = arguments.length;
+    var args = [TL(template)];
+    var i = 1;
+
+    while (i < length) {
+      args.push(arguments[i++]);
+    }
+
+    return args;
+  }
+
+  var wires = new WeakMap$1(); // A wire is a callback used as tag function
+  // to lazily relate a generic object to a template literal.
+  // hyper.wire(user)`<div id=user>${user.name}</div>`; => the div#user
+  // This provides the ability to have a unique DOM structure
+  // related to a unique JS object through a reusable template literal.
+  // A wire can specify a type, as svg or html, and also an id
+  // via html:id or :id convention. Such :id allows same JS objects
+  // to be associated to different DOM structures accordingly with
+  // the used template literal without losing previously rendered parts.
+
+  var wire = function wire(obj, type) {
+    return obj == null ? content(type || 'html') : weakly(obj, type || 'html');
+  }; // A wire content is a virtual reference to one or more nodes.
+  // It's represented by either a DOM node, or an Array.
+  // In both cases, the wire content role is to simply update
+  // all nodes through the list of related callbacks.
+  // In few words, a wire content is like an invisible parent node
+  // in charge of updating its content like a bound element would do.
+
+
+  var content = function content(type) {
+    var wire, tagger, template;
+    return function () {
+      var args = tta.apply(null, arguments);
+
+      if (template !== args[0]) {
+        template = args[0];
+        tagger = new Tagger(type);
+        wire = wireContent(tagger.apply(tagger, args));
+      } else {
+        tagger.apply(tagger, args);
+      }
+
+      return wire;
+    };
+  }; // wires are weakly created through objects.
+  // Each object can have multiple wires associated
+  // and this is thanks to the type + :id feature.
+
+
+  var weakly = function weakly(obj, type) {
+    var i = type.indexOf(':');
+    var wire = wires.get(obj);
+    var id = type;
+
+    if (-1 < i) {
+      id = type.slice(i + 1);
+      type = type.slice(0, i) || 'html';
+    }
+
+    if (!wire) wires.set(obj, wire = {});
+    return wire[id] || (wire[id] = content(type));
+  }; // A document fragment loses its nodes 
+  // as soon as it is appended into another node.
+  // This has the undesired effect of losing wired content
+  // on a second render call, because (by then) the fragment would be empty:
+  // no longer providing access to those sub-nodes that ultimately need to
+  // stay associated with the original interpolation.
+  // To prevent hyperHTML from forgetting about a fragment's sub-nodes,
+  // fragments are instead returned as an Array of nodes or, if there's only one entry,
+  // as a single referenced node which, unlike fragments, will indeed persist
+  // wire content throughout multiple renderings.
+  // The initial fragment, at this point, would be used as unique reference to this
+  // array of nodes or to this single referenced node.
+
+
+  var wireContent = function wireContent(node) {
+    var childNodes = node.childNodes;
+    var length = childNodes.length;
+    return length === 1 ? childNodes[0] : length ? new Wire(childNodes) : node;
+  };
+
+  // are already known to hyperHTML
+
+  var bewitched = new WeakMap$1(); // better known as hyper.bind(node), the render is
+  // the main tag function in charge of fully upgrading
+  // or simply updating, contexts used as hyperHTML targets.
+  // The `this` context is either a regular DOM node or a fragment.
+
+  function render() {
+    var wicked = bewitched.get(this);
+    var args = tta.apply(null, arguments);
+
+    if (wicked && wicked.template === args[0]) {
+      wicked.tagger.apply(null, args);
+    } else {
+      upgrade.apply(this, args);
+    }
+
+    return this;
+  } // an upgrade is in charge of collecting template info,
+  // parse it once, if unknown, to map all interpolations
+  // as single DOM callbacks, relate such template
+  // to the current context, and render it after cleaning the context up
+
+
+  function upgrade(template) {
+    var type = OWNER_SVG_ELEMENT in this ? 'svg' : 'html';
+    var tagger = new Tagger(type);
+    bewitched.set(this, {
+      tagger: tagger,
+      template: template
+    });
+    this.textContent = '';
+    this.appendChild(tagger.apply(null, arguments));
+  }
+
+  /*! (c) Andrea Giammarchi (ISC) */
+  // you can do the following
+  // const {bind, wire} = hyperHTML;
+  // and use them right away: bind(node)`hello!`;
+
+  var bind = function bind(context) {
+    return render.bind(context);
+  };
+
+  var define = Intent.define;
+  var tagger = Tagger.prototype;
+  hyper.Component = Component;
+  hyper.bind = bind;
+  hyper.define = define;
+  hyper.diff = domdiff;
+  hyper.hyper = hyper;
+  hyper.observe = observe;
+  hyper.tagger = tagger;
+  hyper.wire = wire; // exported as shared utils
+  // for projects based on hyperHTML
+  // that don't necessarily need upfront polyfills
+  // i.e. those still targeting IE
+
+  hyper._ = {
+    WeakMap: WeakMap$1,
+    WeakSet: WeakSet$1
+  }; // the wire content is the lazy defined
+  // html or svg property of each hyper.Component
+
+  setup(content); // everything is exported directly or through the
+  // that "magically" understands what's the best
+  // thing to do with passed arguments
+
+  function hyper(HTML) {
+    return arguments.length < 2 ? HTML == null ? content('html') : typeof HTML === 'string' ? hyper.wire(null, HTML) : 'raw' in HTML ? content('html')(HTML) : 'nodeType' in HTML ? hyper.bind(HTML) : weakly(HTML, 'html') : ('raw' in HTML ? content('html') : hyper.wire).apply(null, arguments);
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  return hyper;
+
+}(document));

@@ -1,4 +1,4 @@
-import { css, html, preventResizeCSS } from "../HelperFunctions.js";
+import { css, html, preventSelectCSS } from "../HelperFunctions.js";
 
 const styling = css`
 #resize-handle {
@@ -10,7 +10,7 @@ const styling = css`
     height: 100%;
     display: inline-block;
 
-    ${preventResizeCSS}
+    ${preventSelectCSS}
 }
 
 #container {

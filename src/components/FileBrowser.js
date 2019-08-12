@@ -1,9 +1,10 @@
 // @ts-check
-import { html, css, joinFilePaths, preventResizeCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
+import { html, css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
 import './Triangle.js';
+import "./ContextMenu.js"
 
 const styling = css`
 * {
@@ -50,38 +51,7 @@ const styling = css`
 }
 
 * {
-    ${preventResizeCSS}
-}
-
-.context-menu {
-    position: fixed;
-    background-color: #fbfbfb;
-    border: #c1c1c1 solid 2px;
-    z-index: 100000;
-}
-
-.context-menu-item.disabled {
-    color: #949494;
-    background-color: #f1f1f1;
-    cursor: not-allowed;
-}
-
-.context-menu-item {
-    padding: 8px;
-    padding-right: 11px;
-    border-top: #c1c1c1 solid 1px;
-}
-
-.context-menu-item:first-child {
-    border-top: none;
-}
-
-.context-menu-item:hover{
-    background-color: #e6e6e6;
-}
-
-.context-menu-item:active{
-    background-color: #cccccc;
+    ${preventSelectCSS}
 }
 
 .folder-content > div {
@@ -93,7 +63,7 @@ export default class FileBrowser extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this._openFile = null;
+        this.openFile = null;
         /** @type GitLab */
         this.gitlab = null;
         /** @type {HTMLDivElement} */
@@ -102,25 +72,14 @@ export default class FileBrowser extends HTMLElement {
         this.fileStructure = {
             files: [],
             folders: new Map()
-        }
-
-        this.render();
-
-        this.selectionBoxes.addEventListener("change", () => this.refreshFileList());
+        };
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
-                this.tryRemoveContextMenu();
+                this.myContextMenu = null;
+                this.render();
             }
         });
-    }
-
-    set openFile(newValue){
-        this._openFile = newValue;
-    }
-
-    get openFile(){
-        return this._openFile;
     }
 
     /**
@@ -129,42 +88,15 @@ export default class FileBrowser extends HTMLElement {
      */
     async passInValues(gitlab, openFile) {
         this.gitlab = gitlab;
+        this.openFile = openFile;
 
-        // NOTE: we need to await this to make sure the campaign list is populated
-        // TODO: make this nicer
-        await this.selectionBoxes.passInValues(
-            gitlab,
-        );
+        this.campaigns = await this.gitlab.listCampaigns();
+        this.ip = "IP1";
+        this.campaign = this.campaigns[0];
 
-        await this.setOpenFile(openFile);
         await this.refreshFileList();
+        this.render();
     }
-
-    /**
-     * @param {string} newOpenFile
-     */
-    async setOpenFile(newOpenFile) {
-        this.openFile = newOpenFile;
-        if (this.openFile != null) {
-            this.selectionBoxes.campaign = this.openFile.split("/")[0];
-            this.selectionBoxes.ip = this.openFile.split("/")[1];
-        }
-    }
-
-    get selectionBoxes(){
-        return this.root.querySelector("selection-boxes");
-    }
-
-    get ip() {
-        if(this.selectionBoxes == null) return "";
-        return this.selectionBoxes.ip;
-    }
-
-    get campaign() {
-        if(this.selectionBoxes == null) return "";
-        return this.selectionBoxes.campaign;
-    }
-
 
     async refreshFileList() {
         try {
@@ -182,108 +114,96 @@ export default class FileBrowser extends HTMLElement {
         this.render();
     }
 
-    tryRemoveContextMenu() {
-        if (this.myContextMenu !== null) {
-            this.root.removeChild(this.myContextMenu);
+    async onDeleteButtonPressed(filePath, isFolder, markAsPending){
+        try{
+            if (!confirm(`Are you sure you want to delete the file ${filePath}?`)) return;
+
+            markAsPending();
+
+            if (isFolder) {
+                await this.gitlab.deleteFolder(filePath);
+            } else {
+                await this.gitlab.deleteFile(filePath);
+            }
+    
+            if (this.openFile == filePath) {
+                this.dispatchEvent(new CustomEvent("open-file", {
+                    detail: null
+                }));
+    
+                this.openFile = null;
+            }
+        }
+        finally{
             this.myContextMenu = null;
+            this.render();
+        }
+    }
+
+    async onRenameButtonPressed(filePath, isFolder, markAsPending){
+        try{
+            if(!this.isCommitted){
+                alert("Cannot rename a file without committing the current changes");
+                return;
+            }
+
+            const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
+            if(newName == null) return;
+
+            if (newName.includes(" ")) {
+                alert("Invalid name, paths cannot contain spaces");
+                return;
+            }
+
+            markAsPending();
+
+            if (isFolder) {
+                await this.gitlab.renameFolder(filePath, newName);
+            } else {
+                await this.gitlab.renameFile(filePath, newName);
+            }
+
+            if(this.openFile == filePath){
+                const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
+
+                this.dispatchEvent(new CustomEvent("open-file", {
+                    detail: fullNewName
+                }));
+
+                this.openFile = fullNewName;
+            }
+        }
+        finally{
+            this.myContextMenu = null;
+            this.render();
         }
     }
 
     /**
      * @param {MouseEvent} event
-     * @param {string} fullFilePath This is the full filepath to the file.
+     * @param {string} filePath This is the full filepath to the file.
      * @param {boolean} isFolder
      */
-    onContextMenu(event, fullFilePath, isFolder) {
-        const container = document.createElement("div");
-        container.innerHTML = html`<div style="top: ${event.clientY}px; left: ${event.clientX}px" class="context-menu">
-            <div id="delete-button" class="context-menu-item">Delete</div>
-            <div id="rename-button" class="context-menu-item">Rename</div>
-        </div>`;
-        this.root.appendChild(container);
-
-        const deleteButton = container.querySelector("#delete-button");
-        const renameButton = container.querySelector("#rename-button");
-
-        deleteButton.addEventListener("click", () => {
-            (async () => {
-                try{
-                    if (confirm(`Are you sure you want to delete the file ${fullFilePath}?`)) {
-                        deleteButton.innerText = "Deleting...";
-
-                        deleteButton.classList.add("disabled");
-                        renameButton.classList.add("disabled");
-
-                        if (isFolder) {
-                            await this.gitlab.deleteFolder(fullFilePath);
-                        } else {
-                            await this.gitlab.deleteFile(fullFilePath);
-                        }
-                    }
-
-                    if (this.openFile == fullFilePath) {
-                        this.dispatchEvent(new CustomEvent("open-file", {
-                            detail: null
-                        }));
-
-                        this.openFile = null;
-                    }
-
-                    this.refreshFileList();
-                }
-                finally{
-                    this.tryRemoveContextMenu();
-                }
-            })();
-
-        })
-
-        container.querySelector("#rename-button").addEventListener("click", () => {
-            try{
-                if(!this.isCommitted){
-                    alert("Cannot rename a file without committing the current changes");
-                    return;
-                }
-
-                const newName = prompt(`What do you want to rename ${fullFilePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
-                if (newName !== null) {
-                    if (newName.includes(" ")) {
-                        alert("Invalid name, paths cannot contain spaces");
-                    }
-                    else {
-                        (async () => {
-                            container.querySelector("#delete-button").innerText = "Renaming ...";
-
-                            deleteButton.classList.add("disabled");
-                            renameButton.classList.add("disabled");
-
-                            if (isFolder) {
-                                await this.gitlab.renameFolder(fullFilePath, newName);
-                            } else {
-                                await this.gitlab.renameFile(fullFilePath, newName);
-                            }
-
-                            if(this.openFile == fullFilePath){
-                                const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
-
-                                this.dispatchEvent(new CustomEvent("open-file", {
-                                    detail: fullNewName
-                                }));
-    
-                                this.openFile = fullNewName;
-                            }
-
-                            this.refreshFileList();
-                        })()
-                    }
-                }
-            }
-            finally{
-                this.tryRemoveContextMenu();
-            }
-        })
-
-        this.myContextMenu = container;
+    onContextMenu(event, filePath, isFolder) {
+        this.myContextMenu = wire()`
+            <context-menu 
+                x=${event.clientX}
+                y=${event.clientY}
+                buttons=${[
+                    {
+                        name: "Delete",
+                        pendingMessage: "Deleting ...",
+                        onActivate: (markAsPending) => this.onDeleteButtonPressed(filePath, isFolder, markAsPending)
+                    },
+                    {
+                        name: "Rename",
+                        pendingMessage: "Renaming ...",
+                        onActivate: (markAsPending) => this.onRenameButtonPressed(filePath, isFolder, markAsPending)
+                    },
+                ]}
+            ></context-menu>
+        `
+        this.render();
 
         event.preventDefault();
     }
@@ -342,7 +262,7 @@ export default class FileBrowser extends HTMLElement {
          * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} _structure
          */
         const getElementFromStructure = (_structure, prefix="") => {
-            return wire()`
+            return wire([fileStructure, ip, campaign])`
                 <div>
                     ${_structure.files.map(fileName => {
                         const fullFilePath = joinFilePaths(prefix, fileName);
@@ -394,20 +314,24 @@ export default class FileBrowser extends HTMLElement {
     }
 
     clickNewFile(containingFolder) {
-        const createFileWindow = (wire()`
+        this.createFileWindow = wire()`
             <create-file-window
                 onsubmit=${async event => {
                     try {
                         await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
                     }
                     finally {
-                        this.root.removeChild(createFileWindow);
+                        this.createFileWindow = undefined;
+                        this.render();
                     }
 
                     this.render();
                 }}
                 oncancel=${
-                    () => this.root.removeChild(createFileWindow)
+                    () => {
+                        this.createFileWindow = undefined;
+                        this.render();
+                    }
                 }
                 oncreateEmpty=${async event => {
                     try {
@@ -423,16 +347,13 @@ export default class FileBrowser extends HTMLElement {
                         }
                     }
                     finally {
-                        this.root.removeChild(createFileWindow);
+                        this.createFileWindow = undefined;
+                        this.render();
                     }
-
-                    this.render();
                 }}
-
-            ></create-file-window>
-        `)
-
-        this.root.appendChild(createFileWindow);
+            />`
+            
+        this.render();
     }
 
     /**
@@ -458,17 +379,28 @@ export default class FileBrowser extends HTMLElement {
         this.openFile = fullFileName;
     }
 
+    /**
+     * @param {MouseEvent} event
+     */
+    handleEvent(event){
+        this[event.currentTarget.name] = event.currentTarget.value;
+        this.dispatchEvent(new CustomEvent("change"));
+        this.render();
+    }
+
     render() {
         hyper(this.root)`
         <style>
             ${styling}
         </style>
-        <selection-boxes>
+        <selection-boxes allCampaigns=${this.campaigns} onchange=${this}>
         </selection-boxes>
         <hr />
         <div id="file-browser">
             ${this.getFileUI(this.fileStructure, this.ip, this.campaign)}
         </div>
+        ${this.myContextMenu}
+        ${this.createFileWindow}
         `
     }
 }

@@ -23,39 +23,31 @@ export default class IPCampaignSelectors extends HTMLElement {
         this.waitForInit = new Promise((resolve, _) => {
             this.onInitFinished = resolve;
         });
-
-        this.campaigns = [];
-        this.render();
+        this.allCampaigns = [];
+        this.allIps = ["IP1", "IP2", "IP5", "IP8"];
+        this.ip = "IP1";
+        this.campaign = "";
     }
 
-    /**
-     * @param {GitLab} gitlab
-     */
-    async passInValues(gitlab) {
-        this.campaigns = (await gitlab.listCampaigns()).reverse();
+    connectedCallback(){
         this.render();
-
         this.onInitFinished();
     }
 
-    get ip() {
-        return this.root.getElementById("ip-select").value;
+    get value(){
+        return {
+            ip: this.ip,
+            campaign: this.campaign
+        }
     }
 
-    set ip(newIp){
-        this.root.getElementById("ip-select").value = newIp;
-    }
-
-    get campaign() {
-        return this.root.getElementById("campaign-select").value;
-    }
-
-    set campaign(newCampaign){
-        this.root.getElementById("campaign-select").value = newCampaign;
-    }
-
-    get path() {
-        return this.campaign + '/' + this.ip
+    /**
+     * @param {Event} event
+     */
+    handleEvent(event){
+        this[event.currentTarget.name] = event.currentTarget.value;
+        this.dispatchEvent(new CustomEvent("change"));
+        this.render();
     }
 
     render() {
@@ -66,22 +58,22 @@ export default class IPCampaignSelectors extends HTMLElement {
     <div class="selection-box">
         <div class="selection-name">IP:</div>
         <div>
-            <select onchange=${() => this.dispatchEvent(new CustomEvent("change"))} id="ip-select">
-                <option value="IP1">IP1</option>
-                <option value="IP2">IP2</option>
-                <option value="IP5">IP5</option>
-                <option value="IP8">IP8</option>
+            <select name=ip onchange=${this} id="ip-select">
+                ${
+                    this.allIps.map(ip => 
+                        wire()`<option selected=${this.ip} value=${ip}>${ip}</option>`)
+                }
             </select>
         </div>
     </div>
     <div class="selection-box">
         <div class="selection-name">Campaign:</div>
         <div>
-            <select onchange=${() => this.dispatchEvent(new CustomEvent("change"))} id="campaign-select">
+            <select name=campaign onchange=${this} id="campaign-select">
                 ${
-                    this.campaigns.map(campaignName => 
+                    (async () => (await this.allCampaigns).map(campaignName => 
                         wire()`<option value=${campaignName}>${campaignName}</option>`
-                    )
+                    ))()
                 }
             </select>
         </div>
