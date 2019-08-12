@@ -87,10 +87,8 @@ export default class ChartsComponent extends HTMLElement {
         this.allCharts.forEach(chart => {chart.sigmaToMMFactor=newValue});
     }
 
-    passInValues(sigmaToMMFactor){
-        this.sigmaToMMFactor = sigmaToMMFactor;
-
-        this.allCharts.forEach(chart => chart.passInValues(sigmaToMMFactor));
+    passInValues(sigmaInMM){
+        this.allCharts.forEach(chart => chart.sigmaInMM = sigmaInMM);
     }
 
     /**
