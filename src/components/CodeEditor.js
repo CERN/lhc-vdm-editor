@@ -483,7 +483,6 @@ export default class CodeEditor extends HTMLElement {
     get value() {
         const editorValue = this.rawValue;
 
-        //this.VdM = new VdM()
         this.VdM.parse(addLineNumbers(editorValue));
         if (!this.VdM.isValid) return this.noParseValue;
         else {

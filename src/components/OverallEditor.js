@@ -438,6 +438,7 @@ export default class OverallEditor extends HTMLElement {
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
 
         if (setValue) {
+            this.editor.VdM = this.VdM;
             this.editor.value = previousEditor.value;
         }
 
