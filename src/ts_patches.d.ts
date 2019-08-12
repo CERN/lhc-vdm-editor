@@ -77,3 +77,6 @@ declare namespace AceAjax {
 interface Window {
     [index: string]: any;
 };
+
+declare var wire: any;
+declare var hyper: any;

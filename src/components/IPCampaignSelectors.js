@@ -1,5 +1,5 @@
-import { css, html } from "../HelperFunctions.js";
-import GitLab from "../GitLab.js"
+import { html2 as html, html as oldHtml, css } from "../HelperFunctions.js";
+import GitLab from "../GitLab.js";
 
 const styling = css`
     .selection-box{
@@ -15,28 +15,25 @@ const styling = css`
         padding-bottom: 3px;
     }
 `
-export default class Selectors extends HTMLElement {
+
+export default class IPCampaignSelectors extends HTMLElement {
     constructor() {
-        super()
+        super();
         this.root = this.attachShadow({ mode: 'open' });
-        this.root.innerHTML = this.template();
         this.waitForInit = new Promise((resolve, _) => {
             this.onInitFinished = resolve;
-        })
+        });
 
-        Array.from(this.root.querySelectorAll("#ip-select, #campaign-select")).map(x => x.addEventListener("change", () => {
-            this.dispatchEvent(new CustomEvent('change'))
-        }));
+        this.campaigns = [];
+        this.render();
     }
 
     /**
      * @param {GitLab} gitlab
      */
     async passInValues(gitlab) {
-        const campaigns = (await gitlab.listCampaigns()).reverse();
-        this.root.getElementById("campaign-select").innerHTML = campaigns.map(campaignName => {
-            return html`<option value=${campaignName}>${campaignName}</option>`
-        }).join("\n");
+        this.campaigns = (await gitlab.listCampaigns()).reverse();
+        this.render();
 
         this.onInitFinished();
     }
@@ -61,15 +58,15 @@ export default class Selectors extends HTMLElement {
         return this.campaign + '/' + this.ip
     }
 
-    template() {
-        return html`
+    render() {
+        return hyper(this.root)`
     <style>
         ${styling}
     </style>
     <div class="selection-box">
         <div class="selection-name">IP:</div>
         <div>
-            <select id="ip-select">
+            <select onchange=${() => this.dispatchEvent(new CustomEvent("change"))} id="ip-select">
                 <option value="IP1">IP1</option>
                 <option value="IP2">IP2</option>
                 <option value="IP5">IP5</option>
@@ -80,11 +77,16 @@ export default class Selectors extends HTMLElement {
     <div class="selection-box">
         <div class="selection-name">Campaign:</div>
         <div>
-            <select id="campaign-select">
+            <select onchange=${() => this.dispatchEvent(new CustomEvent("change"))} id="campaign-select">
+                ${
+                    this.campaigns.map(campaignName => 
+                        wire()`<option value=${campaignName}>${campaignName}</option>`
+                    )
+                }
             </select>
         </div>
     </div>
     `
     }
 }
-customElements.define('selection-boxes', Selectors);
+customElements.define('selection-boxes', IPCampaignSelectors);

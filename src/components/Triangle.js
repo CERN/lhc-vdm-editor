@@ -38,7 +38,8 @@ export default class Triangle extends HTMLElement {
         this.triangle = this.root.querySelector('.triangle');
         this.openState = false;
     }
-    set isOpen(newState){
+
+    set open(newState){
         if (newState) {
             this.openState = newState;
             this.triangle.classList.remove("triangle-closed");
@@ -50,9 +51,15 @@ export default class Triangle extends HTMLElement {
             this.triangle.classList.add("triangle-closed");
         }
     }
-    get isOpen(){
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        this[name] = newValue;
+    }
+
+    get open(){
         return this.openState
     }
+
     template() {
         return html`
         <style>
@@ -64,35 +71,7 @@ export default class Triangle extends HTMLElement {
     `
     }
 }
+
+Triangle.observedAttributes = ["open"];
+
 customElements.define('folder-triangle', Triangle);
-
-
-
-
-/* .triangle {
-    width: 0px;
-    height: 0px;
-    position: relative;
-    display: inline-block;
-}
-
-.triangle-closed {
-    border-left: 8px solid grey;
-    border-bottom: 5px solid transparent;
-    border-top: 5px solid transparent;
-    top: 0px;
-    left: 0px;
-}
-
-.triangle-open {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 8px solid grey;
-    top: -1px;
-    left: 0px;
-}
-
-.triangle-container {
-    height: 0px;
-    width: 0px;
-} */

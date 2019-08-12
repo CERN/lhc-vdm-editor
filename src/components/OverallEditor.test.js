@@ -7,9 +7,12 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000000
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
 const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
 
+/**
+ * @param {GitLab} [gitlab]
+ */
 async function getNewOverallEditor(gitlab){
     let oe = new OverallEditor(gitlab);
-    oe.style.visibility = "hidden";
+    oe.style.display = "none";
     document.body.appendChild(oe);
     await oe.loadedPromise;
 
@@ -90,14 +93,14 @@ describe("OverallEditor", () => {
         it("loads the same file from local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE);
 
-            oe = await getNewOverallEditor();
+            oe = await getNewOverallEditor(gitlab);
             expect(oe.filePath).toBe(TEST_FILE);
         })
 
         it("loads the same content from local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
 
-            oe = await getNewOverallEditor();
+            oe = await getNewOverallEditor(gitlab);
             expect(oe.value).toBe(TEST_FILE_CONTENT);
         })
 
@@ -107,7 +110,7 @@ describe("OverallEditor", () => {
             const editorToSwitchTo = 0;
             oe.onSwitchEditorButtonPress(editorToSwitchTo);
 
-            oe = await getNewOverallEditor();
+            oe = await getNewOverallEditor(gitlab);
             expect(oe.currentEditorIndex).toBe(editorToSwitchTo);
         })
     })

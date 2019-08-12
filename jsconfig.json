@@ -5,6 +5,7 @@
         "allowUmdGlobalAccess": true
     },
     "typeAcquisition": {
-        "include": ["ace", "jquery", "highcharts", "jasmine"]
-    }
+        "include": ["ace", "jquery", "highcharts", "jasmine", "hyperhtml"]
+    },
+    "exclude": ["extern/**/*"]
 }

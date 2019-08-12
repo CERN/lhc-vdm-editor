@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src https://*.cern.ch http://127.0.0.1:8080 data: blob: 'unsafe-inline' 'unsafe-eval' https://lhcvdm.web.cern.ch/lhcvdm/">
+    <!-- NOTE: this is for testing to see if this fetches anything from unallowed locations - uncomment to test-->
     <style>
         html,
         body {
@@ -32,14 +34,14 @@
             }
         });
     </script>
-    <link rel="preload" href="./extern/ace-17.06.19/ace.js" as="script">
-    <link rel="preload" href="./extern/ace-17.06.19/ext-language_tools.js" as="script">
-    <link rel="preload" href="./extern/jQuery-3.4.1.js">
-    <link rel="preload" href="./extern/ace-17.06.19/ace.js">
-    <link rel="preload" href="./extern/ace-17.06.19/ext-language_tools.js">
-    <link rel="preload" href="./extern/ace-17.06.19/ext-searchbox.js">
-    <link rel="preload" href="./extern/highcharts-7.1.2/highcharts.js">
-    <link rel="preload" href="./extern/highcharts-7.1.2/no-data-to-display.js">
+    <link rel="preload" as="script" href="./extern/ace-17.06.19/ace.js">
+    <link rel="preload" as="script" href="./extern/ace-17.06.19/ext-language_tools.js">
+    <link rel="preload" as="script" href="./extern/jQuery-3.4.1.js">
+    <link rel="preload" as="script" href="./extern/ace-17.06.19/ace.js">
+    <link rel="preload" as="script" href="./extern/ace-17.06.19/ext-language_tools.js">
+    <link rel="preload" as="script" href="./extern/ace-17.06.19/ext-searchbox.js">
+    <link rel="preload" as="script" href="./extern/highcharts-7.1.2/highcharts.js">
+    <link rel="preload" as="script" href="./extern/highcharts-7.1.2/no-data-to-display.js">
 
     <script src="./extern/jQuery-3.4.1.js"></script>
 
@@ -49,6 +51,12 @@
 
     <script src="./extern/highcharts-7.1.2/highcharts.js"></script>
     <script src="./extern/highcharts-7.1.2/no-data-to-display.js"></script>
+    <script type="module" src="./extern/hyperhtml-2.30.1.js"></script>
+    <script type="module">
+        import {wire, hyper} from "./extern/hyperhtml-2.30.1.js";
+        window.wire = wire;
+        window.hyper = hyper;
+    </script>
 
     <script type='module' src='src/main.js'></script>
 </head>

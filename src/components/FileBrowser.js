@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html, getFilenameFromPath, preventResizeCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
+import { html, css, joinFilePaths, preventResizeCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
@@ -93,25 +93,34 @@ export default class FileBrowser extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
-        this.openFile = null;
+        this._openFile = null;
         /** @type GitLab */
         this.gitlab = null;
-
         /** @type {HTMLDivElement} */
         this.myContextMenu = null;
-
         this.isCommitted = true;
+        this.fileStructure = {
+            files: [],
+            folders: new Map()
+        }
 
-        this.selectionBoxes = this.root.querySelector("selection-boxes");
+        this.render();
 
-        this.selectionBoxes.addEventListener("change", () => this.reloadFileUI());
+        this.selectionBoxes.addEventListener("change", () => this.refreshFileList());
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
                 this.tryRemoveContextMenu();
             }
         });
+    }
+
+    set openFile(newValue){
+        this._openFile = newValue;
+    }
+
+    get openFile(){
+        return this._openFile;
     }
 
     /**
@@ -128,6 +137,7 @@ export default class FileBrowser extends HTMLElement {
         );
 
         await this.setOpenFile(openFile);
+        await this.refreshFileList();
     }
 
     /**
@@ -139,25 +149,40 @@ export default class FileBrowser extends HTMLElement {
             this.selectionBoxes.campaign = this.openFile.split("/")[0];
             this.selectionBoxes.ip = this.openFile.split("/")[1];
         }
+    }
 
-        await this.reloadFileUI();
+    get selectionBoxes(){
+        return this.root.querySelector("selection-boxes");
     }
 
     get ip() {
+        if(this.selectionBoxes == null) return "";
         return this.selectionBoxes.ip;
     }
 
     get campaign() {
+        if(this.selectionBoxes == null) return "";
         return this.selectionBoxes.campaign;
     }
 
 
-    async reloadFileUI() {
-        await this.setFileUI(this.ip, this.campaign);
+    async refreshFileList() {
+        try {
+            this.fileStructure = await this.gitlab.listFiles(`${this.campaign}/${this.ip}`);
+        }
+        catch (error) {
+            if (error instanceof NoPathExistsError) {
+                this.fileStructure = { files: [NO_FILES_TEXT], folders: new Map() };
+            }
+            else {
+                throw error;
+            }
+        }
+
+        this.render();
     }
 
     tryRemoveContextMenu() {
-        console.log("try remove", this.myContextMenu);
         if (this.myContextMenu !== null) {
             this.root.removeChild(this.myContextMenu);
             this.myContextMenu = null;
@@ -165,103 +190,102 @@ export default class FileBrowser extends HTMLElement {
     }
 
     /**
-     * @param {Element} element
-     * @param {string} filePath This is the full filepath to the file.
+     * @param {MouseEvent} event
+     * @param {string} fullFilePath This is the full filepath to the file.
+     * @param {boolean} isFolder
      */
-    addContextMenuListener(element, filePath) {
-        element.addEventListener("contextmenu", /** @param event {MouseEvent}*/event => {
-            const container = document.createElement("div");
-            container.innerHTML = html`<div style="top: ${event.clientY}px; left: ${event.clientX}px" class="context-menu">
-                <div id="delete-button" class="context-menu-item">Delete</div>
-                <div id="rename-button" class="context-menu-item">Rename</div>
-            </div>`;
-            this.root.appendChild(container);
+    onContextMenu(event, fullFilePath, isFolder) {
+        const container = document.createElement("div");
+        container.innerHTML = html`<div style="top: ${event.clientY}px; left: ${event.clientX}px" class="context-menu">
+            <div id="delete-button" class="context-menu-item">Delete</div>
+            <div id="rename-button" class="context-menu-item">Rename</div>
+        </div>`;
+        this.root.appendChild(container);
 
-            const deleteButton = container.querySelector("#delete-button");
-            const renameButton = container.querySelector("#rename-button");
+        const deleteButton = container.querySelector("#delete-button");
+        const renameButton = container.querySelector("#rename-button");
 
-            deleteButton.addEventListener("click", () => {
-                (async () => {
-                    try{
-                        if (confirm(`Are you sure you want to delete the file ${filePath}?`)) {
-                            deleteButton.innerText = "Deleting...";
-
-                            deleteButton.classList.add("disabled");
-                            renameButton.classList.add("disabled");
-
-                            if (element.classList.contains('folder')) {
-                                await this.gitlab.deleteFolder(filePath);
-                            } else {
-                                await this.gitlab.deleteFile(filePath);
-                            }
-                        }
-
-                        if (this.openFile == filePath) {
-                            this.dispatchEvent(new CustomEvent("open-file", {
-                                detail: null
-                            }));
-
-                            this.openFile = null;
-                        }
-
-                        this.reloadFileUI();
-                    }
-                    finally{
-                        this.tryRemoveContextMenu();
-                    }
-                })();
-
-            })
-
-            container.querySelector("#rename-button").addEventListener("click", () => {
+        deleteButton.addEventListener("click", () => {
+            (async () => {
                 try{
-                    if(!this.isCommitted){
-                        alert("Cannot rename a file without committing the current changes");
-                        return;
-                    }
+                    if (confirm(`Are you sure you want to delete the file ${fullFilePath}?`)) {
+                        deleteButton.innerText = "Deleting...";
 
-                    const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
-                    if (newName !== null) {
-                        if (newName.includes(" ")) {
-                            alert("Invalid name, paths cannot contain spaces");
-                        }
-                        else {
-                            (async () => {
-                                container.querySelector("#delete-button").innerText = "Renaming ...";
+                        deleteButton.classList.add("disabled");
+                        renameButton.classList.add("disabled");
 
-                                deleteButton.classList.add("disabled");
-                                renameButton.classList.add("disabled");
-
-                                if (element.classList.contains('folder')) {
-                                    await this.gitlab.renameFolder(filePath, newName);
-                                } else {
-                                    await this.gitlab.renameFile(filePath, newName);
-                                }
-
-                                if(this.openFile == filePath){
-                                    const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
-
-                                    this.dispatchEvent(new CustomEvent("open-file", {
-                                        detail: fullNewName
-                                    }));
-        
-                                    this.openFile = fullNewName;
-                                }
-
-                                this.reloadFileUI();
-                            })()
+                        if (isFolder) {
+                            await this.gitlab.deleteFolder(fullFilePath);
+                        } else {
+                            await this.gitlab.deleteFile(fullFilePath);
                         }
                     }
+
+                    if (this.openFile == fullFilePath) {
+                        this.dispatchEvent(new CustomEvent("open-file", {
+                            detail: null
+                        }));
+
+                        this.openFile = null;
+                    }
+
+                    this.refreshFileList();
                 }
                 finally{
                     this.tryRemoveContextMenu();
                 }
-            })
+            })();
 
-            this.myContextMenu = container;
-
-            event.preventDefault();
         })
+
+        container.querySelector("#rename-button").addEventListener("click", () => {
+            try{
+                if(!this.isCommitted){
+                    alert("Cannot rename a file without committing the current changes");
+                    return;
+                }
+
+                const newName = prompt(`What do you want to rename ${fullFilePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
+                if (newName !== null) {
+                    if (newName.includes(" ")) {
+                        alert("Invalid name, paths cannot contain spaces");
+                    }
+                    else {
+                        (async () => {
+                            container.querySelector("#delete-button").innerText = "Renaming ...";
+
+                            deleteButton.classList.add("disabled");
+                            renameButton.classList.add("disabled");
+
+                            if (isFolder) {
+                                await this.gitlab.renameFolder(fullFilePath, newName);
+                            } else {
+                                await this.gitlab.renameFile(fullFilePath, newName);
+                            }
+
+                            if(this.openFile == fullFilePath){
+                                const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
+
+                                this.dispatchEvent(new CustomEvent("open-file", {
+                                    detail: fullNewName
+                                }));
+    
+                                this.openFile = fullNewName;
+                            }
+
+                            this.refreshFileList();
+                        })()
+                    }
+                }
+            }
+            finally{
+                this.tryRemoveContextMenu();
+            }
+        })
+
+        this.myContextMenu = container;
+
+        event.preventDefault();
     }
 
     /**
@@ -309,124 +333,85 @@ export default class FileBrowser extends HTMLElement {
     }
 
     /**
+     * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} fileStructure
      * @param {string} ip
      * @param {string} campaign
      */
-    async setFileUI(ip, campaign) {
+    async getFileUI(fileStructure, ip, campaign) {
         /**
-         * @param {{ files: string[]; folders: Map<string, any> }} _structure
+         * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} _structure
          */
-        const getElementFromStructure = (_structure, prefix = "") => {
-            const result = document.createElement('div');
+        const getElementFromStructure = (_structure, prefix="") => {
+            return wire()`
+                <div>
+                    ${_structure.files.map(fileName => {
+                        const fullFilePath = joinFilePaths(prefix, fileName);
+                        const isOpenFile = fullFilePath == this.openFile;
 
-            let container = document.createElement("div");
-            for (let fileName of _structure.files) {
-                container.innerHTML = html`<div class="item">${fileName}</div>`;
-                const itemEl = container.querySelector(".item");
-                if (`${campaign}/${ip}/${fileName}` == this.openFile) { itemEl.classList.add('item-open') };
+                        return wire()`<div
+                            onclick=${() => {
+                                if(fullFilePath == NO_FILES_TEXT) return;
+                                this.onFileClick(fullFilePath);
+                                this.render();
+                            }}
+                            oncontextmenu=${event => {
+                                if(fullFilePath == NO_FILES_TEXT) return; 
+                                this.onContextMenu(event, fullFilePath, false)
+                            }}
+                            class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">
+                                ${fileName}</div>`
 
-                if (fileName !== NO_FILES_TEXT) {
-                    const fullFileName = prefix + fileName;
+                    })}
+                    ${Array.from(_structure.folders.entries()).map((folderParts) => {
+                        const [folderName, folderContent] = folderParts;
+                        const isFolderOpen = _structure.isFolderOpen;
 
-                    itemEl.addEventListener("click", () => {
-                        if (!this.isCommitted) {
-                            if (confirm(`Changes not committed. Are you sure you want to open ${fullFileName}? All current changes will be discarded.`)) {
-                                this.dispatchEvent(new CustomEvent('open-file', {
-                                    detail: fullFileName,
-                                }))
-                            }
-                            else {
-                                return;
-                            }
-                        }
-                        else {
-                            this.dispatchEvent(new CustomEvent('open-file', {
-                                detail: fullFileName,
-                            }))
-                        }
-
-                        this.root.querySelectorAll('.item-open').forEach(x => x.classList.remove('item-open'));
-                        itemEl.classList.add('item-open');
-                        this.openFile = fullFileName;
-                    });
-
-                    this.addContextMenuListener(itemEl, fullFileName);
-                }
-                else {
-                    itemEl.classList.add("no-files-item")
-                }
-
-                result.appendChild(itemEl);
-            }
-
-            for (let [folderName, folderContent] of _structure.folders.entries()) {
-                container.innerHTML = html`
-                    <div class="item folder">
-                        <folder-triangle></folder-triangle>
-                        <span class="folder-name">${folderName}</span>
+                        return wire()`
+                            <div onclick=${() => {_structure.isFolderOpen = !_structure.isFolderOpen; this.render()}} class="item folder">
+                                <folder-triangle open=${isFolderOpen}></folder-triangle>
+                                <span class="folder-name">${folderName}</span>
+                            </div>
+                            <span style="display:block" class="folder-content">
+                                ${
+                                    isFolderOpen?getElementFromStructure(folderContent, joinFilePaths(prefix,  folderName)):undefined
+                                }
+                            </span>
+                        `
+                    })}
+                    <div onclick=${() => this.clickNewFile()} class="item" style="font-weight: bold">
+                        <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
+                            +
+                        </span>
+                        <span>
+                            New file(s)
+                        </span>
                     </div>
-                    <span style="display:block" class="folder-content">
-                    </span>
-                `;
+                </div>
+            `
+        }
 
-                const folderContentElement = container.querySelector(".folder-content");
-                const triangle = container.querySelector("folder-triangle");
-                const itemEl = container.querySelector(".item");
+        return getElementFromStructure(fileStructure, joinFilePaths(campaign, ip));
+    }
 
-                this.addContextMenuListener(itemEl, prefix + folderName);
-
-                let isOpen = false;
-                itemEl.addEventListener("click", async () => {
-                    if (isOpen) {
-                        isOpen = false;
-                        triangle.isOpen = isOpen;
-                        folderContentElement.innerHTML = "";
-                    }
-                    else {
-                        isOpen = true;
-                        triangle.isOpen = true;
-                        folderContentElement.appendChild(getElementFromStructure(folderContent, prefix + folderName + "/"));
-                    }
-                });
-
-                for (let containerChild of Array.from(container.children)) {
-                    result.appendChild(containerChild);
-                }
-            }
-
-            let item = document.createElement('div');
-            item.setAttribute('style', 'font-weight: bold');
-            item.className = 'item';
-            item.innerHTML = html`
-                <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
-                    +
-                </span>
-                <span>
-                    New file(s)
-                </span>`;
-
-            item.addEventListener('click', () => {
-                const createFileWindow = document.createElement("create-file-window");
-                createFileWindow.passInValues(this.gitlab);
-
-                createFileWindow.addEventListener("submit", async (event) => {
+    clickNewFile(containingFolder) {
+        const createFileWindow = (wire()`
+            <create-file-window
+                onsubmit=${async event => {
                     try {
-                        await this.tryCopyFolder(prefix.slice(0, -1), event.detail.ip, event.detail.campaign, event.detail.filePaths);
+                        await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
                     }
                     finally {
                         this.root.removeChild(createFileWindow);
                     }
 
-                    this.reloadFileUI();
-                });
-
-                createFileWindow.addEventListener("cancel", () => {
-                    this.root.removeChild(createFileWindow);
-                });
-
-                createFileWindow.addEventListener("create-empty", async event => {
+                    this.render();
+                }}
+                oncancel=${
+                    () => this.root.removeChild(createFileWindow)
+                }
+                oncreateEmpty=${async event => {
                     try {
-                        await this.gitlab.createFile(prefix + event.detail);
+                        await this.gitlab.createFile(containingFolder + event.detail);
                     }
                     catch (error) {
                         if (error instanceof FileAlreadyExistsError) {
@@ -441,43 +426,40 @@ export default class FileBrowser extends HTMLElement {
                         this.root.removeChild(createFileWindow);
                     }
 
-                    this.reloadFileUI();
-                });
+                    this.render();
+                }}
 
-                this.root.appendChild(createFileWindow);
-            })
+            ></create-file-window>
+        `)
 
-            result.appendChild(item);
-
-            return result;
-        }
-
-        let fileStructure;
-        try {
-            fileStructure = await this.gitlab.listFiles(`${campaign}/${ip}`);
-        }
-        catch (error) {
-            if (error instanceof NoPathExistsError) {
-                fileStructure = { files: [NO_FILES_TEXT], folders: new Map() };
-            }
-            else {
-                throw error;
-            }
-        }
-
-        let browser = this.root.querySelector("#file-browser");
-        browser.innerHTML = "";
-
-        let header = document.createElement('div');
-        header.setAttribute('id', 'folder-name');
-        header.innerHTML = `${campaign}/${ip}`;
-        browser.appendChild(header);
-
-        browser.appendChild(getElementFromStructure(fileStructure, `${campaign}/${ip}/`));
+        this.root.appendChild(createFileWindow);
     }
 
-    template() {
-        return html`
+    /**
+     * @param {string} fullFileName
+     */
+    onFileClick(fullFileName) {
+        if (!this.isCommitted) {
+            if (confirm(`Changes not committed. Are you sure you want to open ${fullFileName}? All current changes will be discarded.`)) {
+                this.dispatchEvent(new CustomEvent('open-file', {
+                    detail: fullFileName,
+                }))
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            this.dispatchEvent(new CustomEvent('open-file', {
+                detail: fullFileName,
+            }))
+        }
+
+        this.openFile = fullFileName;
+    }
+
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>
@@ -485,6 +467,7 @@ export default class FileBrowser extends HTMLElement {
         </selection-boxes>
         <hr />
         <div id="file-browser">
+            ${this.getFileUI(this.fileStructure, this.ip, this.campaign)}
         </div>
         `
     }
