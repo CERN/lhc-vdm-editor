@@ -160,13 +160,13 @@ export class VdMcommandObject {
         this.realTime = 0;
         this.sequenceTime = 0;
         this.position = {
-            'BEAM1': {
-                'SEPARATION': 0,
-                'CROSSING': 0,
+            BEAM1: {
+                SEPARATION: 0,
+                CROSSING: 0,
             },
-            'BEAM2': {
-                'SEPARATION': 0,
-                'CROSSING': 0,
+            BEAM2: {
+                SEPARATION: 0,
+                CROSSING: 0,
             }
         }
 
@@ -301,21 +301,23 @@ export class VdMcommandObject {
             this.realTime += Number(this.args[0]);
         }
         if (this.command.includes('TRIM') && this.isValid) {
+            let totTrimTime = 0;
+            for (let i = 0; i < this.args.length; i += 5) {
+                let dist = Number(this.args[i + 3]);
+
+                totTrimTime = Math.max(totTrimTime, dist / trimRate)
+            }
             for (let i = 0; i < this.args.length; i += 5) {
                 let amount = Number(this.args[i + 3]);
                 if (this.args[i + 4] == 'SIGMA') amount = amount * sigma; // to meters
                 if (this.args[i + 4] == 'MM') amount *= 1e-3; // to meters
 
-                let dist;
-                if (this.command == 'RELATIVE_TRIM') {
-                    this.position[this.args[i + 1]][this.args[i + 2]] += amount;
-                    dist = Math.abs(amount);
-                } else if (this.command == 'ABSOLUTE_TRIM') {
-                    this.position[this.args[i + 1]][this.args[i + 2]] = amount;
-                    dist = Math.abs(amount - prevCommand.position[this.args[i + 1]][this.args[i + 2]]);
-                } else throw new Error('Unknown trim command')
+                if (this.command == 'ABSOLUTE_TRIM') {
+                    amount -= prevCommand.position[this.args[i + 1]][this.args[i + 2]];
+                }
 
-                this.realTime += dist / trimRate;
+                this.position[this.args[i + 1]][this.args[i + 2]] += amount;
+                this.realTime += Math.abs(amount) / trimRate;
             }
         }
     }
@@ -530,10 +532,7 @@ export default class VdM {
                 }
 
                 // Simulate luminosity
-                let pos = command.position;
-                let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']); // in m
-                let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']); // in m
-                command.luminosity = this.luminosity(sep, cross); // Hz/m^2
+                command.luminosity = this.luminosityFromPos(command.position); // Hz/m^2
             }
         }
     }
@@ -589,6 +588,11 @@ export default class VdM {
 
     luminosity(separation, crossing) {
         return calcLuminosity(separation, crossing, this.sigma, this.param.bunch_length, this.param.crossing_angle, this.param.intensity, this.param.bunch_pair_collisions)
+    }
+    luminosityFromPos(pos) {
+        let sep = (pos['BEAM1']['SEPARATION'] - pos['BEAM2']['SEPARATION']); // in m
+        let cross = (pos['BEAM1']['CROSSING'] - pos['BEAM2']['CROSSING']); // in m
+        return this.luminosity(sep, cross); // Hz/m^2
     }
 
     toBeamGraph(beamNumber, sepVScross) {
