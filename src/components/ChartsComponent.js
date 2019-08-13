@@ -5,7 +5,7 @@ import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
 
 const styling = css`
 :host {
-    font-family: sans-serif
+    font-family: sans-serif;
 }
 
 input[type="radio"]{
