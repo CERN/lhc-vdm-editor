@@ -102,6 +102,10 @@ input[type=text]{
     margin: 5px 0 5px 0;
 }
 
+#list-options div{
+    margin: 5px 0 5px 0;
+}
+
 label *{
     vertical-align: middle;
 }
@@ -115,7 +119,7 @@ export default class CreateFileWindow extends HTMLElement {
         this.gitlab = null;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         this.render();
 
         this.root.querySelector(".cover").addEventListener("click", () => {
@@ -180,12 +184,14 @@ export default class CreateFileWindow extends HTMLElement {
 
 
         let isOpen = false;
+        this.fileListContent = this.root.querySelector('#file-list-content');
         this.root.querySelector('#dropdown').addEventListener('click', () => {
             const triangle = this.root.querySelector('folder-triangle')
             if (isOpen) {
                 isOpen = false;
                 triangle.isOpen = isOpen;
-                this.root.querySelector('#file-list-content').innerHTML = "";
+                this.fileListContent.innerHTML = "";
+                this.root.querySelector('#list-options').innerHTML = "";
             }
             else {
                 isOpen = true;
@@ -198,12 +204,22 @@ export default class CreateFileWindow extends HTMLElement {
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
         })
+
+        this.fileListContent.onchange = () => {
+            let truthArr = Array.from(this.fileListContent.querySelectorAll('input')).map(x => x.checked);
+            let checkboxSelector = this.root.querySelector('#list-options').querySelector('input');
+            
+            checkboxSelector.indeterminate = false;
+            if(truthArr.every(x => x)) checkboxSelector.checked = true
+            else if (truthArr.every(x => !x)) checkboxSelector.checked = false
+            else checkboxSelector.indeterminate = true;
+        }
     }
 
     get chosenFiles() {
         let arr = [];
-        this.root.querySelector('#file-list-content').querySelectorAll('input').forEach( x => {
-            if(x.checked) arr.push(x.value)
+        this.root.querySelector('#file-list-content').querySelectorAll('input').forEach(x => {
+            if (x.checked) arr.push(x.value)
         })
         return arr;
     }
@@ -222,9 +238,30 @@ export default class CreateFileWindow extends HTMLElement {
         }
         finally {
             this.setFileUI(files);
+            this.setCheckboxSelector();
         }
     }
 
+    setCheckboxSelector() {
+        let element = document.createElement('div');
+        element.innerHTML = html`
+            <label>
+                <input type='checkbox'/>
+                <span>select all</span>
+            </label>
+        `;
+
+        this.root.querySelector('#list-options').innerHTML = '';
+        this.root.querySelector('#list-options').appendChild(element);
+
+        element.querySelector('input').onchange = (event) => this.selectAll(event);
+    }
+
+    selectAll(changeEvent) {
+        this.root.querySelector('#file-list-content').querySelectorAll('input').forEach(x => {
+            x.checked = changeEvent.target.checked;
+        })
+    }
     /**
      * @param {string[]} files
      */
@@ -246,7 +283,6 @@ export default class CreateFileWindow extends HTMLElement {
             }
             list.appendChild(line);
         }
-
         this.root.querySelector('#file-list-content').innerHTML = '';
         this.root.querySelector('#file-list-content').appendChild(list);
     }
@@ -282,11 +318,12 @@ export default class CreateFileWindow extends HTMLElement {
                 </div>
                 <div id='file-list'>
                     <div id='file-list-button'>
-                    <span id="dropdown">
-                        <folder-triangle></folder-triangle>
-                        <div class="slightly-indented">choose files</div>
-                    </span>
-                    <div id='file-list-content'></div>
+                        <span id="dropdown">
+                            <folder-triangle></folder-triangle>
+                            <div class="slightly-indented">choose files</div>
+                        </span>
+                        <div id='list-options'></div>
+                        <div id='file-list-content'></div>
                     </div>
                 </div>
             </div>
