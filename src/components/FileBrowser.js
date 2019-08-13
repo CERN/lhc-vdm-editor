@@ -129,6 +129,7 @@ export default class FileBrowser extends HTMLElement {
             } else {
                 await this.gitlab.deleteFile(filePath);
             }
+            this.refresh();
     
             if (this.openFile == filePath) {
                 this.dispatchEvent(new CustomEvent("open-file", {
@@ -166,6 +167,7 @@ export default class FileBrowser extends HTMLElement {
             } else {
                 await this.gitlab.renameFile(filePath, newName);
             }
+            this.refresh();
 
             if(this.openFile == filePath){
                 const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
