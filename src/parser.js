@@ -104,6 +104,29 @@ export function testArgs(argsObj) {
     }
     return true
 }
+export function toGraphPoint(command) {
+    return [
+        {
+            realTime: command.realTime,
+            sequenceTime: command.sequenceTime
+        },
+        command.luminosity
+    ]
+}
+export function linspace(start, end, num, includeEnd = true) {
+    if (!Number.isInteger(num) || num < 1) throw new Error('Number has to be an integer grater than 0');
+
+    const dist = (end - start) / (includeEnd ? num - 1 : num);
+    let result = new Array(num);
+
+    result[0] = start;
+    for (let i = 1; i < num - 1; i++) {
+        result[i] = result[i - 1] + dist
+    }
+    if (includeEnd) result[num - 1] = end;
+
+    return result
+}
 
 
 
@@ -159,6 +182,7 @@ export class VdMcommandObject {
 
         this.realTime = 0;
         this.sequenceTime = 0;
+        this.trimTime = 0;
         this.position = {
             BEAM1: {
                 SEPARATION: 0,
@@ -301,12 +325,8 @@ export class VdMcommandObject {
             this.realTime += Number(this.args[0]);
         }
         if (this.command.includes('TRIM') && this.isValid) {
-            let totTrimTime = 0;
-            for (let i = 0; i < this.args.length; i += 5) {
-                let dist = Number(this.args[i + 3]);
+            let maxTrimTime = 0;
 
-                totTrimTime = Math.max(totTrimTime, dist / trimRate)
-            }
             for (let i = 0; i < this.args.length; i += 5) {
                 let amount = Number(this.args[i + 3]);
                 if (this.args[i + 4] == 'SIGMA') amount = amount * sigma; // to meters
@@ -317,11 +337,17 @@ export class VdMcommandObject {
                 }
 
                 this.position[this.args[i + 1]][this.args[i + 2]] += amount;
-                this.realTime += Math.abs(amount) / trimRate;
+                maxTrimTime = Math.max(maxTrimTime, Math.abs(amount) / trimRate)
             }
+
+            this.trimTime = maxTrimTime;
+            this.realTime += maxTrimTime;
         }
     }
 
+    separation(plane){
+        return Math.abs(this.position.BEAM1[plane] - this.position.BEAM2[plane])
+    }
     stringify() {
         return `${this.index} ${this.command} ${this.args.join(' ')}`.trim()
     }
@@ -608,13 +634,41 @@ export default class VdM {
         }).filter(x => x);
     }
 
-    toLumiGraph() {
-        return this.structure.map(line => {
-            if (line.type == "command") return [{
-                realTime: line.realTime,
-                sequenceTime: line.sequenceTime
-            }, line.luminosity]
-        }).filter(x => x);
+    //toLumiGraph(resolution = 0.1) {
+    toLumiGraph(stepsPerTrim = 10) {
+        let result = [];
+        const commands = this.structure.filter(x => x.type == 'command' && x.isValid);
+        commands.forEach((command, index, commands) => {
+            const prevCommand = commands[index - 1]
+
+            if (command.command.includes('TRIM') && prevCommand) {
+                //const num = Math.round(command.trimTime / resolution);
+                const num = stepsPerTrim;
+
+                const startTime = command.realTime - command.trimTime;
+                const timeArr = linspace(startTime, command.realTime, num)
+
+                const distSep = linspace(prevCommand.separation('SEPARATION'),   command.separation('SEPARATION'), num)
+                const distCross = linspace(prevCommand.separation('CROSSING'),   command.separation('CROSSING'), num)
+
+                const trimPoints = Array(num);
+                for (let i = 0; i < num; i++) {
+                    trimPoints[i] = [
+                        {
+                            realTime: timeArr[i],
+                            sequenceTime: command.sequenceTime
+                        },
+                        this.luminosity(distSep[i], distCross[i])
+                    ]
+                }
+                result = result.concat(trimPoints)
+            }
+            else {
+                result.push(toGraphPoint(command))
+            }
+        })
+
+        return result;
     }
 
     checkSyntax() {
