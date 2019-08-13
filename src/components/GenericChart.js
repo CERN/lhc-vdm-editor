@@ -1,12 +1,29 @@
 import { sigFigRound } from "../HelperFunctions.js";
+import { throttle } from "../HelperFunctions.js";
+import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
 
 const commonFormatter = x => sigFigRound(x.value, 3);
 
+export class GenericChart extends MyHyperHTMLElement {
+    constructor(...args){
+        super(...args);
+    }
+    
+    connectedCallback(){
+        this.reflow();
+    }
+
+    async reflow(){
+        throttle(() => {
+            this.chart.reflow()
+        }, 500, this, true);
+    }
+}
 
 /** @type {Highcharts.Options} */
 export const commonChartOptions = {
     chart: {
-        height: 270,
+        height: "80%",
         zoomType: "xy",
         spacingBottom: 5
     },

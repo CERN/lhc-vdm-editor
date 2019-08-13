@@ -246,13 +246,13 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {string} commitMessage
      */
-    tryToCommit(commitMessage){
+    async tryToCommit(commitMessage){
         if (this.filePath === null) return;
 
         //this.VdM = new VdM(this.beamJSON, this.ip)
         this.VdM.parse(this.value, true);
         if (this.VdM.isValid) {
-            this.gitlabInterface.writeFile(
+            await this.gitlabInterface.writeFile(
                 this.filePath,
                 commitMessage,
                 this.VdM.deparse()

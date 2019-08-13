@@ -1,4 +1,4 @@
-import { html as oldHtml, css } from "../HelperFunctions.js";
+import { html as oldHtml, css, joinFilePaths } from "../HelperFunctions.js";
 import GitLab from "../GitLab.js";
 
 const styling = css`
@@ -29,11 +29,16 @@ export default class IPCampaignSelectors extends HTMLElement {
         this.campaign = "";
     }
 
+    get path(){
+        return joinFilePaths(this.campaign, this.ip)
+    }
+
     get name(){
         return this.getAttribute("name")
     }
 
-    connectedCallback(){
+    async connectedCallback(){
+        this.campaign = (await this.allCampaigns)[0];
         this.render();
         this.onInitFinished();
     }
@@ -59,8 +64,6 @@ export default class IPCampaignSelectors extends HTMLElement {
         console.log(message, value);
         return value;
     }
-
-    // 
 
     render() {
         return hyper(this.root)`

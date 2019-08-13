@@ -90,7 +90,7 @@ export default class FileBrowser extends HTMLElement {
         this.gitlab = gitlab;
         this.openFile = openFile;
 
-        this.campaigns = await this.gitlab.listCampaigns();
+        this.campaigns = (await this.gitlab.listCampaigns()).reverse();
         this.ip = "IP1";
         this.campaign = this.campaigns[0];
 
@@ -323,6 +323,8 @@ export default class FileBrowser extends HTMLElement {
     clickNewFile(containingFolder) {
         this.createFileWindow = wire()`
             <create-file-window
+                gitlab=${this.gitlab}
+                campaigns=${(async () => [...await this.campaigns]/*we need to deep copy here to prevent wire moving elements*/)()}
                 onsubmit=${async event => {
                     try {
                         await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);

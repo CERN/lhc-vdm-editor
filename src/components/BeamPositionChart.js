@@ -1,6 +1,6 @@
 import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
-import { commonChartOptions } from "./GenericChart.js";
-import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
+import { commonChartOptions, GenericChart } from "./GenericChart.js";
+
 
 const styling = css`
 :host {
@@ -9,7 +9,7 @@ const styling = css`
 }
 `
 
-export default class BeamPositionChart extends MyHyperHTMLElement {
+export default class BeamPositionChart extends GenericChart {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -164,12 +164,12 @@ export default class BeamPositionChart extends MyHyperHTMLElement {
                 type: "line",
                 name: 'Beam 1',
                 data: [],
-                color: "hsl(0, 70%, 70%)"
+                color: "hsl(240, 70%, 70%)"
             }, {
                 type: "line",
                 name: 'Beam 2',
                 data: [],
-                color: "hsl(240, 70%, 70%)"
+                color: "hsl(0, 70%, 70%)"
             }, {
                 type: "area",
                 name: null,
@@ -190,16 +190,6 @@ export default class BeamPositionChart extends MyHyperHTMLElement {
                 color: "rgb(154, 154, 154)"
             }
         ]}));
-    }
-
-    connectedCallback(){
-        this.reflow();
-    }
-
-    async reflow(){
-        throttle(() => {
-            this.chart.reflow()
-        }, 500, this, true);
     }
 
     template() {

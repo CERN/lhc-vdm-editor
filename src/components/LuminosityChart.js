@@ -1,6 +1,5 @@
 import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
-import { commonChartOptions } from "./GenericChart.js"
-import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
+import { commonChartOptions, GenericChart } from "./GenericChart.js"
 
 const styling = css`
 :host {
@@ -9,7 +8,7 @@ const styling = css`
 }
 `
 
-export default class LuminosityChart extends MyHyperHTMLElement {
+export default class LuminosityChart extends GenericChart {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -24,7 +23,7 @@ export default class LuminosityChart extends MyHyperHTMLElement {
     attachChart(){
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), /** @type {Highcharts.Options} */({
             chart: {
-                height: 250,
+                height: "75%",
                 renderTo: this.root.querySelector("#container"),
             },
 
@@ -55,6 +54,7 @@ export default class LuminosityChart extends MyHyperHTMLElement {
         
             series: [{
                 type: "line",
+                name: "Luminosity",
                 data: [],
             }]
         })));

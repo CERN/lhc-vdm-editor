@@ -101,17 +101,26 @@ input[type=text]{
     padding: 2px 5px 2px 5px;
     margin: 5px 0 5px 0;
 }
+
+label *{
+    vertical-align: middle;
+}
 `
 
 export default class CreateFileWindow extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.campaigns = null;
+        this.gitlab = null;
+    }
+
+    connectedCallback(){
+        this.render();
+
         this.root.querySelector(".cover").addEventListener("click", () => {
             this.cancel();
         })
-        this.gitlab = null;
         this.selectionBoxes = this.root.querySelector("selection-boxes");
 
         /**
@@ -216,6 +225,9 @@ export default class CreateFileWindow extends HTMLElement {
         }
     }
 
+    /**
+     * @param {string[]} files
+     */
     setFileUI(files) {
         let list = document.createDocumentFragment();
         for (let file of files) {
@@ -226,8 +238,10 @@ export default class CreateFileWindow extends HTMLElement {
                 `;
             } else {
                 line.innerHTML = html`
-                    <input type='checkbox' value=${file}>
-                    ${file}
+                    <label>
+                        <input type='checkbox' value=${file} />
+                        <span>${file}</span>
+                    </label>
                 `;
             }
             list.appendChild(line);
@@ -245,13 +259,8 @@ export default class CreateFileWindow extends HTMLElement {
         this.dispatchEvent(new CustomEvent("cancel"));
     }
 
-    passInValues(gitlab) {
-        this.gitlab = gitlab;
-        this.root.querySelector("selection-boxes").passInValues(this.gitlab);
-    }
-
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>
@@ -266,7 +275,7 @@ export default class CreateFileWindow extends HTMLElement {
                 <hr>
                 Copy items from folder
                 <div class="slightly-indented">
-                    <selection-boxes></selection-boxes>
+                    <selection-boxes allCampaigns=${this.campaigns}></selection-boxes>
                 </div>
                 <div>
                     <button id="copy-button">Copy files</button>
@@ -277,7 +286,7 @@ export default class CreateFileWindow extends HTMLElement {
                         <folder-triangle></folder-triangle>
                         <div class="slightly-indented">choose files</div>
                     </span>
-                        <div id='file-list-content'></div>
+                    <div id='file-list-content'></div>
                     </div>
                 </div>
             </div>
