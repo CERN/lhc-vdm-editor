@@ -38,10 +38,6 @@ export default class LuminosityChart extends GenericChart {
                 }
             },
 
-            tooltip: {
-                pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y:.8f}</b><br/>`
-            },
-
             xAxis: {
                 title: {
                     text: "Real time [s]"

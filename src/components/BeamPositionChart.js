@@ -178,7 +178,7 @@ export default class BeamPositionChart extends GenericChart {
                 threshold: Infinity,
                 showInNavigator: false,
                 data: [],
-                color: "rgb(154, 154, 154)"
+                color: "rgb(154, 154, 154)",
             }, {
                 type: "area",
                 name: null,

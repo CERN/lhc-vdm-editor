@@ -22,7 +22,7 @@ export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb)
     const Lbb = lhc_constants.f_rev * cos2 * intensity ** 2 / (2 * Math.PI * SigmaCross * SigmaSep) * Ssep * Scross; // luminosity per bunch pair in Hz/m^2
 
     const L = nbb * Lbb; // luminosity in Hz/m^2
-    return L;
+    return L * 1e-4; // luminosity in Hz/cm^2
 }
 export function isSubsetOf(arr1, arr2) {
     // returns true iff arr1 is a subset of arr2
@@ -345,8 +345,8 @@ export class VdMcommandObject {
         }
     }
 
-    separation(plane){
-        return Math.abs(this.position.BEAM1[plane] - this.position.BEAM2[plane])
+    separation(plane) {
+        return this.position.BEAM2[plane] - this.position.BEAM1[plane]
     }
     stringify() {
         return `${this.index} ${this.command} ${this.args.join(' ')}`.trim()
@@ -647,9 +647,8 @@ export default class VdM {
 
                 const startTime = command.realTime - command.trimTime;
                 const timeArr = linspace(startTime, command.realTime, num)
-
-                const distSep = linspace(prevCommand.separation('SEPARATION'),   command.separation('SEPARATION'), num)
-                const distCross = linspace(prevCommand.separation('CROSSING'),   command.separation('CROSSING'), num)
+                const sepArr = linspace(prevCommand.separation('SEPARATION'), command.separation('SEPARATION'), num)
+                const crossArr = linspace(prevCommand.separation('CROSSING'), command.separation('CROSSING'), num)
 
                 const trimPoints = Array(num);
                 for (let i = 0; i < num; i++) {
@@ -658,7 +657,7 @@ export default class VdM {
                             realTime: timeArr[i],
                             sequenceTime: command.sequenceTime
                         },
-                        this.luminosity(distSep[i], distCross[i])
+                        this.luminosity(sepArr[i], crossArr[i])
                     ]
                 }
                 result = result.concat(trimPoints)

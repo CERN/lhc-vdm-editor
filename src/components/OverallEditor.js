@@ -41,14 +41,20 @@ revert-button {
 }
 
 #file-name {
+    position: absolute;
+    top: -20px;
     display: inline-block;
-    float: left;
-    padding: 7px;
+    padding: 20px;
     font: 14px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+    word-wrap: break-word;
 }
 
 #editor {
     height: 100%;
+    margin-top: 50px;
 }
 
 raw-editor{
@@ -164,10 +170,10 @@ export default class OverallEditor extends HTMLElement {
         this.loadedPromise = this.asyncConstrutor();
     }
 
-    async asyncConstrutor(){
-        try{
+    async asyncConstrutor() {
+        try {
             await this.loadDataFromLocalStorage();
-        } 
+        }
         finally {
             this.loadingIndicator.style.display = "none";
         }
@@ -246,7 +252,11 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {string} commitMessage
      */
+<<<<<<< HEAD
     async tryToCommit(commitMessage){
+=======
+    tryToCommit(commitMessage) {
+>>>>>>> 7df5ed0dfaaf3b6d54b544749e24541c207f4b03
         if (this.filePath === null) return;
 
         //this.VdM = new VdM(this.beamJSON, this.ip)
@@ -269,7 +279,7 @@ export default class OverallEditor extends HTMLElement {
      * Adds event listeners for all the elements 
      * @private
      */
-    addListeners(){
+    addListeners() {
         this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => this.tryToCommit(ev.detail));
         this.editorContainer.addEventListener('editor-content-change', ev => this.onEditorContentChange(ev.detail))
         this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
@@ -277,14 +287,14 @@ export default class OverallEditor extends HTMLElement {
         this.fileBrowser.addEventListener('open-file', event => this.setCurrentEditorContent(event.detail));
     }
 
-    onSwitchEditorButtonPress(editorIndex){
+    onSwitchEditorButtonPress(editorIndex) {
         if (this.filePath === null) return;
 
         this.switchToEditor(editorIndex);
         localStorage.setItem('open-tab', editorIndex.toString());
     }
 
-    async tryToRevert(){
+    async tryToRevert() {
         if (this.filePath === null) return;
 
         if (!this.isCommitted) {
@@ -322,7 +332,7 @@ export default class OverallEditor extends HTMLElement {
         // TODO: file path passing in here is messy, this should be done in setCurrentEditorContent (but can't as we 
         // want to only call passInValues once)
         await this.fileBrowser.passInValues(this.gitlabInterface, this.filePath);
-        
+
         if (this.filePath != null) {
             if (localStorage.getItem('open-tab') !== null) {
                 const buttonIndex = parseInt(localStorage.getItem('open-tab'));
@@ -342,8 +352,8 @@ export default class OverallEditor extends HTMLElement {
      * @param {string | null} localFileChanges If set, set the editor content to this values, for 
      * loading from local storage
      */
-    async setCurrentEditorContent(filePath, localFileChanges=null, showLoadingIndicator=true) {
-        if(filePath == null){
+    async setCurrentEditorContent(filePath, localFileChanges = null, showLoadingIndicator = true) {
+        if (filePath == null) {
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
             this.filePath = null;
             this.updateFileNameUI(null);
@@ -354,11 +364,11 @@ export default class OverallEditor extends HTMLElement {
             this.isCommitted = true
             return;
         }
-        
-        if(showLoadingIndicator){
+
+        if (showLoadingIndicator) {
             this.loadingIndicator.style.display = "block";
         }
-        
+
         if (this.filePath == null) {
             // The filepath has been null and now isn't, so switch to the default editor.
             this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
@@ -374,7 +384,7 @@ export default class OverallEditor extends HTMLElement {
         }
         else {
             this.value = fileContent;
-            
+
             this.isCommitted = true;
         }
         this.filePath = filePath;
@@ -390,7 +400,7 @@ export default class OverallEditor extends HTMLElement {
         localStorage.setItem('open-file', filePath);
         localStorage.setItem('content', this.value);
 
-        if(showLoadingIndicator){
+        if (showLoadingIndicator) {
             this.loadingIndicator.style.display = "none";
         }
     }
@@ -428,7 +438,7 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {number} index
      */
-    switchToEditor(index, setValue=true) {
+    switchToEditor(index, setValue = true) {
         const previousEditor = this.editor;
         this.currentEditorIndex = index;
 
@@ -452,12 +462,12 @@ export default class OverallEditor extends HTMLElement {
         <div class="container">
             <div id="loading-indicator">Loading ...</div>
             <div class="header cf">
-                <div id="file-name"></div>
                 <div id='header-buttons'>
                     <commit-element></commit-element>
                     <div class="vr">&nbsp;</div>
                     <revert-button></revert-button>
                 </div>
+                
             </div>
             <div class="body">
                 <resizeable-panel>
@@ -467,6 +477,7 @@ export default class OverallEditor extends HTMLElement {
                     <div id="editor">
                         <raw-editor></raw-editor>
                     </div>
+                    <div id="file-name"></div>
                     <switch-editor-buttons></switch-editor-buttons>
                 </div>
                 <resizeable-panel default-width="300px" side="right">

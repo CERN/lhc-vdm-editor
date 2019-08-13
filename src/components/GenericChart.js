@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { sigFigRound } from "../HelperFunctions.js";
 import { throttle } from "../HelperFunctions.js";
 import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
@@ -20,6 +21,8 @@ export class GenericChart extends MyHyperHTMLElement {
     }
 }
 
+=======
+>>>>>>> 7df5ed0dfaaf3b6d54b544749e24541c207f4b03
 /** @type {Highcharts.Options} */
 export const commonChartOptions = {
     chart: {
@@ -42,18 +45,6 @@ export const commonChartOptions = {
         enabled: false
     },
 
-    yAxis: {
-        labels: {
-            formatter: commonFormatter
-        }
-    },
-
-    xAxis: {
-        labels: {
-            formatter: commonFormatter
-        }
-    },
-
     noData: {
         position: {
             x: -50 // this is needed to correct for a incorrect center calulation in HighCharts
@@ -62,7 +53,8 @@ export const commonChartOptions = {
 
     tooltip: {
         headerFormat: `<span style="font-size: 10px">{point.key:.2f}</span><br/>`,
-        pointFormat: `<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y:.2f}</b><br/>`
+        valueDecimals: 2,
+        shared: true,
     },
 
     plotOptions: {
@@ -84,6 +76,12 @@ export const commonChartOptions = {
             // @ts-ignore
             label: {
                 enabled: false
+            },
+            states: {
+                // @ts-ignore
+                inactive: {
+                    opacity: 1
+                }
             }
         }
     },
