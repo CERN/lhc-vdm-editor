@@ -29,6 +29,10 @@ export default class IPCampaignSelectors extends HTMLElement {
         this.campaign = "";
     }
 
+    get name(){
+        return this.getAttribute("name")
+    }
+
     connectedCallback(){
         this.render();
         this.onInitFinished();
@@ -45,10 +49,18 @@ export default class IPCampaignSelectors extends HTMLElement {
      * @param {Event} event
      */
     handleEvent(event){
+        // @ts-ignore
         this[event.currentTarget.name] = event.currentTarget.value;
         this.dispatchEvent(new CustomEvent("change"));
         this.render();
     }
+
+    log(message, value){
+        console.log(message, value);
+        return value;
+    }
+
+    // 
 
     render() {
         return hyper(this.root)`
@@ -58,10 +70,10 @@ export default class IPCampaignSelectors extends HTMLElement {
     <div class="selection-box">
         <div class="selection-name">IP:</div>
         <div>
-            <select name=ip onchange=${this} id="ip-select">
+            <select name=ip value=${this.ip} onchange=${this} id="ip-select">
                 ${
                     this.allIps.map(ip => 
-                        wire()`<option selected=${this.ip} value=${ip}>${ip}</option>`)
+                        wire(this.allIps, ip)`<option value=${ip}>${ip}</option>`)
                 }
             </select>
         </div>
@@ -69,10 +81,10 @@ export default class IPCampaignSelectors extends HTMLElement {
     <div class="selection-box">
         <div class="selection-name">Campaign:</div>
         <div>
-            <select name=campaign onchange=${this} id="campaign-select">
+            <select name=campaign value=${this.campaign} onchange=${this} id="campaign-select">
                 ${
-                    (async () => (await this.allCampaigns).map(campaignName => 
-                        wire()`<option value=${campaignName}>${campaignName}</option>`
+                    (async () => (await this.allCampaigns).map(campaign => 
+                        wire(this.allCampaigns, campaign)`<option value=${campaign}>${campaign}</option>`
                     ))()
                 }
             </select>
@@ -81,4 +93,6 @@ export default class IPCampaignSelectors extends HTMLElement {
     `
     }
 }
+
+
 customElements.define('selection-boxes', IPCampaignSelectors);

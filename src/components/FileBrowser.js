@@ -69,10 +69,10 @@ export default class FileBrowser extends HTMLElement {
         /** @type {HTMLDivElement} */
         this.myContextMenu = null;
         this.isCommitted = true;
-        this.fileStructure = {
+        this.fileStructure = Promise.resolve({
             files: [],
             folders: new Map()
-        };
+        })
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
@@ -94,24 +94,24 @@ export default class FileBrowser extends HTMLElement {
         this.ip = "IP1";
         this.campaign = this.campaigns[0];
 
-        await this.refreshFileList();
+        this.setFileStructure(this.ip, this.campaign);
         this.render();
     }
 
-    async refreshFileList() {
-        try {
-            this.fileStructure = await this.gitlab.listFiles(`${this.campaign}/${this.ip}`);
-        }
-        catch (error) {
-            if (error instanceof NoPathExistsError) {
-                this.fileStructure = { files: [NO_FILES_TEXT], folders: new Map() };
+    setFileStructure(ip, campaign) {
+        this.fileStructure = (async () => {
+            try {
+                return await this.gitlab.listFiles(`${campaign}/${ip}`);
             }
-            else {
-                throw error;
+            catch (error) {
+                if (error instanceof NoPathExistsError) {
+                    return { files: [NO_FILES_TEXT], folders: new Map() };
+                }
+                else {
+                    throw error;
+                }
             }
-        }
-
-        this.render();
+        })()
     }
 
     async onDeleteButtonPressed(filePath, isFolder, markAsPending){
@@ -181,7 +181,7 @@ export default class FileBrowser extends HTMLElement {
 
     /**
      * @param {MouseEvent} event
-     * @param {string} filePath This is the full filepath to the file.
+     * @param {string} filePath This is the full file path to the file.
      * @param {boolean} isFolder
      */
     onContextMenu(event, filePath, isFolder) {
@@ -383,8 +383,20 @@ export default class FileBrowser extends HTMLElement {
      * @param {MouseEvent} event
      */
     handleEvent(event){
+        // @ts-ignore
         this[event.currentTarget.name] = event.currentTarget.value;
         this.dispatchEvent(new CustomEvent("change"));
+        this.render();
+    }
+
+    set selection(newValue){
+        if(this.ip != newValue.ip || this.campaign != newValue.campaign){
+            this.setFileStructure(newValue.ip, newValue.campaign);
+        }
+
+        this.ip = newValue.ip;
+        this.campaign = newValue.campaign;
+
         this.render();
     }
 
@@ -393,11 +405,13 @@ export default class FileBrowser extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <selection-boxes allCampaigns=${this.campaigns} onchange=${this}>
+        <selection-boxes name="selection" allCampaigns=${this.campaigns} onchange=${this}>
         </selection-boxes>
         <hr />
         <div id="file-browser">
-            ${this.getFileUI(this.fileStructure, this.ip, this.campaign)}
+            ${(async () => 
+                this.getFileUI(await this.fileStructure, this.ip, this.campaign)
+            )()}
         </div>
         ${this.myContextMenu}
         ${this.createFileWindow}
