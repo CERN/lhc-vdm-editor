@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { sigFigRound } from "../HelperFunctions.js";
 import { throttle } from "../HelperFunctions.js";
 import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
@@ -21,8 +20,6 @@ export class GenericChart extends MyHyperHTMLElement {
     }
 }
 
-=======
->>>>>>> 7df5ed0dfaaf3b6d54b544749e24541c207f4b03
 /** @type {Highcharts.Options} */
 export const commonChartOptions = {
     chart: {

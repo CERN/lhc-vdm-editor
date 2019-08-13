@@ -252,11 +252,7 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {string} commitMessage
      */
-<<<<<<< HEAD
     async tryToCommit(commitMessage){
-=======
-    tryToCommit(commitMessage) {
->>>>>>> 7df5ed0dfaaf3b6d54b544749e24541c207f4b03
         if (this.filePath === null) return;
 
         //this.VdM = new VdM(this.beamJSON, this.ip)
