@@ -22,7 +22,7 @@ export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb)
     const Lbb = lhc_constants.f_rev * cos2 * intensity ** 2 / (2 * Math.PI * SigmaCross * SigmaSep) * Ssep * Scross; // luminosity per bunch pair in Hz/m^2
 
     const L = nbb * Lbb; // luminosity in Hz/m^2
-    return L;
+    return L * 1e-4; // luminosity in Hz/cm^2
 }
 export function isSubsetOf(arr1, arr2) {
     // returns true iff arr1 is a subset of arr2
@@ -345,7 +345,7 @@ export class VdMcommandObject {
         }
     }
 
-    separation(plane){
+    separation(plane) {
         return this.position.BEAM2[plane] - this.position.BEAM1[plane]
     }
     stringify() {
