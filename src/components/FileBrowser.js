@@ -98,6 +98,10 @@ export default class FileBrowser extends HTMLElement {
         this.render();
     }
 
+    refresh(){
+        this.setFileStructure(this.ip, this.campaign);
+    }
+
     setFileStructure(ip, campaign) {
         this.fileStructure = (async () => {
             try {
@@ -276,7 +280,7 @@ export default class FileBrowser extends HTMLElement {
                             }}
                             oncontextmenu=${event => {
                                 if(fullFilePath == NO_FILES_TEXT) return; 
-                                this.onContextMenu(event, fullFilePath, false)
+                                this.onContextMenu(event, fullFilePath, false);
                             }}
                             class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">
                                 ${fileName}</div>`
@@ -298,7 +302,7 @@ export default class FileBrowser extends HTMLElement {
                             </span>
                         `
                     })}
-                    <div onclick=${() => this.clickNewFile()} class="item" style="font-weight: bold">
+                    <div onclick=${() => this.clickNewFile(prefix)} class="item" style="font-weight: bold">
                         <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
                             +
                         </span>
@@ -313,19 +317,21 @@ export default class FileBrowser extends HTMLElement {
         return getElementFromStructure(fileStructure, joinFilePaths(campaign, ip));
     }
 
+    /**
+     * @param {string} [containingFolder]
+     */
     clickNewFile(containingFolder) {
         this.createFileWindow = wire()`
             <create-file-window
                 onsubmit=${async event => {
                     try {
                         await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
+                        this.refresh();
                     }
                     finally {
                         this.createFileWindow = undefined;
                         this.render();
                     }
-
-                    this.render();
                 }}
                 oncancel=${
                     () => {
@@ -333,9 +339,10 @@ export default class FileBrowser extends HTMLElement {
                         this.render();
                     }
                 }
-                oncreateEmpty=${async event => {
+                oncreate-empty=${async event => {
                     try {
-                        await this.gitlab.createFile(containingFolder + event.detail);
+                        await this.gitlab.createFile(joinFilePaths(containingFolder, event.detail));
+                        this.refresh();
                     }
                     catch (error) {
                         if (error instanceof FileAlreadyExistsError) {

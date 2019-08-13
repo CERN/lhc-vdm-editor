@@ -1,5 +1,12 @@
-/** @type {any} */
-export class MyHyperHTMLElement extends HTMLElement{
+/**
+ * @type {{
+ *  new(...args: any): {
+ *    [index: string]: any;
+ *    properties: object;
+ *  } & HTMLElement
+ * }}
+ */
+export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement{
     constructor(...args){
         super();
         if(typeof args[0] === "string"){
@@ -23,6 +30,8 @@ export class MyHyperHTMLElement extends HTMLElement{
             })
         }
     }
+
+    /** @method {number} p */
 
     set properties(props){
         for(let [key, value] of Object.entries(props)){
