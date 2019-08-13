@@ -1,5 +1,6 @@
 import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
-import { commonChartOptions } from "./GenericChart.js"
+import { commonChartOptions } from "./GenericChart.js";
+import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
 
 const styling = css`
 :host {
@@ -8,27 +9,27 @@ const styling = css`
 }
 `
 
-export default class BeamPositionChart extends HTMLElement {
+export default class BeamPositionChart extends MyHyperHTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
-
-        this.units = "sigma";
-        this.timeType = "real";
-
-        this.limits = 0;
-        this.data = null;
-        this.sigmaInMM = 0.10050641005198852; // NOTE: this needs to be changed later
-
+        
+        this._unit = "sigma";
+        this._timeType = "real";
+        
+        this._limit = Infinity;
+        this._data = null;
+        this.sigmaInMM = 1; // NOTE: this needs to be changed later
+        
         this.attachChart();
     }
 
     /**
      * @param {string} newTimeType
      */
-    setTimeType(newTimeType){
-        this.timeType = newTimeType;
+    set timeType(newTimeType){
+        this._timeType = newTimeType;
 
         this.chart.xAxis[0].setTitle({
             text: `${newTimeType[0].toUpperCase()}${newTimeType.slice(1)} time [s]`
@@ -36,12 +37,15 @@ export default class BeamPositionChart extends HTMLElement {
 
         this.refresh();
     }
+    get timeType(){
+        return this._timeType
+    }
 
     /**
      * @param {string} newUnits
      */
-    setUnits(newUnits){
-        this.units = newUnits;
+    set unit(newUnits){
+        this._unit = newUnits;
 
         this.chart.yAxis[0].setTitle({
             text: `Beam position [${newUnits.replace("sigma", "&sigma;")}]`
@@ -49,18 +53,39 @@ export default class BeamPositionChart extends HTMLElement {
 
         this.refresh();
     }
+    get unit(){
+        return this._unit
+    }
+
+    set limit(limit){
+        this._limit = limit;
+        this.renderLimit(limit)
+    }
+
+    get limit(){
+        return this._limit
+    }
+
+    set data(data){
+        this._data = data;
+        this.refresh()
+    }
+    
+    get data(){
+        return this._data
+    }
 
     refresh(){
         if(this.data == null) return;
 
         this.updateData(this.data);
-        this.setLimits(this.limits);
+        this.renderLimit(this.limit);
     }
 
     /**
      * @param {number} newLimit
      */
-    setLimits(newLimit){
+    renderLimit(newLimit){
         if(this.maxTime == null) return;
 
         const putInUnit = (number) => {
