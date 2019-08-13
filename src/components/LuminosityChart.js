@@ -1,5 +1,6 @@
 import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
 import { commonChartOptions } from "./GenericChart.js"
+import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
 
 const styling = css`
 :host {
@@ -8,14 +9,14 @@ const styling = css`
 }
 `
 
-export default class LuminosityChart extends HTMLElement {
+export default class LuminosityChart extends MyHyperHTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
-        this.data = null;
 
-        this.timeType = "real";
+        this._data = null;
+        this._timeType = "real";
 
         this.attachChart();
     }
@@ -62,31 +63,37 @@ export default class LuminosityChart extends HTMLElement {
     /**
      * @param {[{realTime: number, sequenceTime: number}, number][]} newData
      */
-    updateData(newData){
-        this.data = newData;
+    set data(newData){
+        this._data = newData;
 
-        this.chart.series[0].setData(newData.map(
-            x => [x[0][this.timeType + "Time"], x[1]]
-        ));
+        this.refresh();
+    }
+    get data(){
+        return this._data
     }
 
     refresh(){
         if(this.data == null) return;
 
-        this.updateData(this.data);
+        this.chart.series[0].setData(this.data.map(
+            x => [x[0][this.timeType + "Time"], x[1]]
+        ));
     }
     
     /**
      * @param {string} newTimeType
      */
-    setTimeType(newTimeType){
-        this.timeType = newTimeType;
+    set timeType(newTimeType){
+        this._timeType = newTimeType;
 
         this.chart.xAxis[0].setTitle({
             text: `${newTimeType[0].toUpperCase()}${newTimeType.slice(1)} time [s]`
         })
 
         this.refresh();
+    }
+    get timeType(){
+        return this._timeType
     }
 
     connectedCallback(){
@@ -99,7 +106,7 @@ export default class LuminosityChart extends HTMLElement {
         }, 500, this, true);
     }
 
-    setScale(newScale){
+    set scale(newScale){
         this.chart.yAxis[0].update({
             type: newScale == "log" ? "logarithmic" : "linear"
         })

@@ -1,6 +1,7 @@
 import { css, html } from "../HelperFunctions.js";
 import "./BeamPositionChart.js"
 import "./LuminosityChart.js"
+import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
 
 const styling = css`
 :host {
@@ -29,133 +30,73 @@ input[type="radio"]{
 }
 `
 
-export default class ChartsComponent extends HTMLElement {
+export default class ChartsComponent extends MyHyperHTMLElement {
     constructor() {
-        super();
+        super({'unit', 'scale', 'timeType', 'data', 'limit', 'sigmaInMM'});
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
-
-        this.separationChart = this.root.querySelector("#separation-chart");
-        this.crossingChart = this.root.querySelector("#crossing-chart");
-        this.luminosityChart = this.root.querySelector("#luminosity-chart");
-
-        this.allCharts = [this.separationChart, this.crossingChart, this.luminosityChart];
-        
-        Array.from(this.root.querySelectorAll("#realSequenceRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            this.timeType = this.root.querySelector("#realRadio").checked ? "real" : "sequence";
-        }))
-
-        Array.from(this.root.querySelectorAll("#mmSigmaRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            this.units = (this.root.querySelector("#mmRadio").checked ? "mm" : "sigma");
-        }))
-
-        Array.from(this.root.querySelectorAll("#logLinearRadio input[type=\"radio\"]")).map(x => x.addEventListener("change", _ => {
-            this.scale = this.root.querySelector("#linearRadio").checked ? "linear" : "log";
-        }))
-    }
-
-    /**
-     * @public
-     * @param {string} newTimeType
-     */
-    set timeType(newTimeType){
-        this.allCharts.map(x => x.setTimeType(newTimeType));
-    }
-
-    /**
-     * @public
-     * @param {string} newUnits
-     */
-    set units(newUnits){
-        this.separationChart.setUnits(newUnits);
-        this.crossingChart.setUnits(newUnits);
-    }
-
-    /**
-     * @public
-     * @param {string} newScale
-     */
-    set scale(newScale){
-        this.luminosityChart.setScale(newScale)
-    }
-
-    /**
-     * @public
-     * @param {any} newValue
-     */
-    set sigmaToMMFactor(newValue){
-        this.allCharts.forEach(chart => {chart.sigmaToMMFactor=newValue});
-    }
-
-    passInValues(sigmaInMM){
-        this.allCharts.forEach(chart => chart.sigmaInMM = sigmaInMM);
-    }
-
-    /**
-     * @public
-     * @param {any} beamSeparationData
-     * @param {any} beamCrossingData
-     * @param {any} luminosityData
-     * @param {any} limits
-     */
-    updateData(beamSeparationData, beamCrossingData, luminosityData, limits){
-        this.separationChart.updateData(beamSeparationData);
-        this.crossingChart.updateData(beamCrossingData);
-        this.luminosityChart.updateData(luminosityData);
-
-        this.separationChart.setLimits(limits);
-        this.crossingChart.setLimits(limits);
+    
+        this.unit = 'sigma';
+        this.timeType = 'linear';
+        this.l
+        this.allCharts = Array.from(this.root.querySelectorAll('beam-position-chart, luminosity-chart'))
     }
 
     reflow(){
         this.allCharts.forEach(chart => chart.reflow());
     }
 
-    template() {
-        return html`
+    render() {
+        const chartProperties = {
+            unit: this.unit,
+            timeType: this.timeType,
+            limit: this.limit,
+            sigmaInMM: this.sigmaInMM
+        }
+
+        return hyper(this.root)`
         <style>
             ${styling}
         </style>
-        <div class="radioSection">
+        <div class="radioSection" onchange=${this}>
             <div class="switchingRow" id="realSequenceRadio">
                 <span class="radio-description">Time display:</span>
                 <div class="option">
-                    <input checked type="radio" name="realSequenceTime" id="realRadio" value="real" />
+                    <input checked type="radio" name="timeType" id="realRadio" value="real"/>
                     <label for="realRadio">Real</label>
                 </div>
                 <div class="option">
-                    <input type="radio" name="realSequenceTime" id="sequenceRadio" value="sequence" />
+                    <input type="radio" name="timeType" id="sequenceRadio" value="sequence" />
                     <label for="sequenceRadio">Sequence</label>
                 </div>
             </div>
             <div class="switchingRow" id="mmSigmaRadio">
                 <span class="radio-description">Units:</span>
                 <div class="option">
-                    <input checked type="radio" name="mmSigma" id="sigmaRadio" value="sigma" />
+                    <input checked type="radio" name="units" id="sigmaRadio" value="sigma" />
                     <label for="sigmaRadio">&sigma;</label>
                 </div>
                 <div class="option">
-                    <input type="radio" name="mmSigma" id="mmRadio" value="mm" />
+                    <input type="radio" name="units" id="mmRadio" value="mm" />
                     <label for="mmRadio">mm</label>
                 </div>
             </div>
         </div>
         <hr>
-        <beam-position-chart id="separation-chart" title="Separation"></beam-position-chart>
-        <beam-position-chart id="crossing-chart" title="Crossing"></beam-position-chart>
+        <beam-position-chart properties=${chartProperties} data=${this.data.beamSeparation} id="separation-chart" title="Separation"></beam-position-chart>
+        <beam-position-chart properties=${chartProperties} data=${this.data.beamCrossing} id="crossing-chart" title="Crossing"></beam-position-chart>
         <hr>
         <div id="logLinearRadio">
             <span class="radio-description">Scale:</span>
             <div class="option">
-                <input checked type="radio" name="logLinear" id="linearRadio" value="linear" />
+                <input checked type="radio" name="scale" id="linearRadio" value="linear" />
                 <label for="linearRadio">Linear</label>
             </div>
             <div class="option">
-                <input type="radio" name="logLinear" id="logRadio" value="log" />
+                <input type="radio" name="scale" id="logRadio" value="log" />
                 <label for="logRadio">Logarithmic</label>
             </div>
         </div>
-        <luminosity-chart id="luminosity-chart"></luminosity-chart>
+        <luminosity-chart scale=${this.scale} data=${this.data.luminosity} id="luminosity-chart"></luminosity-chart>
     `
     }
 }

@@ -143,7 +143,7 @@ export default class OverallEditor extends HTMLElement {
         super();
         this._isCommitted = true;
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template()
+        this.render();
 
         this.filePath = null;
         this.editorContainer = this.root.getElementById("editor");
@@ -201,16 +201,14 @@ export default class OverallEditor extends HTMLElement {
             if (typeof this.editor.setCurrentParsedResult == "function") {
                 this.editor.setCurrentParsedResult(message.data)
             }
-            
             const sigmaInMM = this.VdM.sigma * 1e3;
-            this.chartsComponent.passInValues(sigmaInMM);
-
-            this.chartsComponent.updateData(
-                message.data.beamSeparationData,
-                message.data.beamCrossingData,
-                message.data.luminosityData,
-                this.beamJSON.scan_limits[this.ip]
-            )
+            this.chartsComponent.sigmaInMM = sigmaInMM;
+            this.chartsComponent.data = {
+                beamSeparation: message.data.beamSeparationData,
+                beamCrossing: message.data.beamCrossingData,
+                luminosity: message.data.luminosityData,
+            };
+            this.chartsComponent.limit = this.beamJSON.scan_limits[this.ip];
         }
     }
 
@@ -438,6 +436,7 @@ export default class OverallEditor extends HTMLElement {
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
 
         if (setValue) {
+            this.editor.VdM = this.VdM;
             this.editor.value = previousEditor.value;
         }
 
@@ -445,8 +444,8 @@ export default class OverallEditor extends HTMLElement {
         this.editorContainer.appendChild(this.editor);
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>

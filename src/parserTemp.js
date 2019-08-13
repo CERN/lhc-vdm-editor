@@ -104,6 +104,30 @@ export function testArgs(argsObj) {
     }
     return true
 }
+export function toGraphPoint(command){
+    return [
+        {
+            realTime: command.realTime,
+            sequenceTime: command.sequenceTime
+        }, 
+        command.luminosity
+    ]
+}
+export function linspace(start, end, num, includeEnd = true){
+    if (num < 1 || !Number.isInteger(num)) throw new Error('Number has to be an integer grater than 0');
+    if (num < 2 && includeEnd) throw new Error('Number has to be an integer of at least 2');
+    
+    const dist = (end-start)/num;
+
+    let result = new Array(num);
+    result[0] = start;
+    for(let i = 1; i<num-2; i++){
+        result[i] = result[i-1]+dist
+    }
+    result.push(end)
+
+    return result
+}
 
 
 
@@ -159,6 +183,7 @@ export class VdMcommandObject {
 
         this.realTime = 0;
         this.sequenceTime = 0;
+        this.trimTime = 0;
         this.position = {
             BEAM1: {
                 SEPARATION: 0,
@@ -301,24 +326,23 @@ export class VdMcommandObject {
             this.realTime += Number(this.args[0]);
         }
         if (this.command.includes('TRIM') && this.isValid) {
-            let totTrimTime = 0;
-            for (let i = 0; i < this.args.length; i += 5) {
-                let dist = Number(this.args[i + 3]);
-
-                totTrimTime = Math.max(totTrimTime, dist / trimRate)
-            }
+            let maxTrimTime = 0;
+            
             for (let i = 0; i < this.args.length; i += 5) {
                 let amount = Number(this.args[i + 3]);
                 if (this.args[i + 4] == 'SIGMA') amount = amount * sigma; // to meters
                 if (this.args[i + 4] == 'MM') amount *= 1e-3; // to meters
-
+                
                 if (this.command == 'ABSOLUTE_TRIM') {
                     amount -= prevCommand.position[this.args[i + 1]][this.args[i + 2]];
                 }
-
+                
                 this.position[this.args[i + 1]][this.args[i + 2]] += amount;
-                this.realTime += Math.abs(amount) / trimRate;
+                maxTrimTime = Math.max(maxTrimTime, Math.abs(amount) / trimRate)
             }
+
+            this.trimTime = maxTrimTime;
+            this.realTime += maxTrimTime;
         }
     }
 
@@ -608,13 +632,42 @@ export default class VdM {
         }).filter(x => x);
     }
 
-    toLumiGraph() {
-        return this.structure.map(line => {
-            if (line.type == "command") return [{
-                realTime: line.realTime,
-                sequenceTime: line.sequenceTime
-            }, line.luminosity]
-        }).filter(x => x);
+    toLumiGraph(resolution = 1) {
+        let result = [];
+        const commands = this.structure.filter(x => x.type == 'command');
+        commands.forEach((command, index, commands) => {
+            const prevCommand = commands[index-1]
+
+            if(command.command.includes('TRIM') && prevCommand){
+                const num = Math.round(command.trimTime/resolution);
+
+                const startTime = command.realTime - command.trimTime;
+                const timeArr = linspace(startTime, command.realTime, num)
+                
+                let startDist = prevCommand.position.BEAM1.SEPARATION - prevCommand.position.BEAM2.SEPARATION
+                let endDist = command.position.BEAM1.SEPARATION - command.position.BEAM2.SEPARATION
+                const distSep = linspace(startDist, endDist, num)
+
+                startDist = prevCommand.position.BEAM1.CROSSING - prevCommand.position.BEAM2.CROSSING
+                endDist = command.position.BEAM1.CROSSING - command.position.BEAM2.CROSSING
+                const distCross = linspace(startDist, endDist, num)
+
+                const trimPoints = Array(num);
+                for(let i =0; i<num; i++){
+                    trimPoints[i] = [
+                        {
+                            realTime: timeArr[i],
+                            sequenceTime: command.sequenceTime
+                        }, 
+                        this.luminosity(distSep[i], distCross[i])
+                    ]
+                }
+                result = result.concat(trimPoints)
+            }
+            else {
+                result.push(toGraphPoint(command))
+            }
+        })
     }
 
     checkSyntax() {

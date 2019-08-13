@@ -180,7 +180,11 @@ describe("Parser", () => {
 
         commandArray = inst.parse(largeTrim).structure.filter(x => x.type == 'command');
         expect(commandArray.every(checkCausality)).toBeTruthy()
-        let lastpos = inst.structure.slice(-1)[0].position;
+    })
+    it('Test beam position simulation', () => {
+        let lastpos = inst.parse(largeTrim).structure.slice(-1)[0].position;
         expect(lastpos.BEAM1).toEqual(lastpos.BEAM2)
+
+        
     })
 })

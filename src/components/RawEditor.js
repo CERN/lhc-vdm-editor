@@ -49,15 +49,17 @@ export default class RawEditor extends HTMLElement {
         this.root.innerHTML = this.template()
         this.textarea = this.root.querySelector("textarea");
         this.textarea.addEventListener('input',
-            () => {
-                this.dispatchEvent(new CustomEvent("editor-content-change", {
-                    bubbles: true,
-                    detail: this.value
-                }));
-
-                this.resizeTextArea();
-            }
+        () => {
+            this.dispatchEvent(new CustomEvent("editor-content-change", {
+                bubbles: true,
+                detail: this.value
+            }));
+            
+            this.resizeTextArea();
+        }
         );
+        // Is needed as a placeholder
+        this.VdM = null;
     }
 
     connectedCallback(){
