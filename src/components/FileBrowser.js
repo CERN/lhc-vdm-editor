@@ -257,12 +257,12 @@ export default class FileBrowser extends HTMLElement {
      * @param {string} ip
      * @param {string} campaign
      */
-    async getFileUI(fileStructure, ip, campaign) {
+    getFileUI(fileStructure, ip, campaign) {
         /**
          * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} _structure
          */
         const getElementFromStructure = (_structure, prefix="") => {
-            return wire([fileStructure, ip, campaign])`
+            return wire(fileStructure, prefix)`
                 <div>
                     ${_structure.files.map(fileName => {
                         const fullFilePath = joinFilePaths(prefix, fileName);
@@ -286,7 +286,7 @@ export default class FileBrowser extends HTMLElement {
                         const [folderName, folderContent] = folderParts;
                         const isFolderOpen = _structure.isFolderOpen;
 
-                        return wire()`
+                        return wire(folderParts)`
                             <div onclick=${() => {_structure.isFolderOpen = !_structure.isFolderOpen; this.render()}} class="item folder">
                                 <folder-triangle open=${isFolderOpen}></folder-triangle>
                                 <span class="folder-name">${folderName}</span>

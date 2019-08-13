@@ -1,4 +1,4 @@
-import { html2 as html, html as oldHtml, css } from "../HelperFunctions.js";
+import { html as oldHtml, css } from "../HelperFunctions.js";
 import GitLab from "../GitLab.js";
 
 const styling = css`
