@@ -1,15 +1,27 @@
 /** @type {any} */
-export let MyHyperHTMLElement = class extends HTMLElement{
+export class MyHyperHTMLElement extends HTMLElement{
     constructor(...args){
-        super()
-        this._properties = {};
-
-        args.forEach(propertyName => {
-            Object.defineProperty(this, propertyName, {
-                set: value => {this._properties[propertyName] = value; this.render()},
-                get: () => this._properties[propertyName]
+        super();
+        if(typeof args[0] === "string"){
+            this._properties = {};
+    
+            args.forEach(propertyName => {
+                Object.defineProperty(this, propertyName, {
+                    set: value => {this._properties[propertyName] = value; this.render()},
+                    get: () => this._properties[propertyName]
+                })
             })
-        })
+        }
+        else if(args.length == 1){
+            this._properties = args[0];
+    
+            Object.keys(args[0]).forEach(propertyName => {
+                Object.defineProperty(this, propertyName, {
+                    set: value => {this._properties[propertyName] = value; this.render()},
+                    get: () => this._properties[propertyName]
+                })
+            })
+        }
     }
 
     set properties(props){
@@ -20,7 +32,7 @@ export let MyHyperHTMLElement = class extends HTMLElement{
     
     handleEvent(event){
         // @ts-ignore
-        this[event.currentTarget.name] = event.currentTarget.value;
+        this[event.target.name] = event.target.value;
         this.render();
     }
 

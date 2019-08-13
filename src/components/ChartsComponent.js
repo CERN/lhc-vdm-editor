@@ -32,12 +32,20 @@ input[type="radio"]{
 
 export default class ChartsComponent extends MyHyperHTMLElement {
     constructor() {
-        super({'unit', 'scale', 'timeType', 'data', 'limit', 'sigmaInMM'});
+        super({
+            'unit': 'sigma',
+            'scale': 'linear',
+            'timeType': 'real',
+            'data': {
+                beamSeparation: null,
+                beamCrossing: null,
+                luminosity: null
+            },
+            'limit': Infinity,
+            'sigmaInMM': 1
+        });
         this.root = this.attachShadow({ mode: "open" });
     
-        this.unit = 'sigma';
-        this.timeType = 'linear';
-        this.l
         this.allCharts = Array.from(this.root.querySelectorAll('beam-position-chart, luminosity-chart'))
     }
 
@@ -72,11 +80,11 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             <div class="switchingRow" id="mmSigmaRadio">
                 <span class="radio-description">Units:</span>
                 <div class="option">
-                    <input checked type="radio" name="units" id="sigmaRadio" value="sigma" />
+                    <input checked type="radio" name="unit" id="sigmaRadio" value="sigma" />
                     <label for="sigmaRadio">&sigma;</label>
                 </div>
                 <div class="option">
-                    <input type="radio" name="units" id="mmRadio" value="mm" />
+                    <input type="radio" name="unit" id="mmRadio" value="mm" />
                     <label for="mmRadio">mm</label>
                 </div>
             </div>

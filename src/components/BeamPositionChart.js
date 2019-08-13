@@ -89,7 +89,7 @@ export default class BeamPositionChart extends MyHyperHTMLElement {
         if(this.maxTime == null) return;
 
         const putInUnit = (number) => {
-            if(this.units == "sigma") return number;
+            if(this.unit == "sigma") return number;
             else return number * this.sigmaInMM;
         }
 
@@ -117,11 +117,12 @@ export default class BeamPositionChart extends MyHyperHTMLElement {
     theirDataPointToOurs(point){
         return [
             point[0][this.timeType + "Time"],
-            point[1][this.units]
+            point[1][this.unit]
         ];
     }
 
     /**
+     * @private
      * @param {[number, number][][]} newData
      */
     updateData(newData){
@@ -134,8 +135,6 @@ export default class BeamPositionChart extends MyHyperHTMLElement {
         else{
             this.maxTime = null;
         }
-
-        this.data = newData;
     }
 
     attachChart(){
