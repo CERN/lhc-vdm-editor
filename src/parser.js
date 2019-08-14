@@ -426,7 +426,8 @@ export default class VdM {
                         }
                     } else {
                         obj = {
-                            type: 'error'
+                            type: 'error',
+                            content: line
                         };
                         throw new VdMSyntaxError(index, 'Line has to be of the type "# COMMENT", "INT COMMAND", or "EMPTY_LINE"')
                     }
@@ -546,6 +547,8 @@ export default class VdM {
                 // Line stays empty
             } else if (obj.type == 'comment') {
                 line += '# ' + obj.comment;
+            } else if (obj.type == 'error') {
+                line += obj.content
             } else {
                 throw new Error('Expected object of type command, empty, or comment but got ' + obj.type)
             }
@@ -641,7 +644,6 @@ export default class VdM {
         }).filter(x => x);
     }
 
-    //toLumiGraph(stepsPerTrim = 50) {
     toLumiGraph(resolution = 0.1) {
         let result = [];
         const commands = this.structure.filter(x => x.type == 'command' && x.isValid);
@@ -649,8 +651,8 @@ export default class VdM {
             const prevCommand = commands[index - 1]
 
             if (command.command.includes('TRIM') && prevCommand) {
-                //const num = stepsPerTrim;
-                const num = Math.round(command.trimTime / resolution);
+                // Number of points for the current trim. Minimum number of points set to 5
+                const num = Math.max(5, Math.round(command.trimTime / resolution));
 
                 const startTime = command.realTime - command.trimTime;
                 const timeArr = linspace(startTime, command.realTime, num)
