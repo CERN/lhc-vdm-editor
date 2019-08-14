@@ -109,7 +109,7 @@ export default class ChartsComponent extends MyHyperHTMLElement {
                 </div>
             </div>
         </div>
-        <luminosity-chart scale=${this.scale} data=${this.data.luminosity} id="luminosity-chart"></luminosity-chart>
+        <luminosity-chart scale=${this.scale} data=${this.data.luminosity} timeType=${this.timeType} id="luminosity-chart"></luminosity-chart>
     `
     }
 }
