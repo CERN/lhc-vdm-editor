@@ -34,7 +34,7 @@ export default class LuminosityChart extends GenericChart {
             yAxis: {
                 title: {
                     useHTML: true,
-                    text: "Luminosity [Hz/mm<sup>2</sup>]",
+                    text: "Luminosity [Hz/cm<sup>2</sup>]",
                 }
             },
 
