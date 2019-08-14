@@ -5,9 +5,9 @@ const styling = css`
 textarea {
     resize: none;
     display: inline-block;
-    width: 100%;
-    padding: 5px;
+    width: calc(100% - 10px);
     min-height: 40px;
+    padding: 5px;
 }
 
 .container {
