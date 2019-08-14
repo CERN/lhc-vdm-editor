@@ -45,11 +45,11 @@ export default class ContextMenu extends HTMLElement {
         this.y = 0;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         this.render();
     }
 
-    handleButtonClick(button){
+    handleButtonClick(button) {
         button.onActivate(() => {
             this.allButtonsDisabled = true;
             button.pending = true;
@@ -66,13 +66,13 @@ export default class ContextMenu extends HTMLElement {
                 left: `${this.x}px`
             }} class="context-menu">
             ${
-                this.buttons.map(button =>
-                    wire(button)`<div id="delete-button"
+            this.buttons.map(button =>
+                wire(button)`<div id="delete-button"
                         disabled=${this.allButtonsDisabled}
                         onclick=${() => this.handleButtonClick(button)} class="context-menu-item">
-                        ${ button.pending?button.pendingMessage:button.name }
+                        ${ button.pending ? button.pendingMessage : button.name}
                     </div>`
-                )
+            )
             }
         </div>
     `

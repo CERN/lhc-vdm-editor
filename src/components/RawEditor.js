@@ -5,9 +5,9 @@ const styling = css`
 textarea {
     resize: none;
     display: inline-block;
-    width: 100%;
-    padding: 5px;
+    width: calc(100% - 10px);
     min-height: 40px;
+    padding: 5px;
 }
 
 .container {
@@ -49,35 +49,35 @@ export default class RawEditor extends HTMLElement {
         this.root.innerHTML = this.template()
         this.textarea = this.root.querySelector("textarea");
         this.textarea.addEventListener('input',
-        () => {
-            this.dispatchEvent(new CustomEvent("editor-content-change", {
-                bubbles: true,
-                detail: this.value
-            }));
-            
-            this.resizeTextArea();
-        }
+            () => {
+                this.dispatchEvent(new CustomEvent("editor-content-change", {
+                    bubbles: true,
+                    detail: this.value
+                }));
+
+                this.resizeTextArea();
+            }
         );
         // Is needed as a placeholder
         this.VdM = null;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         // When we are attached to the DOM, we know the scroll height
         this.resizeTextArea();
     }
 
-    resizeTextArea(){
+    resizeTextArea() {
         // Hack to make sure that the textarea always has the height of the content
         this.textarea.style.height = "0px";
         this.textarea.style.height = this.textarea.scrollHeight + 'px';
     }
 
-    get rawValue(){
+    get rawValue() {
         return this.value;
     }
 
-    set rawValue(newRawValue){
+    set rawValue(newRawValue) {
         this.value = newRawValue;
     }
 

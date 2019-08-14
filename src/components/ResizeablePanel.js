@@ -36,11 +36,11 @@ export default class ResizeablePanel extends HTMLElement {
             const clientRect = container.getBoundingClientRect();
             var newWidth;
 
-            if(this.side == "left"){
+            if (this.side == "left") {
                 const containerLeft = clientRect.left;
                 newWidth = event.clientX - containerLeft - 12;
             }
-            else{
+            else {
                 const containerRight = clientRect.right;
                 newWidth = containerRight - event.clientX - 12;
             }
@@ -48,23 +48,23 @@ export default class ResizeablePanel extends HTMLElement {
 
 
             Array.from(this.children).forEach(child => {
-                if(typeof child.reflow == "function"){
+                if (typeof child.reflow == "function") {
                     child.reflow();
                 }
             })
 
         }
         const onMouseMove = _onMouseMove.bind(this);
-    
+
         this.root.querySelector("#resize-handle").addEventListener("mousedown", () => {
             document.addEventListener("mousemove", onMouseMove);
             document.body.addEventListener("mouseup", () => {
                 document.removeEventListener("mousemove", onMouseMove);
-            }, {once: true});
+            }, { once: true });
         });
     }
 
-    get side(){
+    get side() {
         return this.getAttribute("side") || "left";
     }
 
@@ -74,11 +74,11 @@ export default class ResizeablePanel extends HTMLElement {
         <style>
             ${styling}
         </style>
-        ${this.side == "right"?html`<div id="resize-handle">&nbsp;</div>`:""}
+        ${this.side == "right" ? html`<div id="resize-handle">&nbsp;</div>` : ""}
         <div ${this.hasAttribute("default-width") ? `style="width: ${this.getAttribute("default-width")}"` : ""} id="container">
             <slot></slot>
         </div>
-        ${this.side == "left"?html`<div id="resize-handle">&nbsp;</div>`:""}
+        ${this.side == "left" ? html`<div id="resize-handle">&nbsp;</div>` : ""}
     `
     }
 }

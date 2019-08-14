@@ -42,7 +42,7 @@ export default class GitLab {
      */
 
     async readFile(filePath) {
-        try{
+        try {
             return await (
                 await gFetch(
                     `${URL_START}/repository/files/${
@@ -52,8 +52,8 @@ export default class GitLab {
                 )
             ).text();
         }
-        catch(error){
-            if(error instanceof Response && (await error.json()).message == "404 File Not Found"){
+        catch (error) {
+            if (error instanceof Response && (await error.json()).message == "404 File Not Found") {
                 throw new NoPathExistsError(`${filePath} does not exist`);
             }
             else throw error;

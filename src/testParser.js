@@ -44,12 +44,12 @@ const simpleHead = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNIT
 const noHeader = '1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA'
 const empty = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
 const comment = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA) \n # \n 1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA \n 2 END_SEQUENCE'
-const largeTrim = `1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 30 SIGMA
+const largeTrim = `1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 10 SIGMA
 2 SECONDS_WAIT 10
-3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -60 SIGMA
-4 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION 30 SIGMA
+3 RELATIVE_TRIM IP1 BEAM1 SEPARATION -20 SIGMA
+4 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION 10 SIGMA
 5 SECONDS_WAIT 10
-6 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION -30 SIGMA`
+6 ABSOLUTE_TRIM IP1 BEAM2 SEPARATION -10 SIGMA`
 const faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION) UNITS(SIGMA)
 1 SECONDS_WAIT 10.0
 1 START_FIT SEPARATION GAUSSIAN
@@ -66,7 +66,7 @@ const faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION
 // Tests on the parser and deparser functions
 describe("Parser", () => {
     let inst = new VdM()
-    
+
     // Tests on isSubsetOf()
     it('returns of isSubsetOf', () => {
         let arr1 = ['1', '2', '4', '4'];
@@ -81,7 +81,7 @@ describe("Parser", () => {
 
     // Tests on Luminocity
     it('Luminocity test calculation', () => {
-        expect(inst.luminosity(0, 0).toPrecision(2)).toEqual('4.4e+34')
+        expect(inst.luminosity(0, 0).toPrecision(2)).toEqual('4.4e+30')
     })
 
     // Tests on getInnerBracket
@@ -185,6 +185,6 @@ describe("Parser", () => {
         let lastpos = inst.parse(largeTrim).structure.slice(-1)[0].position;
         expect(lastpos.BEAM1).toEqual(lastpos.BEAM2)
 
-        
+
     })
 })

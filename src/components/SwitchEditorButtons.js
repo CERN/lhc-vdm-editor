@@ -1,5 +1,5 @@
 // @ts-check
-import {css, html} from "../HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js"
 
 const styling = css`
 .container {
@@ -31,9 +31,9 @@ button.active{
 `
 
 export default class SwitchEditorButtons extends HTMLElement {
-    constructor(){
+    constructor() {
         super();
-        this.root = this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
         /** @access private */
         this.activeButtonIndex = 0;
@@ -51,7 +51,7 @@ export default class SwitchEditorButtons extends HTMLElement {
      * @public
      * @param {number} index
      */
-    setActiveButton(index){
+    setActiveButton(index) {
         this.DOMbuttons[this.activeButtonIndex].classList.remove("active");
         this.DOMbuttons[index].classList.add("active");
 
@@ -70,7 +70,7 @@ export default class SwitchEditorButtons extends HTMLElement {
         }))
     }
 
-    template(){
+    template() {
         return html`
         <style>
             ${styling}

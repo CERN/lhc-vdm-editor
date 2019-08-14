@@ -11,7 +11,7 @@ export function range(to, start = 0) {
  * @params {any} element
  * @params {number} numberOfTimes
  */
-export function repeat(element, numberOfTimes){
+export function repeat(element, numberOfTimes) {
     return (new Array(numberOfTimes)).fill(element);
 }
 
@@ -27,9 +27,9 @@ function interpolate(literals, ...expressions) {
     return string
 }
 
-export function getFragmentOfChildNodes(node){
+export function getFragmentOfChildNodes(node) {
     let fragment = document.createDocumentFragment();
-    for(let childNode of node.children){
+    for (let childNode of node.children) {
         fragment.appendChild(childNode);
     }
 
@@ -40,7 +40,7 @@ export function getFragmentOfChildNodes(node){
  * @params {string} absPath
  * @params {string} prefix
  */
-export function getRelativePath(absPath, prefix){
+export function getRelativePath(absPath, prefix) {
     return absPath.split("/").filter(x => x != "").slice(
         prefix.split("/").filter(x => x != "").length).join("/")
 }
@@ -48,7 +48,7 @@ export function getRelativePath(absPath, prefix){
 /**
  * @params {string} filePath
  */
-export function getFilenameFromPath(filePath){
+export function getFilenameFromPath(filePath) {
     return filePath.split("/").pop();
 }
 
@@ -57,7 +57,7 @@ export function getFilenameFromPath(filePath){
  * @params {Map} map1
  * @params {Map} map2
  */
-export function mergeMaps(map1, map2){
+export function mergeMaps(map1, map2) {
     return new Map(Array.from(map1.entries()).concat(
         Array.from(map2.entries())))
 }
@@ -84,7 +84,7 @@ export function html2(thisValue) {
                 });
                 numFunctions++;
             }
-            else{
+            else {
                 string += literals[i] + val
             }
         }
@@ -92,13 +92,13 @@ export function html2(thisValue) {
         var parent = document.createElement('template');
         parent.innerHTML = string;
         const UIDElements = parent.querySelectorAll(`[${UID}]`);
-    
-        for(let funcNodes of UIDElements){
+
+        for (let funcNodes of UIDElements) {
             let index = parseInt(funcNodes.getAttribute(UID));
             funcNodes.addEventListener(funcs[index].name, funcs[index].func);
             funcNodes.removeAttribute(UID);
         }
-    
+
         return parent.content;
     }
 }
@@ -125,9 +125,9 @@ export const getJSON = async (...args) => await (await gFetch(...args)).json();
 /**
  * @type <T>(array: T[], func: (item: T, index: number, array: T[]) => Promise<T>) => Promise<T[]>
  */
-export async function asyncMap(array, func){
+export async function asyncMap(array, func) {
     let newArray = new Array(array.length);
-    for(let [i, item] of array.entries()){
+    for (let [i, item] of array.entries()) {
         newArray[i] = await func(item, i, array);
     }
 
@@ -137,9 +137,9 @@ export async function asyncMap(array, func){
 /**
  * @type <T>(array: (Promise<T>)[]) => Promise<T[]>
  */
-export async function awaitArray(array){
+export async function awaitArray(array) {
     let newArray = new Array(array.length);
-    for(let [i, item] of array.entries()){
+    for (let [i, item] of array.entries()) {
         newArray[i] = await item;
     }
 
@@ -158,7 +158,7 @@ user-select: none;
 /**
  * @params {number} milliseconds
  */
-export async function wait(milliseconds){
+export async function wait(milliseconds) {
     return new Promise((resolve, _) => {
         setTimeout(resolve, milliseconds);
     })
@@ -176,8 +176,8 @@ let throttleIDs = new Set();
  * @param {boolean} callLast Calls the function every `time` milliseconds (to make 
  * sure the function is always called after throttle is stopped being called)
  */
-export async function throttle(func, time, uid, callLast=false){
-    if(!throttleIDs.has(uid)){
+export async function throttle(func, time, uid, callLast = false) {
+    if (!throttleIDs.has(uid)) {
         throttleIDs.add(uid);
         func();
 
@@ -185,7 +185,7 @@ export async function throttle(func, time, uid, callLast=false){
             await wait(time);
             throttleIDs.delete(uid);
 
-            if(callLast) func();
+            if (callLast) func();
         })()
     }
 }
@@ -214,13 +214,13 @@ export function addLineNumbers(text, start = 1) {
  * @params {number} num
  * @params {number} sigFigs
  */
-export function sigFigRound(num, sigFigs){
+export function sigFigRound(num, sigFigs) {
     const numTxt = num.toString();
 
-    if(num < 0 && numTxt.length <= sigFigs + 1) return numTxt; // negative numbers
-    else if(Math.round(num) != num && numTxt.length <= sigFigs + 1) return numTxt; // non-integers
-    else if(numTxt.length <= sigFigs) return numTxt; // integers
-    else if(numTxt.split("e")[0].length <= sigFigs + 1) return numTxt; // standard form
+    if (num < 0 && numTxt.length <= sigFigs + 1) return numTxt; // negative numbers
+    else if (Math.round(num) != num && numTxt.length <= sigFigs + 1) return numTxt; // non-integers
+    else if (numTxt.length <= sigFigs) return numTxt; // integers
+    else if (numTxt.split("e")[0].length <= sigFigs + 1) return numTxt; // standard form
     return num.toExponential(sigFigs - 1).replace(".00e", "e").replace("0e", "e");
 }
 
@@ -230,9 +230,9 @@ export function sigFigRound(num, sigFigs){
  * @params {Object} obA Note: this function modifies this paramseter
  * @params {Object} obB 
  */
-export function deepMerge(obA, obB){
-    for(let [key, value] of Object.entries(obB)){
-        if(obA[key] == undefined || obA[key].__proto__ != Object.prototype) obA[key] = value;
+export function deepMerge(obA, obB) {
+    for (let [key, value] of Object.entries(obB)) {
+        if (obA[key] == undefined || obA[key].__proto__ != Object.prototype) obA[key] = value;
         else deepMerge(obA[key], obB[key])
     }
 
@@ -243,11 +243,11 @@ export function deepMerge(obA, obB){
  * Makes a deep copy of an object
  * @params {Object} object 
  */
-export function deepCopy(object){
-    if(typeof object !== "object" || object == null) return object;
+export function deepCopy(object) {
+    if (typeof object !== "object" || object == null) return object;
     let newObject = {};
 
-    for(let [key, value] of Object.entries(object)){
+    for (let [key, value] of Object.entries(object)) {
         newObject[key] = deepCopy(value);
     }
     return newObject;
@@ -292,14 +292,14 @@ export const DEFAULT_BEAM_PARAMS = {
  * @param {(element: T) => any} func
  * @returns {T[][]}
  */
-export function groupBy(arr, func){
+export function groupBy(arr, func) {
     const groups = new Map();
     arr.forEach(element => {
         const key = func(element);
-        if(!groups.has(key)){
+        if (!groups.has(key)) {
             groups.set(key, [element]);
         }
-        else{
+        else {
             groups.set(key, groups.get(key).concat([element]))
         }
     })
@@ -311,7 +311,7 @@ export function groupBy(arr, func){
  * @param {string} filePath1
  * @param {string} filePath2
  */
-export function joinFilePaths(filePath1, filePath2){
-    if(filePath1.endsWith("/")) return filePath1 + filePath2
+export function joinFilePaths(filePath1, filePath2) {
+    if (filePath1.endsWith("/")) return filePath1 + filePath2
     else return filePath1 + "/" + filePath2
 }

@@ -4,12 +4,12 @@
  * NOTE: This is necessary as modules and therefore "import" statements are not implemented
  * in major browsers for web workers at the moment.
  */
-async function getParser(){
-    const parserSourceText = 
+async function getParser() {
+    const parserSourceText =
         (await (await fetch("./parser.js")).text())
-        .replace(/export function/g, "function")
-        .replace(/export class/g, "class")
-        .replace(/export default class/g, "class")
+            .replace(/export function/g, "function")
+            .replace(/export class/g, "class")
+            .replace(/export default class/g, "class")
         + "\n;(() => ({VdM: VdM}))()";
     return eval(parserSourceText);
 }
@@ -17,7 +17,7 @@ async function getParser(){
 (async () => {
     const parser = await getParser();
     addEventListener("message", (message) => {
-        if(message.data.type == "text_change"){
+        if (message.data.type == "text_change") {
             let messageToSend = {
                 type: "lint"
             }

@@ -423,12 +423,12 @@ export default class CodeEditor extends HTMLElement {
         this.topLineEditor.getSession().setAnnotations([]);
         this.editor.getSession().setAnnotations([]);
 
-        if(message.errors !== undefined){
+        if (message.errors !== undefined) {
             this.editor.getSession().setAnnotations(
                 // @ts-ignore
                 groupBy(
                     message.errors.filter(error => {
-                        if(error.row == maxRow){
+                        if (error.row == maxRow) {
                             this.lastLineEditor.getSession().setAnnotations([{
                                 ...error,
                                 row: 0
@@ -436,7 +436,7 @@ export default class CodeEditor extends HTMLElement {
 
                             return false;
                         }
-                        if(error.row == -1){
+                        if (error.row == -1) {
                             this.topLineEditor.getSession().setAnnotations([{
                                 ...error,
                                 row: this.topLineHeaderPosition

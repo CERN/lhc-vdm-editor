@@ -6,7 +6,7 @@ const simpleFileWithComments = '#start\n0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEA
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000000;
 
-function getKeyboardEvent(keyCode){
+function getKeyboardEvent(keyCode) {
     var keyboardEvent = document.createEvent("KeyboardEvent");
     var initMethod = typeof keyboardEvent.initKeyboardEvent !== 'undefined' ? "initKeyboardEvent" : "initKeyEvent";
 

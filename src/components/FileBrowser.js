@@ -98,7 +98,7 @@ export default class FileBrowser extends HTMLElement {
         this.render();
     }
 
-    refresh(){
+    refresh() {
         this.setFileStructure(this.ip, this.campaign);
     }
 
@@ -118,8 +118,8 @@ export default class FileBrowser extends HTMLElement {
         })()
     }
 
-    async onDeleteButtonPressed(filePath, isFolder, markAsPending){
-        try{
+    async onDeleteButtonPressed(filePath, isFolder, markAsPending) {
+        try {
             if (!confirm(`Are you sure you want to delete the file ${filePath}?`)) return;
 
             markAsPending();
@@ -129,30 +129,31 @@ export default class FileBrowser extends HTMLElement {
             } else {
                 await this.gitlab.deleteFile(filePath);
             }
-    
+            this.refresh();
+
             if (this.openFile == filePath) {
                 this.dispatchEvent(new CustomEvent("open-file", {
                     detail: null
                 }));
-    
+
                 this.openFile = null;
             }
         }
-        finally{
+        finally {
             this.myContextMenu = null;
             this.render();
         }
     }
 
-    async onRenameButtonPressed(filePath, isFolder, markAsPending){
-        try{
-            if(!this.isCommitted){
+    async onRenameButtonPressed(filePath, isFolder, markAsPending) {
+        try {
+            if (!this.isCommitted) {
                 alert("Cannot rename a file without committing the current changes");
                 return;
             }
 
             const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
-            if(newName == null) return;
+            if (newName == null) return;
 
             if (newName.includes(" ")) {
                 alert("Invalid name, paths cannot contain spaces");
@@ -166,8 +167,9 @@ export default class FileBrowser extends HTMLElement {
             } else {
                 await this.gitlab.renameFile(filePath, newName);
             }
+            this.refresh();
 
-            if(this.openFile == filePath){
+            if (this.openFile == filePath) {
                 const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
 
                 this.dispatchEvent(new CustomEvent("open-file", {
@@ -177,7 +179,7 @@ export default class FileBrowser extends HTMLElement {
                 this.openFile = fullNewName;
             }
         }
-        finally{
+        finally {
             this.myContextMenu = null;
             this.render();
         }
@@ -194,17 +196,17 @@ export default class FileBrowser extends HTMLElement {
                 x=${event.clientX}
                 y=${event.clientY}
                 buttons=${[
-                    {
-                        name: "Delete",
-                        pendingMessage: "Deleting ...",
-                        onActivate: (markAsPending) => this.onDeleteButtonPressed(filePath, isFolder, markAsPending)
-                    },
-                    {
-                        name: "Rename",
-                        pendingMessage: "Renaming ...",
-                        onActivate: (markAsPending) => this.onRenameButtonPressed(filePath, isFolder, markAsPending)
-                    },
-                ]}
+                {
+                    name: "Delete",
+                    pendingMessage: "Deleting ...",
+                    onActivate: (markAsPending) => this.onDeleteButtonPressed(filePath, isFolder, markAsPending)
+                },
+                {
+                    name: "Rename",
+                    pendingMessage: "Renaming ...",
+                    onActivate: (markAsPending) => this.onRenameButtonPressed(filePath, isFolder, markAsPending)
+                },
+            ]}
             ></context-menu>
         `
         this.render();
@@ -265,14 +267,14 @@ export default class FileBrowser extends HTMLElement {
         /**
          * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} _structure
          */
-        const getElementFromStructure = (_structure, prefix="") => {
+        const getElementFromStructure = (_structure, prefix = "") => {
             return wire(fileStructure, prefix)`
                 <div>
                     ${_structure.files.map(fileName => {
-                        const fullFilePath = joinFilePaths(prefix, fileName);
-                        const isOpenFile = fullFilePath == this.openFile;
+                const fullFilePath = joinFilePaths(prefix, fileName);
+                const isOpenFile = fullFilePath == this.openFile;
 
-                        return wire()`<div
+                return wire()`<div
                             onclick=${() => {
                                 if(fileName == NO_FILES_TEXT) return;
                                 this.onFileClick(fullFilePath);
@@ -285,23 +287,23 @@ export default class FileBrowser extends HTMLElement {
                             class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">
                                 ${fileName}</div>`
 
-                    })}
+            })}
                     ${Array.from(_structure.folders.entries()).map((folderParts) => {
-                        const [folderName, folderContent] = folderParts;
-                        const isFolderOpen = _structure.isFolderOpen;
+                const [folderName, folderContent] = folderParts;
+                const isFolderOpen = _structure.isFolderOpen;
 
-                        return wire(folderParts)`
-                            <div onclick=${() => {_structure.isFolderOpen = !_structure.isFolderOpen; this.render()}} class="item folder">
+                return wire(folderParts)`
+                            <div onclick=${() => { _structure.isFolderOpen = !_structure.isFolderOpen; this.render() }} class="item folder">
                                 <folder-triangle open=${isFolderOpen}></folder-triangle>
                                 <span class="folder-name">${folderName}</span>
                             </div>
                             <span style="display:block" class="folder-content">
                                 ${
-                                    isFolderOpen?getElementFromStructure(folderContent, joinFilePaths(prefix,  folderName)):undefined
-                                }
+                    isFolderOpen ? getElementFromStructure(folderContent, joinFilePaths(prefix, folderName)) : undefined
+                    }
                             </span>
                         `
-                    })}
+            })}
                     <div onclick=${() => this.clickNewFile(prefix)} class="item" style="font-weight: bold">
                         <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
                             +
@@ -326,42 +328,42 @@ export default class FileBrowser extends HTMLElement {
                 gitlab=${this.gitlab}
                 campaigns=${(async () => [...await this.campaigns]/*we need to deep copy here to prevent wire moving elements*/)()}
                 onsubmit=${async event => {
-                    try {
-                        await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
-                        this.refresh();
-                    }
-                    finally {
-                        this.createFileWindow = undefined;
-                        this.render();
-                    }
-                }}
+                try {
+                    await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
+                    this.refresh();
+                }
+                finally {
+                    this.createFileWindow = undefined;
+                    this.render();
+                }
+            }}
                 oncancel=${
-                    () => {
-                        this.createFileWindow = undefined;
-                        this.render();
+            () => {
+                this.createFileWindow = undefined;
+                this.render();
+            }
+            }
+                oncreate-empty=${async event => {
+                try {
+                    await this.gitlab.createFile(joinFilePaths(containingFolder, event.detail));
+                    this.refresh();
+                }
+                catch (error) {
+                    if (error instanceof FileAlreadyExistsError) {
+                        alert(`Cannot create the empty file ${event.detail}, it already exists`);
+                        return;
+                    }
+                    else {
+                        throw error;
                     }
                 }
-                oncreate-empty=${async event => {
-                    try {
-                        await this.gitlab.createFile(joinFilePaths(containingFolder, event.detail));
-                        this.refresh();
-                    }
-                    catch (error) {
-                        if (error instanceof FileAlreadyExistsError) {
-                            alert(`Cannot create the empty file ${event.detail}, it already exists`);
-                            return;
-                        }
-                        else {
-                            throw error;
-                        }
-                    }
-                    finally {
-                        this.createFileWindow = undefined;
-                        this.render();
-                    }
-                }}
+                finally {
+                    this.createFileWindow = undefined;
+                    this.render();
+                }
+            }}
             />`
-            
+
         this.render();
     }
 
@@ -391,15 +393,15 @@ export default class FileBrowser extends HTMLElement {
     /**
      * @param {MouseEvent} event
      */
-    handleEvent(event){
+    handleEvent(event) {
         // @ts-ignore
         this[event.currentTarget.name] = event.currentTarget.value;
         this.dispatchEvent(new CustomEvent("change"));
         this.render();
     }
 
-    set selection(newValue){
-        if(this.ip != newValue.ip || this.campaign != newValue.campaign){
+    set selection(newValue) {
+        if (this.ip != newValue.ip || this.campaign != newValue.campaign) {
             this.setFileStructure(newValue.ip, newValue.campaign);
         }
 
@@ -418,7 +420,7 @@ export default class FileBrowser extends HTMLElement {
         </selection-boxes>
         <hr />
         <div id="file-browser">
-            ${(async () => 
+            ${(async () =>
                 this.getFileUI(await this.fileStructure, this.ip, this.campaign)
             )()}
         </div>

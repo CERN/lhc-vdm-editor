@@ -8,7 +8,7 @@ const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATIO
 /**
  * @param {GitLab} [gitlab]
  */
-async function getNewFileBrowser(gitlab){
+async function getNewFileBrowser(gitlab) {
     let fb = new FileBrowser();
     fb.passInValues(gitlab, null);
     fb.style.display = "none";
@@ -29,7 +29,7 @@ describe("FileBrowser", () => {
         gitlab = new GitLab(
             token,
             // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test" 
+            "vdm-editor-test"
         );
     })
 
@@ -44,7 +44,7 @@ describe("FileBrowser", () => {
     it("gets the FileUIHTML", () => {
         expect(() => {
             fb.getFileUI({
-                files: [ "test1", "test2" ],
+                files: ["test1", "test2"],
                 folders: new Map([
                     ["folder1", [
                         "file1",

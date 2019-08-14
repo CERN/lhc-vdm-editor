@@ -7,7 +7,7 @@ const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATIO
 /**
  * @param {GitLab} [gitlab]
  */
-async function getNewOverallEditor(gitlab){
+async function getNewOverallEditor(gitlab) {
     let oe = new OverallEditor(gitlab);
     oe.style.display = "none";
     document.body.appendChild(oe);
@@ -28,10 +28,10 @@ describe("OverallEditor", () => {
         gitlab = new GitLab(
             token,
             // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test" 
+            "vdm-editor-test"
         );
     })
-    
+
 
     beforeEach(() => {
         fakeLocalStorage = {};
@@ -40,15 +40,15 @@ describe("OverallEditor", () => {
             return fakeLocalStorage[key] || null;
         });
 
-        spyOn(localStorage, "removeItem").and.callFake(key =>  {
+        spyOn(localStorage, "removeItem").and.callFake(key => {
             delete fakeLocalStorage[key];
         });
 
-        spyOn(localStorage, "setItem").and.callFake((key, value) =>  {
+        spyOn(localStorage, "setItem").and.callFake((key, value) => {
             return fakeLocalStorage[key] = value;
         });
 
-        spyOn(localStorage, "clear").and.callFake(() =>  {
+        spyOn(localStorage, "clear").and.callFake(() => {
             fakeLocalStorage = {};
         });
     });
@@ -103,7 +103,7 @@ describe("OverallEditor", () => {
 
         it("saves the current open editor index", async () => {
             await oe.setCurrentEditorContent(TEST_FILE);
-            
+
             const editorToSwitchTo = 0;
             oe.onSwitchEditorButtonPress(editorToSwitchTo);
 
