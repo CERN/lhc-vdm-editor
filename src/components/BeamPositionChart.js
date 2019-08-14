@@ -138,12 +138,7 @@ export default class BeamPositionChart extends GenericChart {
         }
     }
 
-<<<<<<< HEAD
     attachChart(){
-        // @ts-ignore
-=======
-    attachChart() {
->>>>>>> 75291df0021a94d520121b4e95495e3b6a01ef1f
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), {
             chart: {
                 renderTo: this.root.querySelector("#container"),
