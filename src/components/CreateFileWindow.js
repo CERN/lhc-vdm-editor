@@ -197,6 +197,7 @@ export default class CreateFileWindow extends HTMLElement {
                 isOpen = true;
                 triangle.isOpen = isOpen;
                 this.setFilesFromPath(this.selectionBoxes.path);
+                this.setCheckboxSelector();
             }
         })
         this.selectionBoxes.addEventListener('change', () => {
@@ -238,7 +239,6 @@ export default class CreateFileWindow extends HTMLElement {
         }
         finally {
             this.setFileUI(files);
-            this.setCheckboxSelector();
         }
     }
 
@@ -251,7 +251,6 @@ export default class CreateFileWindow extends HTMLElement {
             </label>
         `;
 
-        this.root.querySelector('#list-options').innerHTML = '';
         this.root.querySelector('#list-options').appendChild(element);
 
         element.querySelector('input').onchange = (event) => this.selectAll(event);
