@@ -552,21 +552,20 @@ export default class VdM {
     }
 
     simulateBeam() {
-        this.structure.forEach(command => {
-            if (command.type == 'command') {
-                // Simulate beam movement
-                const prevCommand = this.structure.find(x => x.index == command.index - 1)
-                if (prevCommand) {
-                    command.simulateStep(this.sigma, this.param.trim_rate, prevCommand);
-                }
-
-                // Simulate luminosity
-                command.luminosity = this.luminosityFromPos(command.position); // Hz/m^2
+        let commands = this.structure.filter(x => x.type == 'command');
+        commands.forEach((command, i) => {
+            // Simulate beam movement
+            const prevCommand = commands[i - 1];
+            if (prevCommand) {
+                command.simulateStep(this.sigma, this.param.trim_rate, prevCommand);
             }
+
+            // Simulate luminosity
+            command.luminosity = this.luminosityFromPos(command.position); // Hz/m^2
         })
     }
     checkBeamPositionLimits() {
-        for (let [i, command] of this.structure.entries()) {
+        this.structure.forEach((command, i) => {
             if (command.type == 'command') {
                 try {
                     command.checkLimit(this.param.scan_limits * this.sigma);
@@ -575,7 +574,7 @@ export default class VdM {
                     else throw error
                 }
             }
-        }
+        })
     }
     getInitTrim() {
         let argArr = {
@@ -639,9 +638,10 @@ export default class VdM {
 
     toLumiGraph(resolution = 0.1) {
         let result = [];
-        const commands = this.structure.filter(x => x.type == 'command');
-        commands.forEach((command, index, commands) => {
-            const prevCommand = commands[index - 1]
+
+        let commands = this.structure.filter(x => x.type == 'command');
+        commands.forEach((command, i) => {
+            const prevCommand = commands[i - 1]
 
             if (command.command.includes('TRIM') && prevCommand) {
                 // Number of points for the current trim. Minimum number of points set to 5
