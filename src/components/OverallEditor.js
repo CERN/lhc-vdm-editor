@@ -41,20 +41,19 @@ revert-button {
 }
 
 #file-name {
-    position: absolute;
-    top: -20px;
     display: inline-block;
-    padding: 20px;
+    padding: 10px;
     font: 14px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-    text-align: center;
     width: 100%;
     font-weight: bold;
     word-wrap: break-word;
+    background-color: #e7e9fd;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 
 #editor {
     height: 100%;
-    margin-top: 50px;
 }
 
 raw-editor{
@@ -63,6 +62,7 @@ raw-editor{
 
 .uncommitted {
     color: orange;
+    background-color: #fffae1 !important;
 }
 
 #loading-indicator {
@@ -233,7 +233,8 @@ export default class OverallEditor extends HTMLElement {
 
     onEditorContentChange(newValue) {
         localStorage.setItem('content', newValue);
-        if (newValue == this.initEditorContent)
+        if ((this.editor.isChangedFrom !== undefined && this.editor.isChangedFrom(this.initEditorContent))
+             || newValue == this.initEditorContent)
             this.isCommitted = true;
         else
             this.isCommitted = false;
@@ -281,6 +282,7 @@ export default class OverallEditor extends HTMLElement {
         this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));
         this.fileBrowser.addEventListener('open-file', event => this.setCurrentEditorContent(event.detail));
+        this.editorContainer.addEventListener('change-row-selected', event => this.chartsComponent.showTooltips(event.detail));
     }
 
     onSwitchEditorButtonPress(editorIndex) {
@@ -470,10 +472,10 @@ export default class OverallEditor extends HTMLElement {
                     <file-browser></file-browser>
                 </resizeable-panel>
                 <div id="editor-container">
+                    <div id="file-name"></div>
                     <div id="editor">
                         <raw-editor></raw-editor>
                     </div>
-                    <div id="file-name"></div>
                     <switch-editor-buttons></switch-editor-buttons>
                 </div>
                 <resizeable-panel default-width="300px" side="right">

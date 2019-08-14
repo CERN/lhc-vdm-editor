@@ -181,7 +181,8 @@ export default class CreateFileWindow extends HTMLElement {
 
         let isOpen = false;
         this.root.querySelector('#dropdown').addEventListener('click', () => {
-            const triangle = this.root.querySelector('folder-triangle')
+            const triangle = this.root.querySelector('folder-triangle');
+            debugger;
             if (isOpen) {
                 isOpen = false;
                 triangle.isOpen = isOpen;

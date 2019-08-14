@@ -21,6 +21,7 @@ export default class LuminosityChart extends GenericChart {
     }
 
     attachChart(){
+        // @ts-ignore
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), /** @type {Highcharts.Options} */({
             chart: {
                 height: "75%",
@@ -54,6 +55,18 @@ export default class LuminosityChart extends GenericChart {
                 data: [],
             }]
         })));
+    }
+
+    /**
+     * @param {number} pointIndex
+     */
+    showTooltip(pointIndex){
+        if(this.chart.series[0].data.length == 0) return;
+
+        // @ts-ignore
+        this.chart.series[0].data[pointIndex].setState("hover");
+        // @ts-ignore
+        this.chart.tooltip.refresh([this.chart.series[0].data[pointIndex]]);
     }
 
     /**
@@ -102,6 +115,7 @@ export default class LuminosityChart extends GenericChart {
         }, 500, this, true);
     }
 
+    // @ts-ignore
     set scale(newScale){
         this.chart.yAxis[0].update({
             type: newScale == "log" ? "logarithmic" : "linear"

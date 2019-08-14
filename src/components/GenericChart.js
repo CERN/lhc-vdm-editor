@@ -59,6 +59,12 @@ export const commonChartOptions = {
             // @ts-ignore
             label: {
                 enabled: false
+            },
+            states: {
+                // @ts-ignore
+                inactive: {
+                    opacity: 1
+                }
             }
         },
         area: {

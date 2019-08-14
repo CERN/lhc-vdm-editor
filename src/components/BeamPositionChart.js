@@ -1,3 +1,4 @@
+// @ts-ignore
 import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
 import { commonChartOptions, GenericChart } from "./GenericChart.js";
 
@@ -138,6 +139,7 @@ export default class BeamPositionChart extends GenericChart {
     }
 
     attachChart(){
+        // @ts-ignore
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), {
             chart: {
                 renderTo: this.root.querySelector("#container"),
@@ -190,6 +192,23 @@ export default class BeamPositionChart extends GenericChart {
                 color: "rgb(154, 154, 154)"
             }
         ]}));
+
+        window.chart = this.chart;
+    }
+
+    /**
+     * @param {number} pointIndex
+     */
+    showTooltip(pointIndex){
+        if(this.chart.series[0].data.length == 0) return;
+        const dataSeries = [this.chart.series[0], this.chart.series[1]];
+
+        dataSeries.forEach(series => {
+            // @ts-ignore
+            series.data[pointIndex].setState("hover");
+            // @ts-ignore
+            this.chart.tooltip.refresh([series.data[pointIndex]]);
+        })
     }
 
     template() {

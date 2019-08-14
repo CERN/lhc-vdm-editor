@@ -274,12 +274,12 @@ export default class FileBrowser extends HTMLElement {
 
                         return wire()`<div
                             onclick=${() => {
-                                if(fullFilePath == NO_FILES_TEXT) return;
+                                if(fileName == NO_FILES_TEXT) return;
                                 this.onFileClick(fullFilePath);
                                 this.render();
                             }}
                             oncontextmenu=${event => {
-                                if(fullFilePath == NO_FILES_TEXT) return; 
+                                if(fileName == NO_FILES_TEXT) return; 
                                 this.onContextMenu(event, fullFilePath, false);
                             }}
                             class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">

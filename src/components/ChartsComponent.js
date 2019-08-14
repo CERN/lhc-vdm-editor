@@ -56,6 +56,10 @@ export default class ChartsComponent extends MyHyperHTMLElement {
         this.allCharts.forEach(chart => chart.reflow());
     }
 
+    showTooltips(pointIndex){
+        this.allCharts.forEach(chart => chart.showTooltip(pointIndex));
+    }
+
     render() {
         const chartProperties = {
             unit: this.unit,
@@ -64,7 +68,7 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             sigmaInMM: this.sigmaInMM
         }
 
-        return hyper(this.root)`
+        hyper(this.root)`
         <style>
             ${styling}
         </style>

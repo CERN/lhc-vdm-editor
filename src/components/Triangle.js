@@ -52,10 +52,6 @@ export default class Triangle extends HTMLElement {
         }
     }
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        this[name] = newValue;
-    }
-
     get open(){
         return this.openState
     }

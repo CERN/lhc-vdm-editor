@@ -4,7 +4,7 @@ import {css, html} from "../HelperFunctions.js"
 const styling = css`
 .container {
     position: absolute;
-    top: 5px;
+    top: 62px;
     right: 20px;
 }
 button {

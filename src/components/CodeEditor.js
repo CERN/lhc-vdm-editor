@@ -270,6 +270,13 @@ export default class CodeEditor extends HTMLElement {
             this.editorChange();
         })
 
+        this.editor.selection.on("changeCursor", (_, selection) => {
+            this.dispatchEvent(new CustomEvent("change-row-selected", {
+                detail: selection.getRange().end.row,
+                bubbles: true
+            }));
+        })
+
         let VDMNumberRenderer = {
             getText: (_session, row) => {
                 return calculateLineNumber(this.rawValue, row) + "";
@@ -508,6 +515,16 @@ export default class CodeEditor extends HTMLElement {
         this.editor.setValue(mainText, -1); // use -1 move the cursor to the start of the file
         // Make sure you can't undo the insertion of this text
         this.editor.getSession().setUndoManager(new ace.UndoManager());
+    }
+
+    /**
+     * @param {string} otherContent
+     */
+    isChangedFrom(otherContent){
+        const myMainText = stripText(this.noParseValue)[1];
+        const theirMainText = stripText(otherContent)[1];
+
+        return myMainText == theirMainText;
     }
 
     template() {

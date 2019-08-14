@@ -128,4 +128,3 @@ declare const hyper: {
   // hyper()`HTML`
   (): WiredTemplateFunction;
 };
-
