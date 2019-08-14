@@ -104,15 +104,6 @@ export function testArgs(argsObj) {
     }
     return true
 }
-export function toGraphPoint(command) {
-    return [
-        {
-            realTime: command.realTime,
-            sequenceTime: command.sequenceTime
-        },
-        command.luminosity
-    ]
-}
 export function linspace(start, end, num, includeEnd = true) {
     if (!Number.isInteger(num) || num < 1) throw new Error('Number has to be an integer grater than 0');
 
@@ -327,11 +318,13 @@ export class VdMcommandObject {
         this.realTime += prevCommand.realTime;
         this.sequenceTime += prevCommand.sequenceTime;
 
+        if (!this.isValid) return
+
         if (this.command == 'SECONDS_WAIT') {
             this.sequenceTime += Number(this.args[0]);
             this.realTime += Number(this.args[0]);
         }
-        if (this.command.includes('TRIM') && this.isValid) {
+        if (this.command.includes('TRIM')) {
             let maxTrimTime = 0;
 
             for (let i = 0; i < this.args.length; i += 5) {
@@ -559,7 +552,7 @@ export default class VdM {
     }
 
     simulateBeam() {
-        for (let [i, command] of this.structure.entries()) {
+        this.structure.forEach(command => {
             if (command.type == 'command') {
                 // Simulate beam movement
                 const prevCommand = this.structure.find(x => x.index == command.index - 1)
@@ -570,7 +563,7 @@ export default class VdM {
                 // Simulate luminosity
                 command.luminosity = this.luminosityFromPos(command.position); // Hz/m^2
             }
-        }
+        })
     }
     checkBeamPositionLimits() {
         for (let [i, command] of this.structure.entries()) {
@@ -646,7 +639,7 @@ export default class VdM {
 
     toLumiGraph(resolution = 0.1) {
         let result = [];
-        const commands = this.structure.filter(x => x.type == 'command' && x.isValid);
+        const commands = this.structure.filter(x => x.type == 'command');
         commands.forEach((command, index, commands) => {
             const prevCommand = commands[index - 1]
 
@@ -672,7 +665,13 @@ export default class VdM {
                 result = result.concat(trimPoints)
             }
             else {
-                result.push(toGraphPoint(command))
+                result.push([
+                    {
+                        realTime: command.realTime,
+                        sequenceTime: command.sequenceTime
+                    },
+                    command.luminosity
+                ])
             }
         })
 
