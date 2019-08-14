@@ -1,7 +1,7 @@
 import { css, html } from "../HelperFunctions.js";
 import "./BeamPositionChart.js"
 import "./LuminosityChart.js"
-import {MyHyperHTMLElement} from "./MyHyperHTMLElement.js"
+import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js"
 
 const styling = css`
 :host {
@@ -46,13 +46,13 @@ export default class ChartsComponent extends MyHyperHTMLElement {
         });
         this.root = this.attachShadow({ mode: "open" });
     }
-    
-    connectedCallback(){
+
+    connectedCallback() {
         super.connectedCallback();
         this.allCharts = Array.from(this.root.querySelectorAll('beam-position-chart, luminosity-chart'))
     }
 
-    reflow(){
+    reflow() {
         this.allCharts.forEach(chart => chart.reflow());
     }
 

@@ -29,21 +29,21 @@ export default class IPCampaignSelectors extends HTMLElement {
         this.campaign = "";
     }
 
-    get path(){
+    get path() {
         return joinFilePaths(this.campaign, this.ip)
     }
 
-    get name(){
+    get name() {
         return this.getAttribute("name")
     }
 
-    async connectedCallback(){
+    async connectedCallback() {
         this.campaign = (await this.allCampaigns)[0];
         this.render();
         this.onInitFinished();
     }
 
-    get value(){
+    get value() {
         return {
             ip: this.ip,
             campaign: this.campaign
@@ -53,14 +53,14 @@ export default class IPCampaignSelectors extends HTMLElement {
     /**
      * @param {Event} event
      */
-    handleEvent(event){
+    handleEvent(event) {
         // @ts-ignore
         this[event.currentTarget.name] = event.currentTarget.value;
         this.dispatchEvent(new CustomEvent("change"));
         this.render();
     }
 
-    log(message, value){
+    log(message, value) {
         console.log(message, value);
         return value;
     }
@@ -75,9 +75,9 @@ export default class IPCampaignSelectors extends HTMLElement {
         <div>
             <select name=ip value=${this.ip} onchange=${this} id="ip-select">
                 ${
-                    this.allIps.map(ip => 
-                        wire(this.allIps, ip)`<option value=${ip}>${ip}</option>`)
-                }
+            this.allIps.map(ip =>
+                wire(this.allIps, ip)`<option value=${ip}>${ip}</option>`)
+            }
             </select>
         </div>
     </div>
@@ -86,10 +86,10 @@ export default class IPCampaignSelectors extends HTMLElement {
         <div>
             <select name=campaign value=${this.campaign} onchange=${this} id="campaign-select">
                 ${
-                    (async () => (await this.allCampaigns).map(campaign => 
-                        wire(this.allCampaigns, campaign)`<option value=${campaign}>${campaign}</option>`
-                    ))()
-                }
+            (async () => (await this.allCampaigns).map(campaign =>
+                wire(this.allCampaigns, campaign)`<option value=${campaign}>${campaign}</option>`
+            ))()
+            }
             </select>
         </div>
     </div>

@@ -20,7 +20,7 @@ export default class LuminosityChart extends GenericChart {
         this.attachChart();
     }
 
-    attachChart(){
+    attachChart() {
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), /** @type {Highcharts.Options} */({
             chart: {
                 height: "75%",
@@ -47,7 +47,7 @@ export default class LuminosityChart extends GenericChart {
             legend: {
                 enabled: false
             },
-        
+
             series: [{
                 type: "line",
                 name: "Luminosity",
@@ -59,27 +59,27 @@ export default class LuminosityChart extends GenericChart {
     /**
      * @param {[{realTime: number, sequenceTime: number}, number][]} newData
      */
-    set data(newData){
+    set data(newData) {
         this._data = newData;
 
         this.refresh();
     }
-    get data(){
+    get data() {
         return this._data
     }
 
-    refresh(){
-        if(this.data == null) return;
+    refresh() {
+        if (this.data == null) return;
 
         this.chart.series[0].setData(this.data.map(
             x => [x[0][this.timeType + "Time"], x[1]]
         ));
     }
-    
+
     /**
      * @param {string} newTimeType
      */
-    set timeType(newTimeType){
+    set timeType(newTimeType) {
         this._timeType = newTimeType;
 
         this.chart.xAxis[0].setTitle({
@@ -88,21 +88,21 @@ export default class LuminosityChart extends GenericChart {
 
         this.refresh();
     }
-    get timeType(){
+    get timeType() {
         return this._timeType
     }
 
-    connectedCallback(){
+    connectedCallback() {
         this.reflow();
     }
 
-    async reflow(){
+    async reflow() {
         throttle(() => {
             this.chart.reflow()
         }, 500, this, true);
     }
 
-    set scale(newScale){
+    set scale(newScale) {
         this.chart.yAxis[0].update({
             type: newScale == "log" ? "logarithmic" : "linear"
         })

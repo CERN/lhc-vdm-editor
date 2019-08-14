@@ -39,7 +39,7 @@ export default class Triangle extends HTMLElement {
         this.openState = false;
     }
 
-    set open(newState){
+    set open(newState) {
         if (newState) {
             this.openState = newState;
             this.triangle.classList.remove("triangle-closed");
@@ -56,7 +56,7 @@ export default class Triangle extends HTMLElement {
         this[name] = newValue;
     }
 
-    get open(){
+    get open() {
         return this.openState
     }
 

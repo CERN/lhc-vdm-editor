@@ -8,7 +8,7 @@ describe("GitLab", () => {
         gitlab = new GitLab(
             token,
             // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test" 
+            "vdm-editor-test"
         );
     })
 

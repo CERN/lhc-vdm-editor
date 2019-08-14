@@ -1,5 +1,5 @@
 // @ts-check
-import {css, html} from "../HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js"
 
 const styling = css`
 button {
@@ -23,9 +23,9 @@ button:hover {
 `
 
 export default class RevertButton extends HTMLElement {
-    constructor(){
+    constructor() {
         super();
-        this.root = this.attachShadow({mode: "open"});
+        this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
         this.button = this.root.querySelector("button");
         this.button.addEventListener('click', () => {
@@ -33,7 +33,7 @@ export default class RevertButton extends HTMLElement {
         })
     }
 
-    template(){
+    template() {
         return html`
         <style>
             ${styling}

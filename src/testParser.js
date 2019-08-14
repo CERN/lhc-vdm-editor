@@ -66,7 +66,7 @@ const faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION
 // Tests on the parser and deparser functions
 describe("Parser", () => {
     let inst = new VdM()
-    
+
     // Tests on isSubsetOf()
     it('returns of isSubsetOf', () => {
         let arr1 = ['1', '2', '4', '4'];
@@ -185,6 +185,6 @@ describe("Parser", () => {
         let lastpos = inst.parse(largeTrim).structure.slice(-1)[0].position;
         expect(lastpos.BEAM1).toEqual(lastpos.BEAM2)
 
-        
+
     })
 })

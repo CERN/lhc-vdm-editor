@@ -14,21 +14,21 @@ export default class BeamPositionChart extends GenericChart {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.root.innerHTML = this.template();
-        
+
         this._unit = "sigma";
         this._timeType = "real";
-        
+
         this._limit = Infinity;
         this._data = null;
         this.sigmaInMM = 1; // NOTE: this needs to be changed later
-        
+
         this.attachChart();
     }
 
     /**
      * @param {string} newTimeType
      */
-    set timeType(newTimeType){
+    set timeType(newTimeType) {
         this._timeType = newTimeType;
 
         this.chart.xAxis[0].setTitle({
@@ -37,14 +37,14 @@ export default class BeamPositionChart extends GenericChart {
 
         this.refresh();
     }
-    get timeType(){
+    get timeType() {
         return this._timeType
     }
 
     /**
      * @param {string} newUnits
      */
-    set unit(newUnits){
+    set unit(newUnits) {
         this._unit = newUnits;
 
         this.chart.yAxis[0].setTitle({
@@ -53,30 +53,30 @@ export default class BeamPositionChart extends GenericChart {
 
         this.refresh();
     }
-    get unit(){
+    get unit() {
         return this._unit
     }
 
-    set limit(limit){
+    set limit(limit) {
         this._limit = limit;
         this.renderLimit(limit)
     }
 
-    get limit(){
+    get limit() {
         return this._limit
     }
 
-    set data(data){
+    set data(data) {
         this._data = data;
         this.refresh()
     }
-    
-    get data(){
+
+    get data() {
         return this._data
     }
 
-    refresh(){
-        if(this.data == null) return;
+    refresh() {
+        if (this.data == null) return;
 
         this.updateData(this.data);
         this.renderLimit(this.limit);
@@ -85,11 +85,11 @@ export default class BeamPositionChart extends GenericChart {
     /**
      * @param {number} newLimit
      */
-    renderLimit(newLimit){
-        if(this.maxTime == null) return;
+    renderLimit(newLimit) {
+        if (this.maxTime == null) return;
 
         const putInUnit = (number) => {
-            if(this.unit == "sigma") return number;
+            if (this.unit == "sigma") return number;
             else return number * this.sigmaInMM;
         }
 
@@ -114,7 +114,7 @@ export default class BeamPositionChart extends GenericChart {
      * @param {any} point
      * @returns {[number, number]}
      */
-    theirDataPointToOurs(point){
+    theirDataPointToOurs(point) {
         return [
             point[0][this.timeType + "Time"],
             point[1][this.unit]
@@ -125,19 +125,19 @@ export default class BeamPositionChart extends GenericChart {
      * @private
      * @param {[number, number][][]} newData
      */
-    updateData(newData){
+    updateData(newData) {
         this.chart.series[0].setData(newData[0].map(x => this.theirDataPointToOurs(x)));
         this.chart.series[1].setData(newData[1].map(x => this.theirDataPointToOurs(x)));
 
-        if(newData[0].length != 0){
+        if (newData[0].length != 0) {
             this.maxTime = this.theirDataPointToOurs(newData[0].slice(-1)[0])[0]
         }
-        else{
+        else {
             this.maxTime = null;
         }
     }
 
-    attachChart(){
+    attachChart() {
         this.chart = Highcharts.chart(deepMerge(deepCopy(commonChartOptions), {
             chart: {
                 renderTo: this.root.querySelector("#container"),
@@ -189,7 +189,8 @@ export default class BeamPositionChart extends GenericChart {
                 data: [],
                 color: "rgb(154, 154, 154)"
             }
-        ]}));
+            ]
+        }));
     }
 
     template() {

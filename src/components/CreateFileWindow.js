@@ -209,9 +209,9 @@ export default class CreateFileWindow extends HTMLElement {
         this.fileListContent.onchange = () => {
             let truthArr = Array.from(this.fileListContent.querySelectorAll('input')).map(x => x.checked);
             let checkboxSelector = this.root.querySelector('#list-options').querySelector('input');
-            
+
             checkboxSelector.indeterminate = false;
-            if(truthArr.every(x => x)) checkboxSelector.checked = true
+            if (truthArr.every(x => x)) checkboxSelector.checked = true
             else if (truthArr.every(x => !x)) checkboxSelector.checked = false
             else checkboxSelector.indeterminate = true;
         }
