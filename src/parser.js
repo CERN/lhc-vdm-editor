@@ -135,7 +135,9 @@ export function linspace(start, end, num, includeEnd = true) {
  * @param {Array} args
  */
 export function checkTrimArgs(args) {
-    if (args.length == 0 || args.length % 5 != 0) throw 'Command has to include arguments: IP BEAM PLANE AMOUNT UNIT';
+    if (args.length == 0 || args.length % 5 != 0) throw 'Command has to include arguments: <IP> <BEAM> <PLANE> <AMOUNT> <UNIT>';
+
+    let argStrArr = [];
     for (let i = 0; i < args.length; i += 5) {
         const currentArgs = {
             IP: args[i],
@@ -144,6 +146,11 @@ export function checkTrimArgs(args) {
             UNITS: args[i + 4]
         };
         testArgs(currentArgs);
+
+        let argStr = currentArgs.BEAM + ' ' + currentArgs.PLANE;
+        if (argStrArr.includes(argStr)) throw 'Can only contain one instance of each <BEAM> <PLANE> pair. Got duplicate: ' + argStr
+        else argStrArr.push(argStr)
+
         if (!isFinite(Number(args[i + 3]))) {
             throw 'Amount has to be finite but got ' + args[i + 3]
         };
@@ -276,7 +283,7 @@ export class VdMcommandObject {
                                 throw 'Expected fit type in ' + validArguments.FIT_TYPE + ' but got ' + args[1]
                             }
                         } else {
-                            throw 'Expected exactly two arguments "PLANE FIT_TYPE" but got "' + args.join(' ') + '"'
+                            throw 'Expected exactly two arguments "<PLANE> <FIT_TYPE>" but got "' + args.join(' ') + '"'
                         }
                     }
                     catch (error) {
@@ -421,7 +428,7 @@ export default class VdM {
                         obj = {
                             type: 'error'
                         };
-                        throw new VdMSyntaxError(index, 'Line has to be of the type "#COMMENT", "INT COMMAND", or "EMPTY_LINE"')
+                        throw new VdMSyntaxError(index, 'Line has to be of the type "# COMMENT", "INT COMMAND", or "EMPTY_LINE"')
                     }
                 }
                 else {
@@ -634,16 +641,16 @@ export default class VdM {
         }).filter(x => x);
     }
 
-    //toLumiGraph(resolution = 0.1) {
-    toLumiGraph(stepsPerTrim = 10) {
+    //toLumiGraph(stepsPerTrim = 50) {
+    toLumiGraph(resolution = 0.1) {
         let result = [];
         const commands = this.structure.filter(x => x.type == 'command' && x.isValid);
         commands.forEach((command, index, commands) => {
             const prevCommand = commands[index - 1]
 
             if (command.command.includes('TRIM') && prevCommand) {
-                //const num = Math.round(command.trimTime / resolution);
-                const num = stepsPerTrim;
+                //const num = stepsPerTrim;
+                const num = Math.round(command.trimTime / resolution);
 
                 const startTime = command.realTime - command.trimTime;
                 const timeArr = linspace(startTime, command.realTime, num)
