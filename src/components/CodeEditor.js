@@ -273,10 +273,13 @@ export default class CodeEditor extends HTMLElement {
         })
 
         this.editor.selection.on("changeCursor", (_, selection) => {
-            this.dispatchEvent(new CustomEvent("change-row-selected", {
-                detail: calculateLineNumber(this.rawValue, selection.getRange().end.row),
-                bubbles: true
-            }));
+            let currentRow = calculateLineNumber(this.rawValue, selection.getRange().end.row);
+            if(currentRow !== ""){
+                this.dispatchEvent(new CustomEvent("change-row-selected", {
+                    detail: currentRow,
+                    bubbles: true
+                }))
+            }
         })
 
         let VDMNumberRenderer = {
