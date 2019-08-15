@@ -308,6 +308,14 @@ export function groupBy(arr, func) {
 }
 
 /**
+ * @param {any[]} ob1
+ * @param {any[]} ob2
+ */
+export function arrayEquals(ob1, ob2){
+    return ob1.every((x, i) => x == ob2[i])
+}
+
+/**
  * @param {string} filePath1
  * @param {string} filePath2
  */
@@ -317,3 +325,17 @@ export function joinFilePaths(filePath1, filePath2) {
 }
 
 export var sigmaChar = "\u03C3";
+
+/**
+ * @template T
+ * @param {T[]} arr
+ * @returns {T[]}
+ */
+export function removeSubsequentDuplicates(arr, cmp=(a, b) => a == b){
+    let duplicate = Symbol("duplicate");
+    // @ts-ignore
+    return arr.map((x, i) => {
+        if(i == arr.length - 1 || !cmp(x, arr[i + 1])) return x;
+        else return duplicate;
+    }).filter(x => x !== duplicate);
+}

@@ -244,7 +244,7 @@ export default class OverallEditor extends HTMLElement {
         const TIMEOUT = 1000;
         clearTimeout(this.lastEditorChangeTimeout);
         this.lastEditorChangeTimeout = setTimeout(() => {
-            if (Date.now() - this.lastEditorChange >= TIMEOUT) {
+            if (Date.now() - this.lastEditorChange >= TIMEOUT && this.filePath !== null) {
                 this.makeWebWorkerParse();
             }
         }, TIMEOUT + 100);

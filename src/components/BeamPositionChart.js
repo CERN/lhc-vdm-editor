@@ -1,5 +1,5 @@
 // @ts-ignore
-import { css, html, throttle, deepCopy, deepMerge, sigmaChar } from "../HelperFunctions.js";
+import { css, html, wait, deepCopy, deepMerge, sigmaChar, removeSubsequentDuplicates, arrayEquals } from "../HelperFunctions.js";
 import { commonChartOptions, GenericChart } from "./GenericChart.js";
 
 
@@ -127,8 +127,8 @@ export default class BeamPositionChart extends GenericChart {
      * @param {[number, number][][]} newData
      */
     updateData(newData) {
-        this.chart.series[0].setData(newData[0].map(x => this.theirDataPointToOurs(x)));
-        this.chart.series[1].setData(newData[1].map(x => this.theirDataPointToOurs(x)));
+        this.chart.series[0].setData(newData[0].map(x => this.theirDataPointToOurs(x)).slice(0, -1));
+        this.chart.series[1].setData(newData[1].map(x => this.theirDataPointToOurs(x)).slice(0, -1));
 
         if (newData[0].length != 0) {
             this.maxTime = this.theirDataPointToOurs(newData[0].slice(-1)[0])[0]
@@ -157,6 +157,17 @@ export default class BeamPositionChart extends GenericChart {
             xAxis: {
                 title: {
                     text: "Real time [s]"
+                }
+            },
+            plotOptions:{
+                series: {
+                    marker:{
+                        states: {
+                            select: {
+                                enabled: true
+                            }
+                        }
+                    }
                 }
             },
 
@@ -195,14 +206,22 @@ export default class BeamPositionChart extends GenericChart {
     }
 
     /**
-     * @param {number} pointIndex
+     * @param {number} lineNumber
      */
-    showTooltip(pointIndex){
+    async showTooltip(lineNumber){
         if(this.chart.series[0].data.length == 0) return;
         // NOTE: the below might happen as the parsing lags behind in a web worker
-        if(pointIndex >= this.chart.series[0].data.length) return;
+        if(lineNumber >= this.chart.series[0].data.length) return;
+
+        // This is needed as point clearing doesn't work well, see
+        // // https://github.com/highcharts/highcharts/issues/11693
         // @ts-ignore
-        this.chart.series[0].data[pointIndex].onMouseOver();
+        this.chart.series[0].data[lineNumber].onMouseOver()
+        await wait(500);
+        // @ts-ignore
+        this.chart.series[0].data[lineNumber].onMouseOut()
+        // @ts-ignore
+        this.chart.tooltip.hide()
     }
 
     template() {

@@ -69,18 +69,20 @@ export default class ChartsComponent extends MyHyperHTMLElement {
         }
 
         let timeToLumiPositionMap = new Map();
+        let realPositionToTime = _ => null
         if(this.data.luminosity != null){
             for(let [statementNum, luminosityEntry] of this.data.luminosity.entries()){
                 // NOTE: in this, the last entry will always be set, which is what we want
                 timeToLumiPositionMap.set(luminosityEntry[0][this.timeType + "Time"], statementNum);
             }
+
+            realPositionToTime = position => {
+                if(position >= this.data.beamSeparation[0].length) return null;
+            
+                return this.data.beamSeparation[0][position][0][this.timeType + "Time"];
+            }
         }
 
-        const realPositionToTime = position => {
-            if(position >= this.data.beamSeparation[0].length) return null;
-        
-            return this.data.beamSeparation[0][position][0][this.timeType + "Time"];
-        }
 
         hyper(this.root)`
         <style>

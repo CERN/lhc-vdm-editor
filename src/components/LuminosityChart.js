@@ -1,4 +1,4 @@
-import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
+import { css, html, throttle, deepCopy, deepMerge, removeSubsequentDuplicates, arrayEquals } from "../HelperFunctions.js";
 import { commonChartOptions, GenericChart } from "./GenericChart.js"
 
 const styling = css`
@@ -65,8 +65,11 @@ export default class LuminosityChart extends GenericChart {
         if(this.chart.series[0].data.length == 0) return;
 
         if(this.positionToLumiPosition(pointIndex) == null) return;
-        // @ts-ignore
-        this.chart.series[0].data[this.positionToLumiPosition(pointIndex)].onMouseOver();
+
+        // This is needed as point clearing doesn't work well, see
+        // https://github.com/highcharts/highcharts/issues/11693
+        this.chart.series[0].data[this.positionToLumiPosition(pointIndex)].select(false);
+        this.chart.series[0].data[this.positionToLumiPosition(pointIndex)].select(true, true);
     }
 
     /**
