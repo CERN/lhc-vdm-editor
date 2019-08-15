@@ -22,9 +22,9 @@ export default class Generator {
         this.ip = ip;
 
         this.functions = {
-            linear: function (startPos, endPos, endTime) {
+            linear: function (startPos, endPos, runTime) {
                 return (t) => {
-                    if (t < endTime) return startPos + t * (endPos - startPos) / endTime;
+                    if (t < runTime) return startPos + t * (endPos - startPos) / runTime;
                     else return 0;
                 }
             },
@@ -33,7 +33,7 @@ export default class Generator {
                 return (t) => (t >= startTime && t <= endTime) ? 1 : 0
             },
             // These are in fact redundant since numbers are taken to be constant functions but are included for completeness
-            zero: () => (t) => 0, // Must be used as this.functions.zero() which returns the zerofunction
+            zero: (t) => 0,
             constant: (value) => (t) => value,
         };
 
@@ -44,13 +44,13 @@ export default class Generator {
         let funcArr
         let func
 
-        funcArr = [this.functions.linear(-5, 5, 100), , this.functions.linear(5, -5, 100),]; // no crossing plane functions supplied
+        funcArr = [this.functions.linear(-5, 5, 100), this.functions.linear(5, -5, 100)]; // no crossing plane functions supplied still works
         this.template1 = this.generateFromFunction(funcArr, 50, 100);
 
         funcArr = Array(4);
         func = this.prodFunc(this.functions.period(6), this.functions.step(40, 60)); // periodic function on the interval [40, 60]
         funcArr[0] = this.sumFunc(-1, func, this.functions.constant(1));
-        funcArr[2] = 1;
+        funcArr[1] = 1;
         this.template2 = this.generateFromFunction(funcArr, 50, 100);
 
         let arr1 = linspace(3, -3, 5).map(x => Array(3).fill(x)).flat();
@@ -58,7 +58,11 @@ export default class Generator {
         arr1.push(0);
         let arr2 = [0, 4, 3, 1.5, 3, 1.5, 0, 1.5];
         arr2 = arr2.concat([0]).concat(arr2.map(x => -x).reverse());
-        this.template3 = this.generateFromArray([arr1, , arr2, ,], 30); 
+        this.template3 = this.generateFromArray([arr1, arr2], 30);
+
+        arr1 = linspace(-5, 5, 50);
+        arr2 = arr1.slice().reverse();
+        this.template4 = this.generateFromArray([, , arr1, arr2], 10);
         */
     }
 
@@ -81,9 +85,9 @@ export default class Generator {
     /**
      * @param {function[]} inpFuncArr
      * @param {number} stepNum
-     * @param {number} endTime
+     * @param {number} runTime
      */
-    generateFromFunction(inpFuncArr, stepNum, endTime) {
+    generateFromFunction(inpFuncArr, stepNum, runTime) {
         /* funcArr is an array with 4 functions as specified in "desciption".
         Each function will be evaluated from 0 to endTime.
         If a function is undefined it is simply ignored (zero function).
@@ -94,54 +98,20 @@ export default class Generator {
             else if (Array.isArray(x)) return this.sumFunc(...x)
             else throw new Error('invalid entry')
         });
-        const description = [
-            'BEAM1 SEPARATION',
-            'BEAM1 CROSSING',
-            'BEAM2 SEPARATION',
-            'BEAM2 CROSSING'
-        ]
 
-        const stepTime = endTime / stepNum;
-        let currentTime = 0;
-        let accWaitTime = 0;
-        let prevPos = [0, 0, 0, 0]
+        const stepTime = runTime/stepNum;
+        let arr = Array(4);
+        funcArr.forEach((func, index) => {
+            let posArr = Array(stepNum);
 
-        let lineArr = [];
-        lineArr.push('SECONDS_WAIT ' + stepTime);
-
-        while (currentTime <= endTime) {
-            let line = '';
-
-            funcArr.forEach((func, i) => {
-                const relStep = (func(currentTime) - prevPos[i]).toFixed(2);
-                if (parseFloat(relStep) != 0) {
-                    // Maybe add some test if we want to use absolute trim instead
-                    prevPos[i] += parseFloat(relStep);
-                    line += ` ${this.ip} ${description[i]} ${relStep} SIGMA`;
-                };
-            })
-
-            if (line != '') {
-                if (accWaitTime > 0) {
-                    lineArr.push('SECONDS_WAIT ' + accWaitTime);
-                    accWaitTime = 0;
-                }
-                lineArr.push('RELATIVE_TRIM' + line);
+            for(let i = 0; i < stepNum; i++){
+                posArr[i] = func(stepTime * i)
             }
 
-            accWaitTime += stepTime;
-            currentTime += stepTime;
-        };
-        if (accWaitTime > 0) lineArr.push('SECONDS_WAIT ' + accWaitTime);
-
-        prevPos.forEach((x, i) => {
-            if (x != 0) {
-                lineArr.push(`ABSOLUTE_TRIM ${this.ip} ${description[i]} 0.0 SIGMA`);
-            }
+            arr[index] = posArr;
         })
 
-        lineArr.push('SECONDS_WAIT ' + stepTime);
-        return lineArr.join('\n');
+        return this.generateFromArray(arr, stepTime);
     }
 
     generateFromArray(arr, waitTime) {
@@ -152,14 +122,14 @@ export default class Generator {
         Similarily if an array is undefined. */
         const description = [
             'BEAM1 SEPARATION',
-            'BEAM1 CROSSING',
             'BEAM2 SEPARATION',
+            'BEAM1 CROSSING',
             'BEAM2 CROSSING'
         ]
         const sequenceLength = arr.reduce((acc, cur) => Math.max(acc, cur.length), 0);
 
         let lineArr = [];
-        lineArr.push('SECONDS_WAIT ' + waitTime);
+        let accWaitTime = waitTime;
         let prevPos = [0, 0, 0, 0]
 
         for (let index = 0; index < sequenceLength; index++) {
@@ -176,14 +146,20 @@ export default class Generator {
             })
 
             if (line != '') {
+                lineArr.push('SECONDS_WAIT ' + accWaitTime);
                 lineArr.push('RELATIVE_TRIM' + line);
-                lineArr.push('SECONDS_WAIT ' + waitTime);
+                
+                accWaitTime = waitTime;
             }
+            else accWaitTime += waitTime;
         }
+
+        if (accWaitTime > waitTime) lineArr.push('SECONDS_WAIT ' + accWaitTime)
 
         prevPos.forEach((x, i) => {
             if (x != 0) {
                 lineArr.push(`ABSOLUTE_TRIM ${this.ip} ${description[i]} 0.0 SIGMA`);
+                lineArr.push('SECONDS_WAIT ' + waitTime);
             }
         })
 
