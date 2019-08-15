@@ -1,5 +1,5 @@
 // @ts-ignore
-import { css, html, throttle, deepCopy, deepMerge } from "../HelperFunctions.js";
+import { css, html, throttle, deepCopy, deepMerge, sigmaChar } from "../HelperFunctions.js";
 import { commonChartOptions, GenericChart } from "./GenericChart.js";
 
 
@@ -49,7 +49,7 @@ export default class BeamPositionChart extends GenericChart {
         this._unit = newUnits;
 
         this.chart.yAxis[0].setTitle({
-            text: `Beam position [${newUnits.replace("sigma", "&sigma;")}]`
+            text: `Beam position [${newUnits.replace("sigma", sigmaChar)}]`
         });
 
         this.refresh();
@@ -150,8 +150,7 @@ export default class BeamPositionChart extends GenericChart {
 
             yAxis: {
                 title: {
-                    text: "Beam position [&sigma;]",
-                    useHTML: true // for &sigma;
+                    text: `Beam position [${sigmaChar}]`,
                 }
             },
 
@@ -191,6 +190,8 @@ export default class BeamPositionChart extends GenericChart {
                 color: "rgb(154, 154, 154)"
             }
         ]}));
+
+        window.chart = this.chart;
     }
 
     /**
@@ -198,14 +199,8 @@ export default class BeamPositionChart extends GenericChart {
      */
     showTooltip(pointIndex){
         if(this.chart.series[0].data.length == 0) return;
-        const dataSeries = [this.chart.series[0], this.chart.series[1]];
-
-        dataSeries.forEach(series => {
-            // @ts-ignore
-            series.data[pointIndex].setState("hover");
-            // @ts-ignore
-            this.chart.tooltip.refresh([series.data[pointIndex]]);
-        })
+        // @ts-ignore
+        this.chart.series[0].data[pointIndex].onMouseOver();
     }
 
     template() {

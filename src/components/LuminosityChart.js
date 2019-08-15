@@ -16,6 +16,7 @@ export default class LuminosityChart extends GenericChart {
 
         this._data = null;
         this._timeType = "real";
+        this.positionToLumiPosition = null;
 
         this.attachChart();
     }
@@ -64,9 +65,7 @@ export default class LuminosityChart extends GenericChart {
         if(this.chart.series[0].data.length == 0) return;
 
         // @ts-ignore
-        this.chart.series[0].data[pointIndex].setState("hover");
-        // @ts-ignore
-        this.chart.tooltip.refresh([this.chart.series[0].data[pointIndex]]);
+        this.chart.series[0].data[this.positionToLumiPosition(pointIndex)].onMouseOver();
     }
 
     /**

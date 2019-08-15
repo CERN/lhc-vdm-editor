@@ -272,7 +272,7 @@ export default class CodeEditor extends HTMLElement {
 
         this.editor.selection.on("changeCursor", (_, selection) => {
             this.dispatchEvent(new CustomEvent("change-row-selected", {
-                detail: selection.getRange().end.row,
+                detail: calculateLineNumber(this.rawValue, selection.getRange().end.row),
                 bubbles: true
             }));
         })

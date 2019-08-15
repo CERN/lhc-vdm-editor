@@ -315,3 +315,5 @@ export function joinFilePaths(filePath1, filePath2) {
     if (filePath1.endsWith("/")) return filePath1 + filePath2
     else return filePath1 + "/" + filePath2
 }
+
+export var sigmaChar = "\u03C3";

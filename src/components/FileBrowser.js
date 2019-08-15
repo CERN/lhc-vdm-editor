@@ -9,6 +9,7 @@ import "./ContextMenu.js"
 const styling = css`
 * {
     font-family: sans-serif;
+    border-radius: 2px;
 }
 #file-browser {
     border: 1px solid #a2a2a2;

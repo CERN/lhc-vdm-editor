@@ -50,6 +50,7 @@ revert-button {
     background-color: #e7e9fd;
     margin-bottom: 10px;
     box-sizing: border-box;
+    border-radius: 2px;
 }
 
 #editor {
@@ -62,7 +63,8 @@ raw-editor{
 
 .uncommitted {
     color: orange;
-    background-color: #fffae1 !important;
+    background-color: hsl(30, 85%, 95%) !important;
+    border-radius: 2px;
 }
 
 #loading-indicator {

@@ -52,6 +52,8 @@ export const commonChartOptions = {
         headerFormat: `<span style="font-size: 10px">{point.key:.2f}</span><br/>`,
         valueDecimals: 2,
         shared: true,
+        // NOTE: disable this while https://github.com/highcharts/highcharts/issues/11688 is still a bug
+        //outside: true // this is needed to make the tooltip not go under the axis title
     },
 
     plotOptions: {

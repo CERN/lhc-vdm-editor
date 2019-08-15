@@ -1,4 +1,4 @@
-import { css, html } from "../HelperFunctions.js";
+import { css, sigmaChar } from "../HelperFunctions.js";
 import "./BeamPositionChart.js"
 import "./LuminosityChart.js"
 import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js"
@@ -68,6 +68,16 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             sigmaInMM: this.sigmaInMM
         }
 
+        let timeToLumiPositionMap = new Map();
+        if(this.data.luminosity != null){
+            for(let [statementNum, luminosityEntry] of this.data.luminosity.entries()){
+                // NOTE: in this, the last entry will always be set, which is what we want
+                timeToLumiPositionMap.set(luminosityEntry[0][this.timeType + "Time"], statementNum);
+            }
+        }
+
+        const realPositionToTime = position => this.data.beamSeparation[0][position][0][this.timeType + "Time"];
+
         hyper(this.root)`
         <style>
             ${styling}
@@ -89,7 +99,7 @@ export default class ChartsComponent extends MyHyperHTMLElement {
                     <span class="radio-description">Units:</span>
                     <div class="option">
                         <input checked type="radio" name="unit" id="sigmaRadio" value="sigma" />
-                        <label for="sigmaRadio">&sigma;</label>
+                        <label for="sigmaRadio">${sigmaChar}</label>
                     </div>
                     <div class="option">
                         <input type="radio" name="unit" id="mmRadio" value="mm" />
@@ -113,7 +123,8 @@ export default class ChartsComponent extends MyHyperHTMLElement {
                 </div>
             </div>
         </div>
-        <luminosity-chart scale=${this.scale} data=${this.data.luminosity} timeType=${this.timeType} id="luminosity-chart"></luminosity-chart>
+        <luminosity-chart scale=${this.scale} data=${this.data.luminosity} timeType=${this.timeType}
+            positionToLumiPosition=${pos => timeToLumiPositionMap.get(realPositionToTime(pos))} id="luminosity-chart"></luminosity-chart>
     `
     }
 }

@@ -9,6 +9,7 @@ const styling = css`
     cursor: col-resize;
     height: 100%;
     display: inline-block;
+    border-radius: 2px;
 
     ${preventSelectCSS}
 }
