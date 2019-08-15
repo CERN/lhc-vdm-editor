@@ -64,6 +64,7 @@ export default class LuminosityChart extends GenericChart {
     showTooltip(pointIndex){
         if(this.chart.series[0].data.length == 0) return;
 
+        if(this.positionToLumiPosition(pointIndex) == null) return;
         // @ts-ignore
         this.chart.series[0].data[this.positionToLumiPosition(pointIndex)].onMouseOver();
     }

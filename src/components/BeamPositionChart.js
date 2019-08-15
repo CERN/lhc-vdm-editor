@@ -199,6 +199,8 @@ export default class BeamPositionChart extends GenericChart {
      */
     showTooltip(pointIndex){
         if(this.chart.series[0].data.length == 0) return;
+        // NOTE: the below might happen as the parsing lags behind in a web worker
+        if(pointIndex >= this.chart.series[0].data.length) return;
         // @ts-ignore
         this.chart.series[0].data[pointIndex].onMouseOver();
     }

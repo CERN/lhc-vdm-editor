@@ -63,26 +63,23 @@ describe("OverallEditor", () => {
 
     describe("Initial state (without localStorage)", () => {
         it("doesn't do anything when pressing buttons on default view", () => {
-            expect(() => {
-                spyOn(window, "alert").and.stub();
+            spyOn(window, "alert").and.stub();
 
-                oe.tryToRevert();
-                oe.onSwitchEditorButtonPress(1);
-                oe.onSwitchEditorButtonPress(0);
-                oe.chartsComponent.timeType = "sequence";
-            }).not.toThrow();
+            oe.tryToRevert();
+            oe.onSwitchEditorButtonPress(1);
+            oe.onSwitchEditorButtonPress(0);
+            oe.chartsComponent.timeType = "sequence";
+            expect().nothing();
         })
 
-        it("can load a file from no local storage", () => {
-            expect(async () => {
-                await oe.setCurrentEditorContent(TEST_FILE);
-            }).not.toThrow();
+        it("can load a file from no local storage", async () => {
+            await oe.setCurrentEditorContent(TEST_FILE);
+            expect().nothing();
         })
 
-        it("can load a file from no local storage", () => {
-            expect(async () => {
-                await oe.setCurrentEditorContent(TEST_FILE);
-            }).not.toThrow();
+        it("can load a file from no local storage", async () => {
+            await oe.setCurrentEditorContent(TEST_FILE);
+            expect().nothing();
         })
     })
 
@@ -118,7 +115,7 @@ describe("OverallEditor", () => {
             oe.onSwitchEditorButtonPress(1/** The code editor */);
             oe.editor.rawValue += " ";
 
-            oe.tryToCommit("Test message");
+            await oe.tryToCommit("Test message");
             expect(oe.isCommitted).toBe(true);
         })
 

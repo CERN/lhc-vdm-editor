@@ -108,6 +108,8 @@ raw-editor{
 }
 `
 
+const beamJSONCache = new Map();
+
 /**
  * @param {string} campaignName
  * @param {GitLab} [gitlab]
@@ -140,8 +142,6 @@ const EDITOR_TAG_NAMES = [
     "code-editor",
 ]
 const DEFAULT_EDITOR_INDEX = 1;
-
-const beamJSONCache = new Map();
 
 export default class OverallEditor extends HTMLElement {
     /**
@@ -235,7 +235,7 @@ export default class OverallEditor extends HTMLElement {
 
     onEditorContentChange(newValue) {
         localStorage.setItem('content', newValue);
-        if ((this.editor.isChangedFrom !== undefined && this.editor.isChangedFrom(this.initEditorContent))
+        if ((this.editor.isChangedFrom !== undefined && !this.editor.isChangedFrom(this.initEditorContent))
              || newValue == this.initEditorContent)
             this.isCommitted = true;
         else
@@ -258,7 +258,6 @@ export default class OverallEditor extends HTMLElement {
     async tryToCommit(commitMessage) {
         if (this.filePath === null) return;
 
-        //this.VdM = new VdM(this.beamJSON, this.ip)
         this.VdM.parse(this.value, true);
         if (this.VdM.isValid) {
             await this.gitlabInterface.writeFile(

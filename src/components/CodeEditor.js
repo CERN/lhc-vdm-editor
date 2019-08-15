@@ -199,6 +199,8 @@ export default class CodeEditor extends HTMLElement {
                 }
             }
         );
+        this.topLineEditor.setValue(DEFAULT_HEADER);
+
         this.lastLineEditor = this.setUpReadonlyEditor(
             this.root.getElementById("last-line-editor"),
             // @ts-ignore - putting -1 will always return a number
@@ -484,13 +486,12 @@ export default class CodeEditor extends HTMLElement {
      * Gets the value, without a need for parsing the document (so uses the latest header).
      */
     get noParseValue() {
-        return addLineNumbers(this.topLineEditor.getValue() + "\n" + this.rawValue + "\n" + "END_SEQUENCE\n", 0);
+        return addLineNumbers(this.topLineEditor.getValue() + (this.rawValue == ""? "" : "\n") + this.rawValue + "\n" + "END_SEQUENCE\n", 0);
     }
 
     get value() {
         const editorValue = this.rawValue;
 
-        //this.VdM = new VdM()
         this.VdM.parse(addLineNumbers(editorValue));
         if (!this.VdM.isValid) return this.noParseValue;
         else {
@@ -524,7 +525,7 @@ export default class CodeEditor extends HTMLElement {
         const myMainText = stripText(this.noParseValue)[1];
         const theirMainText = stripText(otherContent)[1];
 
-        return myMainText == theirMainText;
+        return myMainText !== theirMainText;
     }
 
     template() {

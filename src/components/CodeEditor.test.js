@@ -1,5 +1,6 @@
 import CodeEditor from "./CodeEditor.js"
-import { range, wait, asyncMap, addLineNumbers } from "../HelperFunctions.js"
+import { range, wait, asyncMap, DEFAULT_BEAM_PARAMS } from "../HelperFunctions.js"
+import VdM from "../parser.js";
 
 const simpleFile = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 SECONDS_WAIT 1.0\n2 END_SEQUENCE\n';
 const simpleFileWithComments = '#start\n0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n#middle\n1 SECONDS_WAIT 1.0\n2 END_SEQUENCE\n';
@@ -27,7 +28,7 @@ function getKeyboardEvent(keyCode) {
 }
 
 describe("CodeEditor", () => {
-    beforeAll(() => {
+    beforeAll(async () => {
         const makeInvisibleStyle = document.createElement("style");
         makeInvisibleStyle.innerText = ".ace_autocomplete{visibility: hidden !important}";
         document.body.appendChild(makeInvisibleStyle);
@@ -36,6 +37,7 @@ describe("CodeEditor", () => {
     let ce;
     beforeEach(() => {
         ce = new CodeEditor();
+        ce.VdM = new VdM(DEFAULT_BEAM_PARAMS, "IP1");
 
         ce.style.visibility = "hidden";
 

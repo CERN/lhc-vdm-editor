@@ -76,7 +76,11 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             }
         }
 
-        const realPositionToTime = position => this.data.beamSeparation[0][position][0][this.timeType + "Time"];
+        const realPositionToTime = position => {
+            if(position >= this.data.beamSeparation[0].length) return null;
+        
+            return this.data.beamSeparation[0][position][0][this.timeType + "Time"];
+        }
 
         hyper(this.root)`
         <style>
@@ -124,7 +128,11 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             </div>
         </div>
         <luminosity-chart scale=${this.scale} data=${this.data.luminosity} timeType=${this.timeType}
-            positionToLumiPosition=${pos => timeToLumiPositionMap.get(realPositionToTime(pos))} id="luminosity-chart"></luminosity-chart>
+            positionToLumiPosition=${pos => {
+                const time = realPositionToTime(pos);
+                if(time == null) return null;
+                else return timeToLumiPositionMap.get(time)
+            }} id="luminosity-chart"></luminosity-chart>
     `
     }
 }
