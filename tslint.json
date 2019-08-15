@@ -1,0 +1,29 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": true,
+    "rules": {
+        "whitespace": [],
+        "curly": [true, "ignore-same-line"],
+        "trailing-comma": false,
+        "object-literal-sort-keys": false,
+        "no-eval": false,
+        "one-line": false,
+        "triple-equals": false,
+        "radix": false,
+        "variable-name": false,
+        "max-line-length": false,
+        "no-shadowed-variable": false,
+        "no-unused-expression": [true, "allow-tagged-template"],
+        "no-parameter-reassignment": true,
+        "no-async-without-await": true,
+        "no-for-in-array": true,
+        "no-invalid-this": true,
+        "no-string-throw": false,
+        "no-void-expression": [true, "ignore-arrow-function-shorthand"],
+        "strict-comparisons": true
+    },
+    "rulesDirectory": []
+}

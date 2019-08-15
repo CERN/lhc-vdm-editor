@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Test by running test-server and browsing to 127.0.0.1:8080/SpecRunner.html\" && exit 1",
-    "test-server": "http-server -a 127.0.0.1 -c-1"
+    "test-server": "http-server -a 127.0.0.1 -c-1",
+    "lint": "tslint -c ./tslint.json -p ./jsconfig.json ./src/**/*.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
   "dependencies": {},
   "devDependencies": {
     "http-server": "^0.11.1",
-    "jasmine": "^3.4.0"
+    "jasmine": "^3.4.0",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
   }
 }
