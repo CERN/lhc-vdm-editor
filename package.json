@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Test by running test-server and browsing to 127.0.0.1:8080/SpecRunner.html\" && exit 1",
     "test-server": "http-server -a 127.0.0.1 -c-1",
-    "lint": "tslint -c ./tslint.json -p ./jsconfig.json ./src/**/*.js"
+    "lint": "tslint -c ./tslint.json ./src/**/*.js --fix"
   },
   "repository": {
     "type": "git",

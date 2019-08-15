@@ -17,10 +17,8 @@
         "max-line-length": false,
         "no-shadowed-variable": false,
         "no-unused-expression": [true, "allow-tagged-template"],
-        "no-parameter-reassignment": true,
         "no-async-without-await": true,
         "no-for-in-array": true,
-        "no-invalid-this": true,
         "no-string-throw": false,
         "no-void-expression": [true, "ignore-arrow-function-shorthand"],
         "strict-comparisons": true
