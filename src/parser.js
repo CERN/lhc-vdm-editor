@@ -42,6 +42,20 @@ export function getInnerBracket(str, key) {
     }
     return match[1].split(',');
 }
+export function linspace(start, end, num, includeEnd = true) {
+    if (!Number.isInteger(num) || num < 1) throw new Error('Number has to be an integer grater than 0');
+
+    const dist = (end - start) / (includeEnd ? num - 1 : num);
+    let result = new Array(num);
+
+    result[0] = start;
+    for (let i = 1; i < num - 1; i++) {
+        result[i] = result[i - 1] + dist
+    }
+    if (includeEnd) result[num - 1] = end;
+
+    return result
+}
 export function toProperUnits(beamParameters, IP) {
     return {
         "energy": beamParameters.energy, // GeV
@@ -104,20 +118,6 @@ export function testArgs(argsObj) {
     }
     return true
 }
-export function linspace(start, end, num, includeEnd = true) {
-    if (!Number.isInteger(num) || num < 1) throw new Error('Number has to be an integer grater than 0');
-
-    const dist = (end - start) / (includeEnd ? num - 1 : num);
-    let result = new Array(num);
-
-    result[0] = start;
-    for (let i = 1; i < num - 1; i++) {
-        result[i] = result[i - 1] + dist
-    }
-    if (includeEnd) result[num - 1] = end;
-
-    return result
-}
 
 
 
@@ -174,7 +174,7 @@ export class VdMcommandObject {
 
         this.isValid = false;
         this.type = 'command';
-        this.index = line[0];
+        this.index = line[0]
         this.command = line[1];
         this.args = line.slice(2);
 
@@ -199,8 +199,8 @@ export class VdMcommandObject {
                  */
                 (args) => {
                     try {
-                        if (this.index != 0) {
-                            throw 'May only appear at line 0. Encountered at ' + this.index
+                        if (this.index != '0') {
+                            throw 'May only appear at line 0. Encountered at ' + this.index;
                         }
                         if (args.length != 4) {
                             throw 'Expected exactly four arguments: IP(...) BEAM(...) PLANE(...) UNITS(...), but got : ' + args.join(' ')
@@ -517,7 +517,7 @@ export default class VdM {
             // Add initialize trim obj
             this.structure.unshift(genInitTrimObj);
             // Add end sequence obj
-            let endTrimIndex = 1 + parseInt(this.structure.slice().reverse().find(x => x.type == 'command').index);
+            let endTrimIndex = this.structure.reduce((acc, cur) => cur.type == 'command' ? acc + 1 : acc, 0);
             let endSeqObj = new VdMcommandObject(endTrimIndex + ' END_SEQUENCE');
             endSeqObj.checkSyntax(); // Should be redundant but is an extra safety measure
             this.structure.push(endSeqObj);
@@ -532,7 +532,7 @@ export default class VdM {
     }
     deparse() {
         let string = '';
-        for (let [i, obj] of this.structure.entries()) {
+        this.structure.forEach((obj) => {
             let line = '';
             if (obj.type == 'command') {
                 line += obj.stringify();
@@ -547,7 +547,7 @@ export default class VdM {
             }
             line += '\n';
             string += line;
-        }
+        })
         return string.trim() + '\n';
     }
 
