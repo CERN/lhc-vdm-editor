@@ -42,6 +42,20 @@ export function getInnerBracket(str, key) {
     }
     return match[1].split(',');
 }
+export function linspace(start, end, num, includeEnd = true) {
+    if (!Number.isInteger(num) || num < 1) throw new Error('Number has to be an integer grater than 0');
+
+    const dist = (end - start) / (includeEnd ? num - 1 : num);
+    let result = new Array(num);
+
+    result[0] = start;
+    for (let i = 1; i < num - 1; i++) {
+        result[i] = result[i - 1] + dist
+    }
+    if (includeEnd) result[num - 1] = end;
+
+    return result
+}
 export function toProperUnits(beamParameters, IP) {
     return {
         "energy": beamParameters.energy, // GeV
@@ -103,20 +117,6 @@ export function testArgs(argsObj) {
         }
     }
     return true
-}
-export function linspace(start, end, num, includeEnd = true) {
-    if (!Number.isInteger(num) || num < 1) throw new Error('Number has to be an integer grater than 0');
-
-    const dist = (end - start) / (includeEnd ? num - 1 : num);
-    let result = new Array(num);
-
-    result[0] = start;
-    for (let i = 1; i < num - 1; i++) {
-        result[i] = result[i - 1] + dist
-    }
-    if (includeEnd) result[num - 1] = end;
-
-    return result
 }
 
 
