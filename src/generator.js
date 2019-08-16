@@ -29,12 +29,7 @@ export default class Generator {
         this.ip = ip;
 
         this.functions = {
-            linear: function (startPos, endPos, runTime) {
-                return (t) => {
-                    if (t < runTime) return startPos + t * (endPos - startPos) / runTime;
-                    else return 0;
-                }
-            },
+            linear: (startPos, endPos, runTime) => (t) => startPos + t * (endPos - startPos) / runTime,
             periodic: (period) => (t) => (t % period < period / 2) ? 1 : 0,
             step: function (startTime, endTime) {
                 return (t) => (t >= startTime && t <= endTime) ? 1 : 0
@@ -45,12 +40,12 @@ export default class Generator {
         };
 
         this.functionHandler = {
-            linear: (argArr, trimTime, stepNum) => {
+            linear: (argArr, waitTime, stepNum) => {
                 argArr = argArr.map(x => Number(x));
                 if (argArr.length != 2) throw new ArgError('Linear function takes two arguments: linear(startPos,endPos)');
                 if (argArr.some(x => isNaN(x))) throw new ArgError('Invalid argument. Arguments must be numbers');
 
-                return this.functions.linear(argArr[0], argArr[1], trimTime * stepNum);
+                return this.functions.linear(argArr[0], argArr[1], waitTime * stepNum);
             }
         }
 
@@ -114,22 +109,22 @@ export default class Generator {
      * @param {number} stepNum
      * @param {number} runTime
      */
-    generateFromFunction(inpFuncArr, stepNum, runTime) {
+    generateFromFunction(inpFuncArr, waitTime, stepNum) {
         /* funcArr is an array with 4 functions as specified in "desciption".
         Each function will be evaluated from 0 to endTime.
         If a function is undefined it is simply ignored (zero function).
         If a function is a number, it is taken to be the constant function. */
-        const funcArr = inpFuncArr.map((x, i) => {
+        const funcArr = inpFuncArr.map(x => {
             if (typeof x == 'function') return x
             else if (typeof x == 'number') return this.functions.constant(x)
             else if (Array.isArray(x)) return this.sumFunc(...x)
             else throw new Error('invalid entry')
         });
 
-        const stepTime = runTime / stepNum;
+        let stepTime = waitTime;
         let arr = Array(4);
         funcArr.forEach((func, index) => {
-            let posArr = Array(stepNum);
+            let posArr = Array(stepNum + 1);
 
             for (let i = 0; i <= stepNum; i++) {
                 posArr[i] = func(stepTime * i)
@@ -138,6 +133,7 @@ export default class Generator {
             arr[index] = posArr;
         })
 
+        stepTime = parseFloat(stepTime.toFixed(2));
         return this.generateFromArray(arr, stepTime);
     }
 
@@ -168,9 +164,8 @@ export default class Generator {
 
                 const relStep = newPos - prevPos[i];
                 if (relStep != 0) {
-                    // Maybe add some test if we want to use absolute trim instead
-                    prevPos[i] += relStep;
-                    line += ` ${this.ip} ${description[i]} ${relStep} SIGMA`;
+                    prevPos[i] = prevPos[i] + parseFloat(relStep.toFixed(2));
+                    line += ` ${this.ip} ${description[i]} ${relStep.toFixed(2)} SIGMA`;
                 };
             })
 
@@ -189,7 +184,7 @@ export default class Generator {
         let line = '';
         prevPos.forEach((x, i) => {
             if (x != 0) {
-                line += ` ${this.ip} ${description[i]} ${-prevPos[i]} SIGMA`;
+                line += ` ${this.ip} ${description[i]} ${(-prevPos[i]).toFixed(2)} SIGMA`;
             }
         })
         

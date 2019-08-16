@@ -148,7 +148,7 @@ export class GenerateSequenceWindow extends HTMLElement {
             }
         })
 
-        return this.generator.generateFromFunction(funcArr, stepNum, waitTime * stepNum)
+        return this.generator.generateFromFunction(funcArr, waitTime, stepNum)
     }
 
     onFunctionGenerateClick() {
