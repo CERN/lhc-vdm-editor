@@ -74,10 +74,7 @@ export default class IPCampaignSelectors extends HTMLElement {
         <div class="selection-name">IP:</div>
         <div>
             <select name=ip value=${this.ip} onchange=${this} id="ip-select">
-                ${
-            this.allIps.map(ip =>
-                wire(this.allIps, ip)`<option value=${ip}>${ip}</option>`)
-            }
+                ${this.allIps.map(ip => wire(this.allIps, ip)`<option value=${ip}>${ip}</option>`)}
             </select>
         </div>
     </div>
@@ -85,11 +82,9 @@ export default class IPCampaignSelectors extends HTMLElement {
         <div class="selection-name">Campaign:</div>
         <div>
             <select name=campaign value=${this.campaign} onchange=${this} id="campaign-select">
-                ${
-            (async () => (await this.allCampaigns).map(campaign =>
-                wire(this.allCampaigns, campaign)`<option value=${campaign}>${campaign}</option>`
-            ))()
-            }
+                ${(async () => (await this.allCampaigns).map(campaign =>
+                    wire(this.allCampaigns, campaign)`<option value=${campaign}>${campaign}</option>`
+                ))()}
             </select>
         </div>
     </div>

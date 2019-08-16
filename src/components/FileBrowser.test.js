@@ -10,7 +10,7 @@ const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATIO
  */
 async function getNewFileBrowser(gitlab) {
     let fb = new FileBrowser();
-    fb.passInValues(gitlab, null);
+    fb.init(gitlab, null);
     fb.style.display = "none";
     document.body.appendChild(fb);
 

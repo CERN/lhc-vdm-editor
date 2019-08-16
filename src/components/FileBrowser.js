@@ -1,10 +1,11 @@
 // @ts-check
-import { html, css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
+import { css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
 import './FolderTriangle.js';
 import "./ContextMenu.js"
+import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js";
 
 const styling = css`
 * {
@@ -60,7 +61,7 @@ const styling = css`
 }
 `
 
-export default class FileBrowser extends HTMLElement {
+export default class FileBrowser extends MyHyperHTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -83,11 +84,16 @@ export default class FileBrowser extends HTMLElement {
         });
     }
 
+    // We need this to be not implemented by MyHyperHTMLElement, as we want render to be called in init
+    connectedCallback(){}
+
     /**
+     * Initialise the FileBrowser with the GitLab instance and the openFile
+     * 
      * @param {GitLab} gitlab
      * @param {string} openFile The current open file, as path relative to the current explored folder
      */
-    async passInValues(gitlab, openFile) {
+    async init(gitlab, openFile) {
         this.gitlab = gitlab;
         this.openFile = openFile;
 
@@ -96,13 +102,20 @@ export default class FileBrowser extends HTMLElement {
         this.campaign = this.campaigns[0];
 
         this.setFileStructure(this.ip, this.campaign);
+
         this.render();
+        
+        await this.fileStructure;
     }
 
     refresh() {
         this.setFileStructure(this.ip, this.campaign);
     }
 
+    /**
+     * @param {string} ip
+     * @param {string} campaign
+     */
     setFileStructure(ip, campaign) {
         this.fileStructure = (async () => {
             try {
@@ -389,16 +402,6 @@ export default class FileBrowser extends HTMLElement {
         }
 
         this.openFile = fullFileName;
-    }
-
-    /**
-     * @param {MouseEvent} event
-     */
-    handleEvent(event) {
-        // @ts-ignore
-        this[event.currentTarget.name] = event.currentTarget.value;
-        this.dispatchEvent(new CustomEvent("change"));
-        this.render();
     }
 
     set selection(newValue) {
