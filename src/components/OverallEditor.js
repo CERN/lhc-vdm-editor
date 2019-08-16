@@ -396,6 +396,7 @@ export default class OverallEditor extends HTMLElement {
         this.beamJSON = await getBeamJSON(this.campaign, this.gitlabInterface);
         this.VdM = new VdM(this.beamJSON, this.ip);
         this.editor.VdM = this.VdM;
+        this.root.querySelector('generate-button').ip = this.ip;
 
         this.onEditorContentChange(this.value);
         this.updateFileNameUI(filePath);

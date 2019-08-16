@@ -12,6 +12,13 @@ function linspace(start, end, num, includeEnd = true) {
 
     return result
 }
+export class ArgError extends Error {
+    constructor(message, where = undefined) {
+        super()
+        this.message = message;
+        this.where = where;
+    }
+}
 
 
 export default class Generator {
@@ -28,7 +35,7 @@ export default class Generator {
                     else return 0;
                 }
             },
-            period: (period) => (t) => (t % period < period / 2) ? 1 : 0,
+            periodic: (period) => (t) => (t % period < period / 2) ? 1 : 0,
             step: function (startTime, endTime) {
                 return (t) => (t >= startTime && t <= endTime) ? 1 : 0
             },
@@ -36,6 +43,16 @@ export default class Generator {
             zero: (t) => 0,
             constant: (value) => (t) => value,
         };
+
+        this.functionHandler = {
+            linear: (argArr, trimTime, stepNum) => {
+                argArr = argArr.map(x => Number(x));
+                if (argArr.length != 2) throw new ArgError('Linear function takes two arguments: linear(startPos,endPos)');
+                if (argArr.some(x => isNaN(x))) throw new ArgError('Invalid argument. Arguments must be numbers');
+
+                return this.functions.linear(argArr[0], argArr[1], trimTime * stepNum);
+            }
+        }
 
 
         /* These are all examples of how to efficiently use the generator.
@@ -48,7 +65,7 @@ export default class Generator {
         this.template1 = this.generateFromFunction(funcArr, 50, 100);
 
         funcArr = Array(4);
-        func = this.prodFunc(this.functions.period(6), this.functions.step(40, 60)); // periodic function on the interval [40, 60]
+        func = this.prodFunc(this.functions.periodic(6), this.functions.step(40, 60)); // periodic function on the interval [40, 60]
         funcArr[0] = this.sumFunc(-1, func, this.functions.constant(1));
         funcArr[1] = 1;
         this.template2 = this.generateFromFunction(funcArr, 50, 100);
@@ -82,6 +99,16 @@ export default class Generator {
         return (t) => (t >= startTime) ? func(t - startTime) : 0
     }
 
+    getFunctionsFromHandles(funcHandleArr, waitTime, stepNum) {
+        return funcHandleArr.map(funcHandle => {
+            const tmp = funcHandle.split(/\(|\)/);
+            let handle = tmp[0];
+            let argArr = tmp[1].split(',');
+
+            if (this.functionHandler[handle]) return this.functionHandler[handle](argArr, waitTime, stepNum)
+            else throw new ArgError('Unknown function ' + handle)
+        })
+    }
     /**
      * @param {function[]} inpFuncArr
      * @param {number} stepNum
@@ -99,12 +126,12 @@ export default class Generator {
             else throw new Error('invalid entry')
         });
 
-        const stepTime = runTime/stepNum;
+        const stepTime = runTime / stepNum;
         let arr = Array(4);
         funcArr.forEach((func, index) => {
             let posArr = Array(stepNum);
 
-            for(let i = 0; i < stepNum; i++){
+            for (let i = 0; i <= stepNum; i++) {
                 posArr[i] = func(stepTime * i)
             }
 
@@ -136,7 +163,9 @@ export default class Generator {
             let line = '';
 
             arr.forEach((posArr, i) => {
-                const newPos = posArr[index] || 0;
+                const newPos = Number(posArr[index]);
+                if(isNaN(newPos)) throw new ArgError('Array may only contain numbers', i)
+
                 const relStep = newPos - prevPos[i];
                 if (relStep != 0) {
                     // Maybe add some test if we want to use absolute trim instead
@@ -148,20 +177,26 @@ export default class Generator {
             if (line != '') {
                 lineArr.push('SECONDS_WAIT ' + accWaitTime);
                 lineArr.push('RELATIVE_TRIM' + line);
-                
+
                 accWaitTime = waitTime;
             }
             else accWaitTime += waitTime;
         }
 
         if (accWaitTime > waitTime) lineArr.push('SECONDS_WAIT ' + accWaitTime)
+        lineArr.push('SECONDS_WAIT ' + waitTime);
 
+        let line = '';
         prevPos.forEach((x, i) => {
             if (x != 0) {
-                lineArr.push(`ABSOLUTE_TRIM ${this.ip} ${description[i]} 0.0 SIGMA`);
-                lineArr.push('SECONDS_WAIT ' + waitTime);
+                line += ` ${this.ip} ${description[i]} ${-prevPos[i]} SIGMA`;
             }
         })
+        
+        if (line) {
+            lineArr.push('RELATIVE_TRIM' + line);
+            lineArr.push('SECONDS_WAIT ' + waitTime);
+        }
 
         return lineArr.join('\n');
     }
