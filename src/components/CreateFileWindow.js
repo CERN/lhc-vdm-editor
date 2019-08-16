@@ -137,7 +137,7 @@ export default class CreateFileWindow extends HTMLElement {
         }
 
         this.onKeyUp = onKeyUp.bind(this);
-        this.root.addEventListener("keyup", this.onKeyUp);
+        document.body.addEventListener("keyup", this.onKeyUp);
         this.root.querySelector("#exit-button").addEventListener("click", () => {
             this.cancel();
         });
@@ -187,7 +187,6 @@ export default class CreateFileWindow extends HTMLElement {
         this.fileListContent = this.root.querySelector('#file-list-content');
         this.root.querySelector('#dropdown').addEventListener('click', () => {
             const triangle = this.root.querySelector('folder-triangle');
-            debugger;
             if (isOpen) {
                 isOpen = false;
                 triangle.isOpen = isOpen;

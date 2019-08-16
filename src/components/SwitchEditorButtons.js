@@ -2,11 +2,6 @@
 import { css, html } from "../HelperFunctions.js"
 
 const styling = css`
-.container {
-    position: absolute;
-    top: 62px;
-    right: 20px;
-}
 button {
     background-color: #dcdcdc;
     padding: 6px;

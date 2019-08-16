@@ -10,6 +10,7 @@ import GitLab, { NoPathExistsError } from "../GitLab.js"
 import VdM from "../parser.js"
 import './RevertButton.js'
 import "./ChartsComponent.js"
+import './GenerateButton.js'
 
 const styling = css`
 #editor-container {
@@ -17,6 +18,11 @@ const styling = css`
     height: calc(100% - 55px);
     flex-grow: 1;
     padding-bottom: 20px;
+}
+#editor-button-container{
+    position: absolute;
+    top: 45px;
+    right: 0;
 }
 
 .header {
@@ -477,7 +483,10 @@ export default class OverallEditor extends HTMLElement {
                     <div id="editor">
                         <raw-editor></raw-editor>
                     </div>
-                    <switch-editor-buttons></switch-editor-buttons>
+                    <div id='editor-button-container'>
+                        <switch-editor-buttons></switch-editor-buttons>
+                        <generate-button></generate-button>
+                    </div>
                 </div>
                 <resizeable-panel default-width="300px" side="right">
                     <charts-component></charts-component>
