@@ -213,8 +213,6 @@ export default class BeamPositionChart extends GenericChart {
         // NOTE: the below might happen as the parsing lags behind in a web worker
         if(lineNumber >= this.chart.series[0].data.length) return;
 
-        // This is needed as point clearing doesn't work well, see
-        // // https://github.com/highcharts/highcharts/issues/11693
         // @ts-ignore
         this.chart.series[0].data[lineNumber].onMouseOver()
         await wait(500);

@@ -21,8 +21,8 @@ const styling = css`
 }
 #editor-button-container{
     position: absolute;
-    top: 45px;
-    right: 0;
+    top: 49px;
+    right: 1px;
 }
 
 .header {
@@ -319,6 +319,7 @@ export default class OverallEditor extends HTMLElement {
             await this.setCurrentEditorContent(
                 localStorage.getItem("open-file"),
                 localStorage.getItem("content"),
+                false,
                 false
             )
         }
@@ -355,7 +356,7 @@ export default class OverallEditor extends HTMLElement {
      * @param {string | null} localFileChanges If set, set the editor content to this values, for 
      * loading from local storage
      */
-    async setCurrentEditorContent(filePath, localFileChanges = null, showLoadingIndicator = true) {
+    async setCurrentEditorContent(filePath, localFileChanges=null, showLoadingIndicator=true, switchEditor=true) {
         if (filePath == null) {
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
             this.filePath = null;
@@ -372,7 +373,7 @@ export default class OverallEditor extends HTMLElement {
             this.loadingIndicator.style.display = "block";
         }
 
-        if (this.filePath == null) {
+        if (this.filePath == null && switchEditor) {
             // The filepath has been null and now isn't, so switch to the default editor.
             this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
         }
