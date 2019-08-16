@@ -98,4 +98,4 @@ export default class IPCampaignSelectors extends HTMLElement {
 }
 
 
-customElements.define('selection-boxes', IPCampaignSelectors);
+customElements.define('ip-campaign-selectors', IPCampaignSelectors);

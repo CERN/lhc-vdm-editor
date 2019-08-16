@@ -3,7 +3,7 @@ import { html, css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativeP
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
-import './Triangle.js';
+import './FolderTriangle.js';
 import "./ContextMenu.js"
 
 const styling = css`
@@ -417,8 +417,8 @@ export default class FileBrowser extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <selection-boxes name="selection" allCampaigns=${this.campaigns} onchange=${this}>
-        </selection-boxes>
+        <ip-campaign-selectors name="selection" allCampaigns=${this.campaigns} onchange=${this}>
+        </ip-campaign-selectors>
         <hr />
         <div id="file-browser">
             ${(async () =>

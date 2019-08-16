@@ -1,7 +1,7 @@
 import { css, html, NO_FILES_TEXT } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
-import './Triangle.js';
+import './FolderTriangle.js';
 
 const styling = css`        
 .cover{
@@ -125,7 +125,7 @@ export default class CreateFileWindow extends HTMLElement {
         this.root.querySelector(".cover").addEventListener("click", () => {
             this.cancel();
         })
-        this.selectionBoxes = this.root.querySelector("selection-boxes");
+        this.selectionBoxes = this.root.querySelector("ip-campaign-selectors");
 
         /**
          * @param event {KeyboardEvent}
@@ -310,7 +310,7 @@ export default class CreateFileWindow extends HTMLElement {
                 <hr>
                 Copy items from folder
                 <div class="slightly-indented">
-                    <selection-boxes allCampaigns=${this.campaigns}></selection-boxes>
+                    <ip-campaign-selectors allCampaigns=${this.campaigns}></ip-campaign-selectors>
                 </div>
                 <div>
                     <button id="copy-button">Copy files</button>

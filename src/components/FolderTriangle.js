@@ -30,7 +30,7 @@ const styling = css`
 }
 `
 
-export default class Triangle extends HTMLElement {
+export default class FolderTriangle extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
@@ -72,6 +72,6 @@ export default class Triangle extends HTMLElement {
     }
 }
 
-Triangle.observedAttributes = ["open"];
+FolderTriangle.observedAttributes = ["open"];
 
-customElements.define('folder-triangle', Triangle);
+customElements.define('folder-triangle', FolderTriangle);
