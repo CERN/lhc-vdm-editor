@@ -157,13 +157,13 @@ export default class OverallEditor extends HTMLElement {
         super();
         this._isCommitted = true;
         this.root = this.attachShadow({ mode: "open" });
+        this.gitlabInterface = gitlab;
         this.render();
 
         this.filePath = null;
         this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
         this.editor = this.root.querySelector("raw-editor");
-        this.gitlabInterface = gitlab;
         this.errorWebWorker = new Worker("./src/worker-vdm.js");
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
@@ -334,7 +334,7 @@ export default class OverallEditor extends HTMLElement {
             }
             else throw error;
         }
-        this.fileBrowser.init(this.gitlabInterface, this.filePath);
+        await this.fileBrowser.setOpenFile(this.filePath);
 
         if (this.filePath != null) {
             if (localStorage.getItem('open-tab') !== null) {
@@ -474,7 +474,7 @@ export default class OverallEditor extends HTMLElement {
             </div>
             <div class="body">
                 <resizeable-panel>
-                    <file-browser></file-browser>
+                    <file-browser gitlab=${this.gitlabInterface}></file-browser>
                 </resizeable-panel>
                 <div id="editor-container">
                     <div id="file-name"></div>

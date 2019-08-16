@@ -74,7 +74,12 @@ export default class FileBrowser extends MyHyperHTMLElement {
         this.fileStructure = Promise.resolve({
             files: [],
             folders: new Map()
-        })
+        });
+        this.campaigns = new Promise((resolve, reject) => {
+            this.setCampaigns = resolve;
+        });
+        this.ip = "";
+        this.campaign = "";
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
@@ -84,27 +89,29 @@ export default class FileBrowser extends MyHyperHTMLElement {
         });
     }
 
-    // We need this to be not implemented by MyHyperHTMLElement, as we want render to be called in init
-    connectedCallback(){}
-
-    /**
-     * Initialise the FileBrowser with the GitLab instance and the openFile
-     * 
-     * @param {GitLab} gitlab
-     * @param {string} openFile The current open file, as path relative to the current explored folder
-     */
-    async init(gitlab, openFile) {
-        this.gitlab = gitlab;
-        this.openFile = openFile;
-
-        this.campaigns = (await this.gitlab.listCampaigns()).reverse();
-        this.ip = "IP1";
-        this.campaign = this.campaigns[0];
-
-        this.setFileStructure(this.ip, this.campaign);
+    async connectedCallback(){
+        this.setCampaigns((await this.gitlab.listCampaigns()).reverse());
 
         this.render();
-        
+    }
+
+    /**
+     * @param {string} newOpenFile
+     */
+    async setOpenFile(newOpenFile){
+        if(newOpenFile == null){
+            this.ip = "IP1";
+            this.campaign = (await this.campaigns)[0];
+        }
+        else{
+            const parts = newOpenFile.split("/");
+            this.campaign = parts[0];
+            this.ip = parts[1];
+        }
+
+        this.setFileStructure(this.ip, this.campaign);
+        this.render();
+
         await this.fileStructure;
     }
 
@@ -420,7 +427,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
         <style>
             ${styling}
         </style>
-        <ip-campaign-selectors name="selection" allCampaigns=${this.campaigns} onchange=${this}>
+        <ip-campaign-selectors name="selection" ip=${this.ip} campaign=${this.campaign} allCampaigns=${this.campaigns} onchange=${this}>
         </ip-campaign-selectors>
         <hr />
         <div id="file-browser">

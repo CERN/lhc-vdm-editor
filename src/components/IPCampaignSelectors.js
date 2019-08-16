@@ -1,5 +1,5 @@
 import { html as oldHtml, css, joinFilePaths } from "../HelperFunctions.js";
-import GitLab from "../GitLab.js";
+import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js";
 
 const styling = css`
     .selection-box{
@@ -16,17 +16,18 @@ const styling = css`
     }
 `
 
-export default class IPCampaignSelectors extends HTMLElement {
+export default class IPCampaignSelectors extends MyHyperHTMLElement {
     constructor() {
-        super();
+        super({
+            ip: "IP1",
+            campaign: ""
+        });
         this.root = this.attachShadow({ mode: 'open' });
         this.waitForInit = new Promise((resolve, _) => {
             this.onInitFinished = resolve;
         });
         this.allCampaigns = [];
         this.allIps = ["IP1", "IP2", "IP5", "IP8"];
-        this.ip = "IP1";
-        this.campaign = "";
     }
 
     get path() {
@@ -39,8 +40,8 @@ export default class IPCampaignSelectors extends HTMLElement {
 
     async connectedCallback() {
         this.campaign = (await this.allCampaigns)[0];
-        this.render();
         this.onInitFinished();
+        this.render();
     }
 
     get value() {
@@ -58,11 +59,6 @@ export default class IPCampaignSelectors extends HTMLElement {
         this[event.currentTarget.name] = event.currentTarget.value;
         this.dispatchEvent(new CustomEvent("change"));
         this.render();
-    }
-
-    log(message, value) {
-        console.log(message, value);
-        return value;
     }
 
     render() {
