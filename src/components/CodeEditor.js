@@ -1,4 +1,4 @@
-import { html, css, addLineNumbers, groupBy } from "../HelperFunctions.js"
+import { html, css, addLineNumbers, removeLineNumbers, groupBy } from "../HelperFunctions.js"
 import "../mode-vdm.js"
 import VdM from "../parser.js"
 import "../token_tooltip.js"
@@ -88,25 +88,6 @@ function calculateLineNumber(file, absLineNum) {
     }
 
     return currentCalcLineNum - 1; // this will happen is absLineNum is -1
-}
-
-/**
- * Removes the line numbers from the text of a VDM file
- * 
- * @param {string} text 
- */
-function removeLineNumbers(text) {
-    return text.split("\n").map(x => {
-        const match = x.match(/^[0-9]+ +/);
-        if (match !== null) {
-            const numMatchLength = match[0].length;
-            return x.slice(numMatchLength);
-        }
-        else {
-            return x;
-        }
-
-    }).join("\n");
 }
 
 /**
@@ -519,6 +500,23 @@ export default class CodeEditor extends HTMLElement {
         this.editor.setValue(mainText, -1); // use -1 move the cursor to the start of the file
         // Make sure you can't undo the insertion of this text
         this.editor.getSession().setUndoManager(new ace.UndoManager());
+    }
+
+    /**
+     * Inserts generated content at the cursor, putting it on a new blank line after the current cursor
+     * @param {any} newContent
+     */
+    insertGeneratedContent(newContent){
+        let currentRow = this.editor.getCursorPosition().row;
+        this.editor.session.insert({
+            row: currentRow,
+            column: Infinity
+        }, '\n' + newContent);
+
+        this.editor.gotoLine(
+            currentRow + newContent.split("\n").length + 1,
+            Infinity
+        )
     }
 
     /**

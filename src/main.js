@@ -27,6 +27,7 @@ $(async () => {
     const gl = new GitLab(token, "vdm-editor-test", usesOAuth);
 
     const overallEditor = new OverallEditor(gl);
+    window.oe = overallEditor;
 
     document.body.appendChild(overallEditor);
 })

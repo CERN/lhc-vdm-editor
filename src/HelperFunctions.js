@@ -327,6 +327,29 @@ export function getHTMLElementWithText(element, text){
     return null;
 }
 
+/**
+ * @param {HTMLElement} element
+ * @param {string} text
+ */
 export function HTMLHasText(element, text){
     return getHTMLElementWithText(element, text) != null;
+}
+
+/**
+ * Removes the line numbers from the text of a VDM file
+ * 
+ * @param {string} text 
+ */
+export function removeLineNumbers(text) {
+    return text.split("\n").map(x => {
+        const match = x.match(/^[0-9]+ +/);
+        if (match !== null) {
+            const numMatchLength = match[0].length;
+            return x.slice(numMatchLength);
+        }
+        else {
+            return x;
+        }
+
+    }).join("\n");
 }

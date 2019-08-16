@@ -1,4 +1,4 @@
-import { css, html } from "../HelperFunctions.js"
+import { css, removeLineNumbers, addLineNumbers } from "../HelperFunctions.js"
 import "./SwitchEditorButtons.js"
 
 const styling = css`
@@ -89,6 +89,20 @@ export default class RawEditor extends HTMLElement {
         this.textarea.value = newValue;
 
         this.resizeTextArea();
+    }
+
+    /**
+     * Inserts generated content at the cursor, putting it on a new blank line after the current cursor
+     * @param {any} newContent
+     */
+    insertGeneratedContent(newContent){
+        const cursorPos = this.textarea.selectionEnd;
+        const nextNewLine = this.value.slice(cursorPos).search("\n") + cursorPos;
+        this.value = addLineNumbers(removeLineNumbers(
+            this.value.slice(0, nextNewLine) + "\n" + newContent + this.value.slice(nextNewLine)
+        ))
+
+        this.textarea.focus();
     }
 
     render() {
