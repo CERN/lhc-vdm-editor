@@ -102,7 +102,7 @@ export class GenerateSequenceWindow extends HTMLElement {
     }
 
     onSuccess(newLines) {
-        this.dispatchEvent(new CustomEvent('generated-lines', { detail: newLines, bubbles: true }));
+        this.dispatchEvent(new CustomEvent('has-generated', { detail: newLines, bubbles: true }));
         this.cancel();
         
         console.log(newLines)
