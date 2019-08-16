@@ -1,6 +1,6 @@
 // @ts-check
 import { css, html } from "../HelperFunctions.js"
-import Generator from '../generator.js'
+import { default as Generator, ArgError } from '../generator.js'
 
 const windowStyling = css`        
 .cover{
@@ -13,15 +13,6 @@ const windowStyling = css`
     z-index: 1000;
 }
 
-.window-container {
-    left: 0;
-    right: 0;
-    position: fixed;
-    z-index: 10000;
-    text-align: center;
-    top: 15px;
-}
-
 .window {
     background-color: #f1f1f1;
     display: inline-block;
@@ -32,6 +23,7 @@ const windowStyling = css`
     box-shadow: grey 0 0 8px 3px;
     text-align: left;
     position: relative;
+    z-index: 10000;
 }
 
 button {
@@ -85,46 +77,156 @@ input{
     border: solid 1px grey;
     margin: 5px 0 5px 0;
 }
+
+input.error{
+    box-shadow: 0 0 0px 1px red;
+}
+
+#container{
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 1000;
+    position: fixed;
+    top: 15px;
+}
 `
 
 export class GenerateSequenceWindow extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
-        this.generator = new Generator('IP1')
+        this._ip = 'IP1';
+        this.generator = null;
+        this.allInputs = null;
+    }
 
-        this.root.querySelector('#function-generate').addEventListener('click', () => {
-            let newLines = this.genFromFunctionInput()
-            this.dispatchEvent(new CustomEvent('generated-lines', { detail: newLines, bubbles: true }));
-        });
-        this.root.querySelector('#array-generate').addEventListener('click', () => {
-            let newLines = this.genFromArrayInput()
-            this.dispatchEvent(new CustomEvent('generated-lines', { detail: newLines, bubbles: true }));
-            console.log(newLines)
-        });
+    onSuccess(newLines) {
+        this.dispatchEvent(new CustomEvent('has-generated', { detail: newLines, bubbles: true }));
+        this.cancel();
+        
+        console.log(newLines)
     }
 
     genFromArrayInput() {
-        const allInputs = this.root.querySelector('#arrays').querySelectorAll('input');
-        const waitTime = allInputs[0].value;
+        const waitTime = Number(this.allInputs.arrays[0].value);
 
         let resArr = Array(4);
-        const arrayInputs = Array.from(allInputs).slice(1);
+        const arrayInputs = Array.from(this.allInputs.arrays).slice(1);
         arrayInputs.forEach((elem, i) => {
             const input = elem.value;
-            let arr = input.replace(/\[|\]/, '').split(',').map(x => x.trim()).filter(x => x == '');
+            if (!input) return
+
+            let arr = input.replace(/\[|\]/, '').split(',').map(x => Number(x))
+            resArr[i] = arr;
+        });
+        
+        return this.generator.generateFromArray(resArr, waitTime);
+        
+    }
+
+    genFromFunctionInput() {
+        const waitTime = Number(this.allInputs.functions[0].value);
+        const stepNum = Number(this.allInputs.functions[1].value);
+
+        let resArr = Array(4);
+        const funcInputs = Array.from(this.allInputs.functions).slice(2);
+        funcInputs.forEach((elem, i) => {
+            const handle = elem.value;
+            if (!handle) return
+
+            let arr = handle.split('+').map(x => x.trim()).filter(x => x);
             resArr[i] = arr;
         });
 
-        return this.generator.generateFromArray(resArr, waitTime);
+        const funcArr = resArr.map((handleArr, index) => {
+            try {
+                return this.generator.getFunctionsFromHandles(handleArr, waitTime, stepNum)
+            } catch (error) {
+                if (error instanceof ArgError) throw new ArgError(error.message, index)
+                else throw error
+            }
+        })
+
+        return this.generator.generateFromFunction(funcArr, stepNum, waitTime * stepNum)
+    }
+
+    onFunctionGenerateClick() {
+        let missingNumber = false;
+        Array.from(this.allInputs.functions).slice(0, 2).forEach(x => {
+            if (!x.value) {
+                missingNumber = true;
+                x.classList.add('error')
+            }
+        })
+        if (missingNumber) {
+            alert('Both "Time between trims" and "Number of steps" are required fields');
+            return
+        }
+
+        try {    
+            let newLines = this.genFromFunctionInput()
+            this.onSuccess(newLines);
+        }
+        catch (error) {
+            if (error instanceof ArgError) {
+                this.allInputs.functions[error.where + 2].classList.add('error')
+                alert('Invalid input function: ' + error.message)
+            }
+            else throw error
+        }
+    }
+
+    onArrayGenerateClick() {
+        if (!this.allInputs.functions[0].value) {
+            this.allInputs.functions[0].classList.add('error')
+            alert('"Time between trims" is a required field');
+            return
+        }
+        
+        try {
+            let newLines = this.genFromArrayInput()
+            this.onSuccess(newLines);
+        }
+        catch (error) {
+            if (error instanceof ArgError) {
+                this.allInputs.arrays[error.where + 1].classList.add('error')
+                alert('Invalid input array: ' + error.message)
+            }
+            else throw error
+        }
     }
 
     cancel() {
         this.dispatchEvent(new CustomEvent("cancel", { bubbles: true }));
     }
 
+    set ip(ip) {
+        this._ip = ip;
+        this.render()
+    }
+    get ip() {
+        return this._ip
+    }
+
     connectedCallback() {
+        this.render();
+        this.generator = new Generator(this.ip);
+        
+        this.allInputs = {
+            arrays: this.root.querySelector('#arrays').querySelectorAll('input'),
+            functions: this.root.querySelector('#functions').querySelectorAll('input'),
+        };
+
+        this.root.querySelectorAll('input').forEach(elem => {
+            elem.addEventListener('change', () => {
+                elem.classList.remove('error');
+            })
+        })
+
+        this.root.querySelector('#function-generate').addEventListener('click', () => this.onFunctionGenerateClick());
+        this.root.querySelector('#array-generate').addEventListener('click', () => this.onArrayGenerateClick());
+
         this.root.querySelector(".cover").addEventListener("click", () => this.cancel())
 
         /**
@@ -146,12 +248,12 @@ export class GenerateSequenceWindow extends HTMLElement {
         document.removeEventListener("keyup", this.onKeyUp);
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${windowStyling}
         </style>
-        <div class="window-container">
+        <div id='container'>
             <div class="window">
                 <div id="exit-button">x</div>
                 
@@ -191,8 +293,9 @@ export class GenerateSequenceWindow extends HTMLElement {
                     <button id='array-generate'>Generate at cursor</button>
                 </div>
             </div>
+            
+            <div class="cover">&nbsp;</div>
         </div>
-        <div class="cover">&nbsp;</div>
         `
     }
 }
@@ -242,12 +345,14 @@ export class GenerateButton extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.render()
+
         this.button = this.root.querySelector("button");
         this.generateSequenceWindow = '';
+        this._ip = 'IP1';
 
         this.button.addEventListener("click", () => {
             this.button.classList.add('active')
-            this.generateSequenceWindow = wire()`<generate-sequence-window></generate-sequence-window>`
+            this.generateSequenceWindow = wire()`<generate-sequence-window ip=${this.ip}></generate-sequence-window>`
             this.render()
         })
         this.root.addEventListener('cancel', () => {
@@ -255,6 +360,13 @@ export class GenerateButton extends HTMLElement {
             this.generateSequenceWindow = '';
             this.render()
         })
+    }
+    set ip(ip) {
+        this._ip = ip;
+        this.render()
+    }
+    get ip() {
+        return this._ip
     }
 
     render() {

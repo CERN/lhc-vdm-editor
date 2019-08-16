@@ -14,11 +14,11 @@ const styling = css`
     z-index: 1000;
 }
 
-.window-container {
+.container {
     left: 0;
     right: 0;
     position: fixed;
-    z-index: 10000;
+    z-index: 1000;
     text-align: center;
     top: 15px;
 }
@@ -33,6 +33,7 @@ const styling = css`
     box-shadow: grey 0 0 8px 3px;
     text-align: left;
     position: relative;
+    z-index: 10000;
 }
 
 #create-empty {
@@ -298,7 +299,7 @@ export default class CreateFileWindow extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <div class="window-container">
+        <div class="container">
             <div class="window">
                 <div id="exit-button">x</div>
                 <div>Create an empty file</div>
@@ -325,8 +326,9 @@ export default class CreateFileWindow extends HTMLElement {
                     </div>
                 </div>
             </div>
+            
+            <div class="cover">&nbsp;</div>
         </div>
-        <div class="cover">&nbsp;</div>
         `
     }
 }
