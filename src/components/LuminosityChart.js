@@ -12,7 +12,7 @@ export default class LuminosityChart extends GenericChart {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.render();
 
         this._data = null;
         this._timeType = "real";
@@ -124,8 +124,8 @@ export default class LuminosityChart extends GenericChart {
         })
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>

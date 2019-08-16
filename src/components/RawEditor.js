@@ -46,7 +46,7 @@ export default class RawEditor extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template()
+        this.render()
         this.textarea = this.root.querySelector("textarea");
         this.textarea.addEventListener('input',
             () => {
@@ -91,8 +91,8 @@ export default class RawEditor extends HTMLElement {
         this.resizeTextArea();
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <div class="container">
             <style>
                 ${styling}

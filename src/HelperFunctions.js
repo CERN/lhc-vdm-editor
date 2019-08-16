@@ -67,43 +67,6 @@ export const css = interpolate;
 ///** @type {(x: TemplateStringsArray, ...xs: string[]) => string} */
 export const html = interpolate;
 
-
-export function html2(thisValue) {
-    return (literals, ...expressions) => {
-        const UID = 'GduzMkeFpevUiClNJkcI';
-        let string = ``;
-        let numFunctions = 0;
-        let funcs = []
-        for (const [i, val] of expressions.entries()) {
-            if (typeof val == "function") {
-                const strBefore = literals[i];
-                string += strBefore.slice(0, strBefore.lastIndexOf("@")) + UID + '=' + numFunctions.toString();
-                funcs.push({
-                    name: strBefore.slice(strBefore.lastIndexOf("@") + 1, -2),
-                    func: val
-                });
-                numFunctions++;
-            }
-            else {
-                string += literals[i] + val
-            }
-        }
-        string += literals[literals.length - 1];
-        var parent = document.createElement('template');
-        parent.innerHTML = string;
-        const UIDElements = parent.querySelectorAll(`[${UID}]`);
-
-        for (let funcNodes of UIDElements) {
-            let index = parseInt(funcNodes.getAttribute(UID));
-            funcNodes.addEventListener(funcs[index].name, funcs[index].func);
-            funcNodes.removeAttribute(UID);
-        }
-
-        return parent.content;
-    }
-}
-
-
 /**
  * @params {Response} response
  */

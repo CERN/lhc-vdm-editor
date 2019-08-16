@@ -14,7 +14,7 @@ export default class BeamPositionChart extends GenericChart {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.render();
 
         this._unit = "sigma";
         this._timeType = "real";
@@ -224,8 +224,8 @@ export default class BeamPositionChart extends GenericChart {
         this.chart.tooltip.hide()
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>

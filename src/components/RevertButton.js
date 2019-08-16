@@ -26,15 +26,15 @@ export default class RevertButton extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.render();
         this.button = this.root.querySelector("button");
         this.button.addEventListener('click', () => {
             this.dispatchEvent(new Event('revert-changes'))
         })
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>

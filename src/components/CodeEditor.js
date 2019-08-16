@@ -172,7 +172,7 @@ export default class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.render();
         /** @public */
         this.editor = ace.edit(this.root.getElementById("editor"));
         this.lastEditorChange = Date.now();
@@ -531,8 +531,8 @@ export default class CodeEditor extends HTMLElement {
         return myMainText !== theirMainText;
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
             <style>
                 ${styling}
             </style>

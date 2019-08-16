@@ -34,7 +34,7 @@ export default class Triangle extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.render();
         this.triangle = this.root.querySelector('.triangle');
         this.openState = false;
     }
@@ -60,8 +60,8 @@ export default class Triangle extends HTMLElement {
         return this.openState
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>

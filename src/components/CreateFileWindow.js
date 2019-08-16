@@ -244,8 +244,7 @@ export default class CreateFileWindow extends HTMLElement {
     }
 
     setCheckboxSelector() {
-        let element = document.createElement('div');
-        element.innerHTML = html`
+        let element = wire()`
             <label>
                 <input type='checkbox'/>
                 <span>select all</span>
@@ -270,11 +269,11 @@ export default class CreateFileWindow extends HTMLElement {
         for (let file of files) {
             let line = document.createElement('div');
             if (file == NO_FILES_TEXT) {
-                line.innerHTML = html`
+                line = wire()`
                     ${NO_FILES_TEXT}
                 `;
             } else {
-                line.innerHTML = html`
+                line = wire()`
                     <label>
                         <input type='checkbox' value=${file} />
                         <span>${file}</span>

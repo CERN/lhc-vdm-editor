@@ -35,7 +35,7 @@ export default class CommitElement extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.root.innerHTML = this.template();
+        this.render();
         this.root.querySelector("form").addEventListener("submit", () => {
             let message = this.root.querySelector("input[type=text]").value;
             if (message) {
@@ -49,8 +49,8 @@ export default class CommitElement extends HTMLElement {
         })
     }
 
-    template() {
-        return html`
+    render() {
+        hyper(this.root)`
         <style>
             ${styling}
         </style>
