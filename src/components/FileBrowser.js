@@ -112,6 +112,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
             this.campaign = parts[0];
             this.ip = parts[1];
         }
+        this.openFile = newOpenFile;
 
         this.setFileStructure(this.ip, this.campaign);
         this.render();

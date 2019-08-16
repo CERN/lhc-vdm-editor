@@ -423,11 +423,11 @@ export default class OverallEditor extends HTMLElement {
         }
 
         if (this.isCommitted) {
-            this.root.querySelector("#file-name").innerText = "./" + fileName + " (committed)";
+            this.root.querySelector("#file-name").innerText = fileName + " (committed)";
             this.root.querySelector("#file-name").classList.remove("uncommitted");
         }
         else {
-            this.root.querySelector("#file-name").innerText = "./" + fileName + " (uncommitted)";
+            this.root.querySelector("#file-name").innerText = fileName + " (uncommitted)";
             this.root.querySelector("#file-name").classList.add("uncommitted");
         }
     }

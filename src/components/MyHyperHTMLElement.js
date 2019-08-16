@@ -18,9 +18,8 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
             args.forEach(propertyName => {
                 Object.defineProperty(this, propertyName, {
                     set: value => {
-                        this.setState({
-                            [propertyName]: value
-                        })
+                        this._properties[propertyName] = value;
+                        this.render()
                     },
                     get: () => this._properties[propertyName]
                 })
@@ -32,9 +31,8 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
             Object.keys(args[0]).forEach(propertyName => {
                 Object.defineProperty(this, propertyName, {
                     set: value => {
-                        this.setState({
-                            [propertyName]: value
-                        })
+                        this._properties[propertyName] = value;
+                        this.render();
                     },
                     get: () => this._properties[propertyName]
                 })
@@ -49,7 +47,7 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
      */
     setState(props) {
         for (let [key, value] of Object.entries(props)) {
-            this._properties[key] = value;
+            this[key] = value;
         }
 
         if(this._render_timeout == undefined){
