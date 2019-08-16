@@ -13,7 +13,7 @@
     "url": "git+https://github.com/CERN/lhc-vdm-editor.git"
   },
   "author": "CERN",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/CERN/lhc-vdm-editor/issues"
   },
