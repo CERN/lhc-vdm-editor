@@ -302,3 +302,31 @@ export function removeSubsequentDuplicates(arr, cmp=(a, b) => a == b){
         else return duplicate;
     }).filter(x => x !== duplicate);
 }
+
+/**
+ * @param {Node} element
+ * @param {string} text
+ * @returns {HTMLElement}
+ */
+export function getHTMLElementWithText(element, text){
+    if(element.nodeName == "#text" && element.nodeValue.includes(text)) return element.parentElement;
+    else {
+        // @ts-ignore
+        if(element.shadowRoot != undefined){
+            // @ts-ignore
+            return getHTMLElementWithText(element.shadowRoot, text);
+        }
+        else if(element.childNodes.length !== 0){
+            // @ts-ignore
+            for(let child of element.childNodes){
+                const foundElement = getHTMLElementWithText(child, text);
+                if(foundElement != null) return foundElement;
+            }
+        }
+    }
+    return null;
+}
+
+export function HTMLHasText(element, text){
+    return getHTMLElementWithText(element, text) != null;
+}

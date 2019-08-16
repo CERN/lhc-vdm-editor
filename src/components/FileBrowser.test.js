@@ -1,9 +1,10 @@
 import FileBrowser from "./FileBrowser.js";
 import GitLab from "../GitLab.js";
-import { wait } from "../HelperFunctions.js";
+import { NO_FILES_TEXT, HTMLHasText, getHTMLElementWithText, wait } from "../HelperFunctions.js";
 
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
 const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
+const TEST_NO_FILE_FOLDER = "201707_ATLAS_DryRun/IP8";
 
 /**
  * @param {GitLab} [gitlab]
@@ -20,7 +21,6 @@ async function getNewFileBrowser(gitlab) {
 describe("FileBrowser", () => {
     /** @type {FileBrowser} */
     let fb;
-    let fakeLocalStorage;
     /** @type {GitLab} */
     let gitlab;
 
@@ -53,5 +53,30 @@ describe("FileBrowser", () => {
                 ])
             }, "ip", "campaign")
         }).not.toThrow();
+    })
+
+    it("Can set ip and campaign", async () => {
+        const [campaign, ip, fileName] = TEST_FILE.split("/");
+
+        await fb.setOpenFile(TEST_FILE);
+        await wait(1000);
+        // @ts-ignore
+        expect(getHTMLElementWithText(fb, ip).selected).toBeTruthy();
+        // @ts-ignore
+        expect(getHTMLElementWithText(fb, campaign).selected).toBeTruthy();
+        expect(HTMLHasText(fb, fileName)).toBeTruthy();
+    })
+
+    it("Handles no files correctly", async () => {
+        await fb.setOpenFile(TEST_NO_FILE_FOLDER);
+
+        const openFileSpy = jasmine.createSpy();
+        fb.addEventListener("open-file", openFileSpy);
+
+        let noFilesElement = getHTMLElementWithText(fb, NO_FILES_TEXT);
+
+        expect(noFilesElement).not.toBeNull();
+        noFilesElement.click();
+        expect(openFileSpy).not.toHaveBeenCalled();
     })
 })

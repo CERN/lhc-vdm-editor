@@ -95,6 +95,10 @@ export default class FileBrowser extends MyHyperHTMLElement {
         this.render();
     }
 
+    get loadedPromise(){
+        return Promise.all([this.fileStructure, this.campaigns])
+    }
+
     /**
      * @param {string} newOpenFile
      */
@@ -112,7 +116,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
         this.setFileStructure(this.ip, this.campaign);
         this.render();
 
-        await this.fileStructure;
+        await this.loadedPromise;
     }
 
     refresh() {
