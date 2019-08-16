@@ -219,8 +219,6 @@ export default class BeamPositionChart extends GenericChart {
         this.chart.series[0].data[lineNumber].onMouseOver()
         await wait(500);
         // @ts-ignore
-        this.chart.series[0].data[lineNumber].onMouseOut()
-        // @ts-ignore
         this.chart.tooltip.hide()
     }
 
