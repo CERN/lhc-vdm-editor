@@ -269,20 +269,26 @@ export default class OverallEditor extends HTMLElement {
      * @param {string} commitMessage
      */
     async tryToCommit(commitMessage) {
-        if (this.filePath === null) return;
+        this.showLoadingIndicator();
+        try{
+            if (this.filePath === null) return;
 
-        this.VdM.parse(this.value, true);
-        if (this.VdM.isValid) {
-            await this.gitlabInterface.writeFile(
-                this.filePath,
-                commitMessage,
-                this.VdM.deparse()
-            );
+            this.VdM.parse(this.value, true);
+            if (this.VdM.isValid) {
+                await this.gitlabInterface.writeFile(
+                    this.filePath,
+                    commitMessage,
+                    this.VdM.deparse()
+                );
 
-            this.isCommitted = true;
+                this.isCommitted = true;
+            }
+            else {
+                alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'))
+            }
         }
-        else {
-            alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'))
+        finally{
+            this.hideLoadingIndicator();
         }
     }
 
@@ -309,14 +315,17 @@ export default class OverallEditor extends HTMLElement {
 
     async tryToRevert() {
         if (this.filePath === null) return;
+        this.showLoadingIndicator();
 
-        if (!this.isCommitted) {
-            if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
+        try{
+            if (!this.isCommitted) {
+                if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
+                    await this.setCurrentEditorContent(this.filePath)
+                }
+            } else {
                 await this.setCurrentEditorContent(this.filePath)
             }
-        } else {
-            await this.setCurrentEditorContent(this.filePath)
-        }
+        } finally {this.hideLoadingIndicator()};
     }
 
     /**
@@ -357,6 +366,14 @@ export default class OverallEditor extends HTMLElement {
         }
     }
 
+    showLoadingIndicator(){
+        this.loadingIndicator.style.display = "block";
+    }
+
+    hideLoadingIndicator(){
+        this.loadingIndicator.style.display = "none";
+    }
+
     /**
      * Function to set the file the editor is editing.
      * 
@@ -378,43 +395,46 @@ export default class OverallEditor extends HTMLElement {
         }
 
         if (showLoadingIndicator) {
-            this.loadingIndicator.style.display = "block";
+            this.showLoadingIndicator();
         }
 
-        if (this.filePath == null && switchEditor) {
-            // The filepath has been null and now isn't, so switch to the default editor.
-            this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
+        try{
+            if (this.filePath == null && switchEditor) {
+                // The filepath has been null and now isn't, so switch to the default editor.
+                this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
+            }
+
+            const fileContent = await this.gitlabInterface.readFile(filePath);
+            this.initEditorContent = fileContent;
+            // NOTE: we trim below to remove a new line as the last line
+            if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()) {
+                this.value = localFileChanges;
+
+                this.isCommitted = false;
+            }
+            else {
+                this.value = fileContent;
+
+                this.isCommitted = true;
+            }
+            this.filePath = filePath;
+            this.beamJSON = await getBeamJSON(this.campaign, this.gitlabInterface);
+            this.VdM = new VdM(this.beamJSON, this.ip);
+            this.editor.VdM = this.VdM;
+            this.root.querySelector('generate-button').ip = this.ip;
+
+            this.onEditorContentChange(this.value);
+            this.updateFileNameUI(filePath);
+
+            this.makeWebWorkerParse();
+
+            localStorage.setItem('open-file', filePath);
+            localStorage.setItem('content', this.value);
         }
-
-        const fileContent = await this.gitlabInterface.readFile(filePath);
-        this.initEditorContent = fileContent;
-        // NOTE: we trim below to remove a new line as the last line
-        if (localFileChanges != null && fileContent.trim() != localFileChanges.trim()) {
-            this.value = localFileChanges;
-
-            this.isCommitted = false;
-        }
-        else {
-            this.value = fileContent;
-
-            this.isCommitted = true;
-        }
-        this.filePath = filePath;
-        this.beamJSON = await getBeamJSON(this.campaign, this.gitlabInterface);
-        this.VdM = new VdM(this.beamJSON, this.ip);
-        this.editor.VdM = this.VdM;
-        this.root.querySelector('generate-button').ip = this.ip;
-
-        this.onEditorContentChange(this.value);
-        this.updateFileNameUI(filePath);
-
-        this.makeWebWorkerParse();
-
-        localStorage.setItem('open-file', filePath);
-        localStorage.setItem('content', this.value);
-
-        if (showLoadingIndicator) {
-            this.loadingIndicator.style.display = "none";
+        finally{
+            if (showLoadingIndicator) {
+                this.loadingIndicator.style.display = "none";
+            }
         }
     }
 
