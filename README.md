@@ -1,4 +1,4 @@
-# Editor for LHC VdM Scans
+# lhc-vdm-editor
 
 An code and file editor for VdM scans.
 
