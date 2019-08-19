@@ -318,7 +318,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 })}
                 ${Array.from(_structure.folders.entries()).map((folderParts) => {
                 const [folderName, folderContent] = folderParts;
-                const isFolderOpen = _structure.isFolderOpen;
+                const isFolderOpen = _structure.isFolderOpen ||
+                    (_structure.isFolderOpen === undefined && this.openFile.startsWith(joinFilePaths(prefix, folderName)));
 
                 return wire(folderParts)`
                         <div onclick=${() => { _structure.isFolderOpen = !_structure.isFolderOpen; this.render() }} class="item folder">
