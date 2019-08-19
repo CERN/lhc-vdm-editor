@@ -8,23 +8,11 @@ const simpleFileWithComments = '#start\n0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEA
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000000;
 
 function getKeyboardEvent(keyCode) {
-    var keyboardEvent = document.createEvent("KeyboardEvent");
-    var initMethod = typeof keyboardEvent.initKeyboardEvent !== 'undefined' ? "initKeyboardEvent" : "initKeyEvent";
-
-    keyboardEvent[initMethod](
-        "keydown",
-        true,
-        true,
-        window,
-        false,
-        false,
-        false,
-        false,
-        keyCode,
-        0
-    );
-
-    return keyboardEvent;
+    return new KeyboardEvent("keydown", {
+        code: keyCode,
+        bubbles: true,
+        cancelable: true
+    })
 }
 
 describe("CodeEditor", () => {
@@ -51,7 +39,12 @@ describe("CodeEditor", () => {
         ce.editor.execCommand("startAutocomplete");
 
         await asyncMap(range(6), async () => {
-            ce.editor.onCommandKey(getKeyboardEvent(13/*Enter*/), 0, 13);
+            ce.editor.onCommandKey(new KeyboardEvent("keydown", {
+                code: "13",
+                key: "Enter",
+                bubbles: true,
+                cancelable: true
+            }), 0, 13);
             await wait(0);
         })
 

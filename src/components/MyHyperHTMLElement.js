@@ -50,12 +50,7 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
             this[key] = value;
         }
 
-        if(this._render_timeout == undefined){
-            this._render_timeout = setTimeout(() => {
-                this.render();
-                this._render_timeout = undefined;
-            }, 0)
-        }
+        this.render();
     }
 
     set properties(props) {
