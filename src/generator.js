@@ -41,11 +41,12 @@ export default class Generator {
 
         this.functionHandler = {
             linear: (argArr, waitTime, stepNum) => {
-                argArr = argArr.map(x => Number(x));
                 if (argArr.length != 2) throw new ArgError('Linear function takes two arguments: linear(startPos,endPos)');
-                if (argArr.some(x => isNaN(x))) throw new ArgError('Invalid argument. Arguments must be numbers');
-
                 return this.functions.linear(argArr[0], argArr[1], waitTime * stepNum);
+            },
+            periodic: (argArr, waitTime, stepNum) => {
+                if (argArr.length != 1) throw new ArgError('Periodic function takes one argument: periodic(period)');
+                return this.functions.periodic(argArr[0]);
             }
         }
 
@@ -94,20 +95,36 @@ export default class Generator {
         return (t) => (t >= startTime) ? func(t - startTime) : 0
     }
 
-    getFunctionsFromHandles(funcHandleArr, waitTime, stepNum) {
-        return funcHandleArr.map(funcHandle => {
-            const tmp = funcHandle.split(/\(|\)/);
-            let handle = tmp[0];
-            let argArr = tmp[1].split(',');
+    getFunctionFromString(string, waitTime, stepNum) {
+        let arr = string.split(/\(|\)/).slice(0,-1);
+        if (arr.length % 2 != 0) throw new ArgError('Invalid syntax');
 
-            if (this.functionHandler[handle]) return this.functionHandler[handle](argArr, waitTime, stepNum)
+        let funcArr = [];
+        for(let i = 0; i < arr.length; i += 2) {
+            let args = arr[i + 1].split(',').map(x => Number(x));
+            if (args.some(x => isNaN(x))) throw new ArgError('Invalid argument. Arguments must be numbers');
+            
+            let handle = arr[i];
+            let sign = 1;
+            let match = handle.match(/ *(\+|-) */);
+            if (match){
+                sign = Number(match[1] + '1');
+                handle = handle.replace(match[0], '');
+            }
+
+            if (this.functionHandler[handle]) {
+                let func = this.prodFunc(sign, this.functionHandler[handle](args, waitTime, stepNum));
+                funcArr.push(func);
+            }
             else throw new ArgError('Unknown function ' + handle)
-        })
+        }
+
+        return this.sumFunc(...funcArr)
     }
     /**
      * @param {function[]} inpFuncArr
      * @param {number} stepNum
-     * @param {number} runTime
+     * @param {number} waitTime
      */
     generateFromFunction(inpFuncArr, waitTime, stepNum) {
         /* funcArr is an array with 4 functions as specified in "desciption".

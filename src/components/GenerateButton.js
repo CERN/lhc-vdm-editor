@@ -130,19 +130,17 @@ export class GenerateSequenceWindow extends HTMLElement {
         const waitTime = Number(this.allInputs.functions[0].value);
         const stepNum = Number(this.allInputs.functions[1].value);
 
-        let resArr = Array(4);
+        let handleArr = Array(4);
         const funcInputs = Array.from(this.allInputs.functions).slice(2);
         funcInputs.forEach((elem, i) => {
             const handle = elem.value;
             if (!handle) return
-
-            let arr = handle.split('+').map(x => x.trim()).filter(x => x);
-            resArr[i] = arr;
+            else handleArr[i] = handle;
         });
 
-        const funcArr = resArr.map((handleArr, index) => {
+        const funcArr = handleArr.map((handle, index) => {
             try {
-                return this.generator.getFunctionsFromHandles(handleArr, waitTime, stepNum)
+                return this.generator.getFunctionFromString(handle, waitTime, stepNum)
             } catch (error) {
                 if (error instanceof ArgError) throw new ArgError(error.message, index)
                 else throw error
@@ -274,7 +272,7 @@ export class GenerateSequenceWindow extends HTMLElement {
                         <input type="text" placeholder="Beam 2 Crossing">
                     </div>
                     <div class='tiny'>
-                        *Currently supported functions include: linear(startpos, endpos)
+                        *Currently supported functions include: linear(startpos, endpos), periodic(period) <br>**Function can be a sum of functions. Ex: linear(a,b) + periodic(c)
                     </div>
                     <button id='function-generate'>Generate at cursor</button>
                 </div>
