@@ -18,7 +18,9 @@ const styling = css`
     height: calc(100% - 55px);
     flex-grow: 1;
     padding-bottom: 20px;
+    min-width: 0px;
 }
+
 #editor-button-container{
     position: absolute;
     top: 49px;
@@ -65,6 +67,11 @@ revert-button {
 
 raw-editor{
     height: 100%
+}
+
+
+resizeable-panel{
+    flex-shrink: 0;
 }
 
 .uncommitted {

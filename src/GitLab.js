@@ -115,7 +115,7 @@ export default class GitLab {
             )
         }
         catch (error) {
-            if (error instanceof Response && (await error.json()).message == "A file with this name already exists") {
+            if (error instanceof Response && (await error.clone().json()).message == "A file with this name already exists") {
                 throw new FileAlreadyExistsError();
             }
             else {

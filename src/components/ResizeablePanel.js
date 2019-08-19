@@ -39,11 +39,11 @@ export default class ResizeablePanel extends HTMLElement {
 
             if (this.side == "left") {
                 const containerLeft = clientRect.left;
-                newWidth = event.clientX - containerLeft - 12;
+                newWidth = event.clientX - containerLeft;
             }
             else {
                 const containerRight = clientRect.right;
-                newWidth = containerRight - event.clientX - 12;
+                newWidth = containerRight - event.clientX;
             }
             container.style.width = newWidth + "px";
 

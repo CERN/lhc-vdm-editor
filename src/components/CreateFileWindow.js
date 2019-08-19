@@ -166,12 +166,16 @@ export default class CreateFileWindow extends HTMLElement {
         });
 
         function _onEmptySubmit() {
+            const fileName = (/**@type HTMLInputElement*/(this.root.querySelector("#file-name"))).value;
+            if(fileName == null){
+                alert("Cannot create a file without a file name");
+                return;
+            }
+
             createEmptyButton.innerText = "Creating...";
 
             copyButton.disabled = true;
             createEmptyButton.disabled = true;
-
-            const fileName = (/**@type HTMLInputElement*/(this.root.querySelector("#file-name"))).value;
 
             this.dispatchEvent(new CustomEvent("create-empty", {
                 detail: fileName
