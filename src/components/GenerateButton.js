@@ -102,10 +102,8 @@ export class GenerateSequenceWindow extends HTMLElement {
     }
 
     onSuccess(newLines) {
-        this.dispatchEvent(new CustomEvent('has-generated', { detail: newLines, bubbles: true }));
+        this.dispatchEvent(new CustomEvent('generated', { detail: newLines, bubbles: true, composed: true }));
         this.cancel();
-        
-        console.log(newLines)
     }
 
     genFromArrayInput() {
@@ -176,8 +174,8 @@ export class GenerateSequenceWindow extends HTMLElement {
     }
 
     onArrayGenerateClick() {
-        if (!this.allInputs.functions[0].value) {
-            this.allInputs.functions[0].classList.add('error')
+        if (!this.allInputs.arrays[0].value) {
+            this.allInputs.arrays[0].classList.add('error')
             alert('"Time between trims" is a required field');
             return
         }

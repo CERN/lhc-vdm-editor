@@ -112,22 +112,23 @@ export default class FileBrowser extends MyHyperHTMLElement {
             this.campaign = parts[0];
             this.ip = parts[1];
         }
+        this.openFile = newOpenFile;
 
-        this.setFileStructure(this.ip, this.campaign);
+        await this.setFileStructure(this.ip, this.campaign);
         this.render();
 
         await this.loadedPromise;
     }
 
-    refresh() {
-        this.setFileStructure(this.ip, this.campaign);
+    async refresh() {
+        await this.setFileStructure(this.ip, this.campaign);
     }
 
     /**
      * @param {string} ip
      * @param {string} campaign
      */
-    setFileStructure(ip, campaign) {
+    async setFileStructure(ip, campaign) {
         this.fileStructure = (async () => {
             try {
                 return await this.gitlab.listFiles(`${campaign}/${ip}`);
@@ -140,7 +141,9 @@ export default class FileBrowser extends MyHyperHTMLElement {
                     throw error;
                 }
             }
-        })()
+        })();
+
+        await this.fileStructure;
     }
 
     async onDeleteButtonPressed(filePath, isFolder, markAsPending) {
@@ -295,40 +298,40 @@ export default class FileBrowser extends MyHyperHTMLElement {
         const getElementFromStructure = (_structure, prefix = "") => {
             return wire(fileStructure, prefix)`
                 <div>
-                    ${_structure.files.map(fileName => {
+                ${_structure.files.map(fileName => {
                 const fullFilePath = joinFilePaths(prefix, fileName);
                 const isOpenFile = fullFilePath == this.openFile;
 
                 return wire()`<div
-                            onclick=${() => {
-                                if(fileName == NO_FILES_TEXT) return;
-                                this.onFileClick(fullFilePath);
-                                this.render();
-                            }}
-                            oncontextmenu=${event => {
-                                if(fileName == NO_FILES_TEXT) return; 
-                                this.onContextMenu(event, fullFilePath, false);
-                            }}
-                            class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">
-                                ${fileName}</div>`
+                    onclick=${() => {
+                        if(fileName == NO_FILES_TEXT) return;
+                        this.onFileClick(fullFilePath);
+                        this.render();
+                    }}
+                    oncontextmenu=${event => {
+                        if(fileName == NO_FILES_TEXT) return; 
+                        this.onContextMenu(event, fullFilePath, false);
+                    }}
+                    class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">
+                        ${fileName}</div>`
 
-            })}
-                    ${Array.from(_structure.folders.entries()).map((folderParts) => {
+                })}
+                ${Array.from(_structure.folders.entries()).map((folderParts) => {
                 const [folderName, folderContent] = folderParts;
                 const isFolderOpen = _structure.isFolderOpen;
 
                 return wire(folderParts)`
-                            <div onclick=${() => { _structure.isFolderOpen = !_structure.isFolderOpen; this.render() }} class="item folder">
-                                <folder-triangle open=${isFolderOpen}></folder-triangle>
-                                <span class="folder-name">${folderName}</span>
-                            </div>
-                            <span style="display:block" class="folder-content">
-                                ${
-                    isFolderOpen ? getElementFromStructure(folderContent, joinFilePaths(prefix, folderName)) : undefined
-                    }
-                            </span>
-                        `
-            })}
+                        <div onclick=${() => { _structure.isFolderOpen = !_structure.isFolderOpen; this.render() }} class="item folder">
+                            <folder-triangle open=${isFolderOpen}></folder-triangle>
+                            <span class="folder-name">${folderName}</span>
+                        </div>
+                        <span style="display:block" class="folder-content">
+                            ${
+                            isFolderOpen ? getElementFromStructure(folderContent, joinFilePaths(prefix, folderName)) : undefined
+                            }
+                        </span>
+                    `
+                })}
                     <div onclick=${() => this.clickNewFile(prefix)} class="item" style="font-weight: bold">
                         <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
                             +
@@ -415,15 +418,19 @@ export default class FileBrowser extends MyHyperHTMLElement {
         this.openFile = fullFileName;
     }
 
-    set selection(newValue) {
+    async setSelection(newValue){
         if (this.ip != newValue.ip || this.campaign != newValue.campaign) {
-            this.setFileStructure(newValue.ip, newValue.campaign);
+            await this.setFileStructure(newValue.ip, newValue.campaign);
         }
 
         this.ip = newValue.ip;
         this.campaign = newValue.campaign;
 
         this.render();
+    }
+
+    set selection(newValue) {
+        this.setSelection(newValue);
     }
 
     render() {
