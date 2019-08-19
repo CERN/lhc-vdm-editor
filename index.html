@@ -13,25 +13,34 @@
     <title>LHC VdM web-editor</title>
     <script>
         window.addEventListener("error", function (error) {
-            alert(error.filename + ":" + error.lineno + "\n" + error.message);
+            try{
+                alert(error.type + error.filename + ":" + error.lineno + "\n" + error.message);
+            } catch {}
         })
         window.addEventListener('unhandledrejection', async function (err) {
-            if (err.reason instanceof Response) {
-                try {
-                    const obj = await err.reason.json();
-                    if (Object.keys(obj).includes('message')) {
-                        alert('GitLab API error: ' + obj.message);
-                    } else {
-                        throw err
+            try{
+                let errorText;
+
+                if(err.reason.body.locked) errorText = "";
+                else errorText = await err.reason.text();
+
+                if (err.reason instanceof Response) {
+                    try {
+                        const obj = JSON.parse(errorText);
+                        if (typeof obj.message !== "undefined") {
+                            alert('GitLab API error: ' + obj.message);
+                        } else {
+                            throw err;
+                        }
+                    } catch {
+                        alert(`${err.reason.url} gave error code ${err.reason.status}:\n${errorText}`)
                     }
-                } catch (err) {
-                    alert('There has been an error. Please check the console.');
-                    throw err;
+                }
+                else {
+                    alert(err.type + err.filename + ":" + err.lineno + "\n" + err.message);
                 }
             }
-            else {
-                alert('There has been an error. Please check the console.');
-            }
+            catch {}
         });
     </script>
     <link rel="preload" as="script" href="./extern/ace-17.06.19/ace.js">
