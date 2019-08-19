@@ -1,4 +1,4 @@
-import { css, html, NO_FILES_TEXT } from "../HelperFunctions.js";
+import { css, NO_FILES_TEXT } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
 import './FolderTriangle.js';
@@ -105,6 +105,10 @@ input[type=text]{
 
 #list-options div{
     margin: 5px 0 5px 0;
+}
+
+label {
+    display: block;
 }
 
 label *{
@@ -270,7 +274,7 @@ export default class CreateFileWindow extends HTMLElement {
             let line = document.createElement('div');
             if (file == NO_FILES_TEXT) {
                 line = wire()`
-                    ${NO_FILES_TEXT}
+                    <span>${NO_FILES_TEXT}</span>
                 `;
             } else {
                 line = wire()`

@@ -2,7 +2,7 @@ import { sigFigRound } from "../HelperFunctions.js";
 import { throttle } from "../HelperFunctions.js";
 import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js"
 
-const commonFormatter = x => sigFigRound(x.value, 3);
+const sigFigFormatter = x => sigFigRound(x.value, 3);
 
 export class GenericChart extends MyHyperHTMLElement {
     constructor(...args) {
@@ -45,6 +45,12 @@ export const commonChartOptions = {
     noData: {
         position: {
             x: -50 // this is needed to correct for a incorrect center calulation in HighCharts
+        }
+    },
+
+    yAxis: {
+        labels: {
+            formatter: sigFigFormatter
         }
     },
 
