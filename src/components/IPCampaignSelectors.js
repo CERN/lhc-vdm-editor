@@ -20,7 +20,7 @@ export default class IPCampaignSelectors extends MyHyperHTMLElement {
     constructor() {
         super({
             ip: "IP1",
-            campaign: ""
+            campaign: undefined
         });
         this.root = this.attachShadow({ mode: 'open' });
         this.waitForInit = new Promise((resolve, _) => {

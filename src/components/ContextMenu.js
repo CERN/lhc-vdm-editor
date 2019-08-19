@@ -56,6 +56,8 @@ export default class ContextMenu extends HTMLElement {
         button.onActivate(() => {
             this.allButtonsDisabled = true;
             button.pending = true;
+
+            this.render();
         });
     }
 

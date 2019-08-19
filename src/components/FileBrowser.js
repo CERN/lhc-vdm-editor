@@ -258,7 +258,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
      * @param {string} campaign
      * @param {string[]} files
      */
-    async tryCopyFolder(source, ip, campaign, files = []) {
+    async tryCopyFolder(source, ip, campaign, files=[]) {
         if (!confirm(`Are you sure you want to copy files from the campaign "${campaign}" and interaction point "${ip}"?`)) {
             return;
         }
@@ -266,8 +266,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
         const fromFolder = campaign + "/" + ip;
         const toFolder = source;
 
-        let toFolderContents
-        let fromFolderContents
+        let toFolderContents;
+        let fromFolderContents;
 
         try {
             toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, fromFolder));
@@ -275,8 +275,15 @@ export default class FileBrowser extends MyHyperHTMLElement {
             if (error instanceof NoPathExistsError) toFolderContents = []
             else throw error
         }
+        
         try {
-            fromFolderContents = (await this.gitlab.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
+            if(files.length == 0){
+                fromFolderContents = (await this.gitlab.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
+            }
+            else{
+                fromFolderContents = files.map(x => getRelativePath(x, fromFolder));
+            }
+
             const commonFileNames = fromFolderContents.filter(x => toFolderContents.includes(x));
             if (commonFileNames.length != 0) {
                 alert(`Note:\n"${commonFileNames.join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)

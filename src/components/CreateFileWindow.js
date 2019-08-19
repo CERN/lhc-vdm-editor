@@ -122,6 +122,7 @@ export default class CreateFileWindow extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.campaigns = null;
         this.gitlab = null;
+        this.dropdownOpen = false;
     }
 
     connectedCallback() {
@@ -160,7 +161,7 @@ export default class CreateFileWindow extends HTMLElement {
                 detail: {
                     ip: this.selectionBoxes.ip,
                     campaign: this.selectionBoxes.campaign,
-                    filePaths: this.root.querySelector('folder-triangle').isOpen ? this.chosenFiles : []
+                    filePaths: this.root.querySelector('folder-triangle').open ? this.chosenFiles : []
                 }
             }));
         });
@@ -191,26 +192,10 @@ export default class CreateFileWindow extends HTMLElement {
             }
         });
 
-
-        let isOpen = false;
         this.fileListContent = this.root.querySelector('#file-list-content');
-        this.root.querySelector('#dropdown').addEventListener('click', () => {
-            const triangle = this.root.querySelector('folder-triangle');
-            if (isOpen) {
-                isOpen = false;
-                triangle.isOpen = isOpen;
-                this.fileListContent.innerHTML = "";
-                this.root.querySelector('#list-options').innerHTML = "";
-            }
-            else {
-                isOpen = true;
-                triangle.isOpen = isOpen;
-                this.setFilesFromPath(this.selectionBoxes.path);
-                this.setCheckboxSelector();
-            }
-        })
+        this.root.querySelector('#dropdown').addEventListener('click', () => this.onDropdownClick())
         this.selectionBoxes.addEventListener('change', () => {
-            if (isOpen) {
+            if (this.dropdownOpen) {
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
         })
@@ -223,6 +208,22 @@ export default class CreateFileWindow extends HTMLElement {
             if (truthArr.every(x => x)) checkboxSelector.checked = true
             else if (truthArr.every(x => !x)) checkboxSelector.checked = false
             else checkboxSelector.indeterminate = true;
+        }
+    }
+
+    async onDropdownClick(){
+        const triangle = this.root.querySelector('folder-triangle');
+        if (this.dropdownOpen) {
+            this.dropdownOpen = false;
+            triangle.open = this.dropdownOpen;
+            this.fileListContent.innerHTML = "";
+            this.root.querySelector('#list-options').innerHTML = "";
+        }
+        else {
+            this.dropdownOpen = true;
+            triangle.open = this.dropdownOpen;
+            await this.setFilesFromPath(this.selectionBoxes.path);
+            this.setCheckboxSelector();
         }
     }
 
