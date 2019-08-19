@@ -2,6 +2,15 @@
 
 An code and file editor for VdM scans.
 
+![lhc-vdm-editor-pic](https://user-images.githubusercontent.com/6304200/63268652-f1409280-c294-11e9-92fa-ef0ecc4c37c8.png)
+
+## Features
+
+* A VdM code editor, including: syntax highlighting, syntax checking, autocompletion, auto generation of line numbers and VdM file headers and hints for VdM commands
+* A file browser tracking files on a GitLab repository.
+* Graphs containing simulations of expected beam position and luminosity.
+* Generation of common VdM scans.
+
 ## Local Development
 
 * Create the file `/secrets.json` with the format `{"token": <TOKEN>}`.
