@@ -49,6 +49,9 @@ export default class ContextMenu extends HTMLElement {
         this.render();
     }
 
+    /**
+     * @param {{ onActivate: (arg0: () => void) => void; pending: boolean; }} button
+     */
     handleButtonClick(button) {
         button.onActivate(() => {
             this.allButtonsDisabled = true;

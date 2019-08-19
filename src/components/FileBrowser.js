@@ -146,6 +146,11 @@ export default class FileBrowser extends MyHyperHTMLElement {
         await this.fileStructure;
     }
 
+    /**
+     * @param {string} filePath
+     * @param {boolean} isFolder
+     * @param {() => void} markAsPending
+     */
     async onDeleteButtonPressed(filePath, isFolder, markAsPending) {
         try {
             if (!confirm(`Are you sure you want to delete the file ${filePath}?`)) return;
@@ -173,6 +178,11 @@ export default class FileBrowser extends MyHyperHTMLElement {
         }
     }
 
+    /**
+     * @param {string} filePath
+     * @param {boolean} isFolder
+     * @param {() => void} markAsPending
+     */
     async onRenameButtonPressed(filePath, isFolder, markAsPending) {
         try {
             if (!this.isCommitted) {
@@ -318,7 +328,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 })}
                 ${Array.from(_structure.folders.entries()).map((folderParts) => {
                 const [folderName, folderContent] = folderParts;
-                const isFolderOpen = _structure.isFolderOpen;
+                const isFolderOpen = _structure.isFolderOpen ||
+                    (_structure.isFolderOpen === undefined && this.openFile != undefined && this.openFile.startsWith(joinFilePaths(prefix, folderName)));
 
                 return wire(folderParts)`
                         <div onclick=${() => { _structure.isFolderOpen = !_structure.isFolderOpen; this.render() }} class="item folder">
@@ -418,6 +429,9 @@ export default class FileBrowser extends MyHyperHTMLElement {
         this.openFile = fullFileName;
     }
 
+    /**
+     * @param {{ ip: any; campaign: any; }} newValue
+     */
     async setSelection(newValue){
         if (this.ip != newValue.ip || this.campaign != newValue.campaign) {
             await this.setFileStructure(newValue.ip, newValue.campaign);

@@ -118,6 +118,9 @@ export default class LuminosityChart extends GenericChart {
         }, 500, this, true);
     }
 
+    /**
+     * @param {string} newScale
+     */
     set scale(newScale){
         this.chart.yAxis[0].update({
             type: newScale == "log" ? "logarithmic" : "linear"

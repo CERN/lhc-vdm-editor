@@ -114,7 +114,7 @@ describe("FileBrowser", () => {
         const folderElement = getHTMLElementWithText(fb, folderName);
 
         folderElement.click();
-        await wait(1); // wait for await to resolve
+        await wait(1); // wait for async to resolve
         const hasFile1 = HTMLHasText(fb, fileName);
         folderElement.click();
         await wait(1);
