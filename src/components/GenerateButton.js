@@ -269,7 +269,7 @@ export class GenerateSequenceWindow extends HTMLElement {
                         <input type="text" placeholder="Beam 2 Crossing">
                     </div>
                     <div class='tiny'>
-                        *Currently supported functions include: linear(startpos, endpos), periodic(period) <br>**Function can be a sum of functions. Ex: linear(a,b) + periodic(c)
+                        *Currently supported functions include: constant, linear(startpos, endpos), periodic(period, amplitude) <br>**Function can be a sum. Ex: linear(-4,3) - 1
                     </div>
                     <button id='function-generate'>Generate at cursor</button>
                 </div>
