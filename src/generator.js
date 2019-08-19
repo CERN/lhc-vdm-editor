@@ -30,7 +30,7 @@ export default class Generator {
 
         this.functions = {
             linear: (startPos, endPos, runTime) => (t) => startPos + t * (endPos - startPos) / runTime,
-            periodic: (period) => (t) => (t % period < period / 2) ? 1 : 0,
+            periodic: (period, amplitude) => (t) => (t % period < period / 2) ? amplitude : 0,
             step: function (startTime, endTime) {
                 return (t) => (t >= startTime && t <= endTime) ? 1 : 0
             },
@@ -42,11 +42,11 @@ export default class Generator {
         this.functionHandler = {
             linear: (argArr, waitTime, stepNum) => {
                 if (argArr.length != 2) throw new ArgError('Linear function takes two arguments: linear(startPos,endPos)');
-                return this.functions.linear(argArr[0], argArr[1], waitTime * stepNum);
+                return this.functions.linear(...argArr, waitTime * stepNum);
             },
             periodic: (argArr, waitTime, stepNum) => {
-                if (argArr.length != 1) throw new ArgError('Periodic function takes one argument: periodic(period)');
-                return this.functions.periodic(argArr[0]);
+                if (argArr.length != 2) throw new ArgError('Periodic function takes one argument: periodic(period)');
+                return this.functions.periodic(...argArr);
             }
         }
 
@@ -96,30 +96,40 @@ export default class Generator {
     }
 
     getFunctionFromString(string, waitTime, stepNum) {
-        let arr = string.split(/\(|\)/).slice(0,-1);
-        if (arr.length % 2 != 0) throw new ArgError('Invalid syntax');
+        string = string.replace(' ', '');
 
-        let funcArr = [];
-        for(let i = 0; i < arr.length; i += 2) {
-            let args = arr[i + 1].split(',').map(x => Number(x));
-            if (args.some(x => isNaN(x))) throw new ArgError('Invalid argument. Arguments must be numbers');
+        /* if (string.includes('*')) {
+            let arr1 = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))\*(((?=\+)|-)?\d+)/g);
+            let arr2 = string.match(/(((?=\+)|-)?\d+)\*(((?=\+)|-)?(\w+)\(([^)]+)\))/g);
+            let arr3 = string.match(/(((?=\+)|-)?\d+)\*(((?=\+)|-)?\d+)/g);
+            let arr4 = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))\*(((?=\+)|-)?(\w+)\(([^)]+)\))/g);
             
-            let handle = arr[i];
-            let sign = 1;
-            let match = handle.match(/ *(\+|-) */);
-            if (match){
-                sign = Number(match[1] + '1');
-                handle = handle.replace(match[0], '');
-            }
+            let
+            let arr = arr1.concat(arr2, arr3, arr4).map(x => {
+                this.prodFunc(...x.split('*').map(x => this.getFunctionFromString(x)))
+            });
 
-            if (this.functionHandler[handle]) {
-                let func = this.prodFunc(sign, this.functionHandler[handle](args, waitTime, stepNum));
-                funcArr.push(func);
-            }
-            else throw new ArgError('Unknown function ' + handle)
-        }
+            return this.sumFunc(...arr);
+        } */
 
-        return this.sumFunc(...funcArr)
+        let tmp = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))|(((?=\+)|-)?\d+)/g);
+        if (tmp.length > 1) return this.sumFunc(...tmp.map(x => this.getFunctionFromString(x, waitTime, stepNum)));
+
+        tmp = Number(string);
+        if (tmp) return tmp;
+
+        tmp = string.replace('-', '');
+        if(string[0] == '-') return this.prodFunc(-1, this.getFunctionFromString(tmp, waitTime, stepNum))
+
+        tmp = Array.from(string.matchAll(/(\w+)\(([^)]+)\)/))[0];
+        if (tmp.length != 3) throw new ArgError('Unknown syntax error');
+
+        let args = tmp[2].split(',').map(x => Number(x));
+        if (args.some(x => isNaN(x))) throw new ArgError('Invalid argument. Function arguments must be numbers');
+        
+        let handle = tmp[1];
+        if (this.functionHandler[handle]) return this.functionHandler[handle](args, waitTime, stepNum);
+        else throw new ArgError('Unknown function ' + handle)
     }
     /**
      * @param {function[]} inpFuncArr
@@ -127,31 +137,30 @@ export default class Generator {
      * @param {number} waitTime
      */
     generateFromFunction(inpFuncArr, waitTime, stepNum) {
-        /* funcArr is an array with 4 functions as specified in "desciption".
+        /* funcArr is an array with 4 functions as specified in "desciption" in this.generateFromArray.
         Each function will be evaluated from 0 to endTime.
         If a function is undefined it is simply ignored (zero function).
         If a function is a number, it is taken to be the constant function. */
         const funcArr = inpFuncArr.map(x => {
             if (typeof x == 'function') return x
             else if (typeof x == 'number') return this.functions.constant(x)
-            else if (Array.isArray(x)) return this.sumFunc(...x)
             else throw new Error('invalid entry')
         });
 
-        let stepTime = waitTime;
+        let stepTime = (waitTime * stepNum) / (stepNum - 1);
         let arr = Array(4);
         funcArr.forEach((func, index) => {
-            let posArr = Array(stepNum + 1);
+            let posArr = Array(stepNum);
 
-            for (let i = 0; i <= stepNum; i++) {
+            for (let i = 0; i < stepNum; i++) {
                 posArr[i] = func(stepTime * i)
             }
 
             arr[index] = posArr;
         })
 
-        stepTime = parseFloat(stepTime.toFixed(2));
-        return this.generateFromArray(arr, stepTime);
+        //stepTime = parseFloat(stepTime.toFixed(2));
+        return this.generateFromArray(arr, waitTime);
     }
 
     generateFromArray(arr, waitTime) {
@@ -169,9 +178,9 @@ export default class Generator {
         const sequenceLength = arr.reduce((acc, cur) => Math.max(acc, cur.length), 0);
 
         let lineArr = [];
-        let accWaitTime = waitTime;
+        let accWaitTime = 0;
         let prevPos = [0, 0, 0, 0]
-
+        
         for (let index = 0; index < sequenceLength; index++) {
             let line = '';
 
@@ -187,17 +196,14 @@ export default class Generator {
             })
 
             if (line != '') {
-                lineArr.push('SECONDS_WAIT ' + accWaitTime);
+                if (accWaitTime > 0) lineArr.push('SECONDS_WAIT ' + accWaitTime);
                 lineArr.push('RELATIVE_TRIM' + line);
 
                 accWaitTime = waitTime;
             }
             else accWaitTime += waitTime;
         }
-
-        if (accWaitTime > waitTime) lineArr.push('SECONDS_WAIT ' + accWaitTime)
-        lineArr.push('SECONDS_WAIT ' + waitTime);
-
+        
         let line = '';
         prevPos.forEach((x, i) => {
             if (x != 0) {
@@ -206,10 +212,13 @@ export default class Generator {
         })
         
         if (line) {
+            lineArr.push('SECONDS_WAIT ' + accWaitTime);
             lineArr.push('RELATIVE_TRIM' + line);
-            lineArr.push('SECONDS_WAIT ' + waitTime);
+
+            accWaitTime = 0;
         }
 
+        if (accWaitTime > 0) lineArr.push('SECONDS_WAIT ' + accWaitTime);
         return lineArr.join('\n');
     }
 }
