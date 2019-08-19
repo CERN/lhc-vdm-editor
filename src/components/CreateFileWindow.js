@@ -230,6 +230,9 @@ export default class CreateFileWindow extends HTMLElement {
         return arr;
     }
 
+    /**
+     * @param {string} path
+     */
     async setFilesFromPath(path) {
         let files = [NO_FILES_TEXT];
         try {
@@ -260,11 +263,15 @@ export default class CreateFileWindow extends HTMLElement {
         element.querySelector('input').onchange = (event) => this.selectAll(event);
     }
 
+    /**
+     * @param {any} changeEvent
+     */
     selectAll(changeEvent) {
         this.root.querySelector('#file-list-content').querySelectorAll('input').forEach(x => {
             x.checked = changeEvent.target.checked;
         })
     }
+    
     /**
      * @param {string[]} files
      */

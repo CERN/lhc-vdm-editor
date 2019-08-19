@@ -52,6 +52,11 @@ export default class FolderTriangle extends HTMLElement {
         }
     }
 
+    /**
+     * @param {string | number} name
+     * @param {any} oldValue
+     * @param {any} newValue
+     */
     attributeChangedCallback(name, oldValue, newValue) {
         this[name] = newValue;
     }

@@ -56,6 +56,9 @@ export default class ChartsComponent extends MyHyperHTMLElement {
         this.allCharts.forEach(chart => chart.reflow());
     }
 
+    /**
+     * @param {number} pointIndex
+     */
     showTooltips(pointIndex){
         this.allCharts.forEach(chart => chart.showTooltip(pointIndex));
     }
