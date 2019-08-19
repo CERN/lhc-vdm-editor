@@ -1,11 +1,12 @@
 import FileBrowser from "./FileBrowser.js";
 import GitLab from "../GitLab.js";
-import { NO_FILES_TEXT, HTMLHasText, getHTMLElementWithText, wait } from "../HelperFunctions.js";
+import { NO_FILES_TEXT, HTMLHasText, getHTMLElementWithText, wait, joinFilePaths } from "../HelperFunctions.js";
 
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
 const TEST_FILE2 = "201806_VdM/IP1/IP1_LSC_B1X_12Nov17.txt";
 const TEST_NO_FILE_FOLDER = "201707_ATLAS_DryRun/IP8";
 const TEST_FOLDER_FILE = "201811_VdM_PbPb/IP8/spare/lhcb_Diag_Nov2018.txt";
+const TEST_FOLDER = "Test_Campaign/IP1";
 
 /**
  * @param {GitLab} [gitlab]
@@ -127,5 +128,32 @@ describe("FileBrowser", () => {
         const newFileButton = getHTMLElementWithText(fb, "New file");
         newFileButton.click();
         expect(fb.shadowRoot.querySelector("create-file-window")).not.toBeNull();
+    })
+
+    it("Can create, rename and delete in one", async () => {
+        await fb.setOpenFile(TEST_FOLDER);
+        const TEST_FILENAME = "my_file.txt";
+        const RENAMED_FILENAME = "my_new_file.txt";
+        const FULL_FILEPATH = joinFilePaths(TEST_FOLDER, TEST_FILENAME);
+        const FULL_NEW_FILEPATH = joinFilePaths(TEST_FOLDER, RENAMED_FILENAME);
+        
+        await fb.tryCreateEmptyFile(TEST_FOLDER, TEST_FILENAME);
+        await wait(1);
+        expect(HTMLHasText(fb, TEST_FILENAME)).toBeTruthy();
+        
+        const renameChangeSpy = jasmine.createSpy("renameChangeSpy");
+        spyOn(window, "prompt").and.callFake(() => RENAMED_FILENAME);
+        await fb.onRenameButtonPressed(FULL_FILEPATH, false, renameChangeSpy);
+        await wait(1);
+        expect(renameChangeSpy).toHaveBeenCalled();
+        expect(HTMLHasText(fb, TEST_FILENAME)).not.toBeTruthy();
+        expect(HTMLHasText(fb, RENAMED_FILENAME)).toBeTruthy();
+
+        const deleteChangeSpy = jasmine.createSpy("deleteChangeSpy");
+        spyOn(window, "confirm").and.callFake(() => true);
+        await fb.onDeleteButtonPressed(FULL_NEW_FILEPATH, false, deleteChangeSpy);
+        await wait(1);
+        expect(deleteChangeSpy).toHaveBeenCalled();
+        expect(HTMLHasText(fb, RENAMED_FILENAME)).not.toBeTruthy();
     })
 })

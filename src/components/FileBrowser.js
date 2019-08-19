@@ -162,7 +162,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
             } else {
                 await this.gitlab.deleteFile(filePath);
             }
-            this.refresh();
+            await this.refresh();
 
             if (this.openFile == filePath) {
                 this.dispatchEvent(new CustomEvent("open-file", {
@@ -205,7 +205,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
             } else {
                 await this.gitlab.renameFile(filePath, newName);
             }
-            this.refresh();
+            await this.refresh();
 
             if (this.openFile == filePath) {
                 const fullNewName = `${this.campaign}/${this.ip}/${newName}`;
@@ -366,6 +366,30 @@ export default class FileBrowser extends MyHyperHTMLElement {
     }
 
     /**
+     * @param {string} filename
+     * @param {string} containingFolder
+     */
+    async tryCreateEmptyFile(containingFolder, filename){
+        try {
+            await this.gitlab.createFile(joinFilePaths(containingFolder, filename));
+            await this.refresh();
+        }
+        catch (error) {
+            if (error instanceof FileAlreadyExistsError) {
+                alert(`Cannot create the empty file ${filename}, it already exists`);
+                return;
+            }
+            else {
+                throw error;
+            }
+        }
+        finally {
+            this.createFileWindow = undefined;
+            this.render();
+        }
+    }
+
+    /**
      * @param {string} [containingFolder]
      */
     clickNewFile(containingFolder) {
@@ -384,30 +408,12 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 }
             }}
                 oncancel=${
-            () => {
-                this.createFileWindow = undefined;
-                this.render();
-            }
-            }
-                oncreate-empty=${async event => {
-                try {
-                    await this.gitlab.createFile(joinFilePaths(containingFolder, event.detail));
-                    this.refresh();
-                }
-                catch (error) {
-                    if (error instanceof FileAlreadyExistsError) {
-                        alert(`Cannot create the empty file ${event.detail}, it already exists`);
-                        return;
-                    }
-                    else {
-                        throw error;
+                    () => {
+                        this.createFileWindow = undefined;
+                        this.render();
                     }
                 }
-                finally {
-                    this.createFileWindow = undefined;
-                    this.render();
-                }
-            }}
+                oncreate-empty=${event => this.tryCreateEmptyFile(containingFolder, event.detail)}
             />`
 
         this.render();
