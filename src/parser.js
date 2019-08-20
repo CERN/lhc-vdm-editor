@@ -35,8 +35,8 @@ export function isSubsetOf(arr1, arr2) {
  * @param {string} key
  * @returns {Array}
  */
-export function getInnerBracket(str, key) {
-    const match = str.match(new RegExp('^' + key + '\\((.*)\\)$'));
+export function getInnerBracket(str, key = '') {
+    const match = key ? str.match(new RegExp('^' + key + '\\((.*)\\)$')) : str.match(/\((.*)\)$/);
     if (!match) {
         throw `Expected ${key}(...) but got ${str}`
     }
@@ -507,8 +507,12 @@ export default class VdM {
             }
 
             let initTrimObj = this.structure.find(x => x.command == 'INITIALIZE_TRIM');
-            if (initTrimObj) {
-                if (this.errors.length == 0 && initTrimObj.stringify() != genInitTrimObj.stringify()) {
+            if (initTrimObj && initTrimObj.isValid) {
+                const initTrimIsValid = [0, 1, 2, 3].map(i => 
+                    isSubsetOf(getInnerBracket(genInitTrimObj.args[i]), getInnerBracket(initTrimObj.args[i]))
+                ).every(x => x);
+
+                if (this.errors.length == 0 && !initTrimIsValid) {
                     this.errors.push(new VdMSyntaxError(0, `Invalid INITIALIZE_TRIM command. Expected "${genInitTrimObj.stringify()}" but got "${initTrimObj.stringify()}"`))
                 }
             }
