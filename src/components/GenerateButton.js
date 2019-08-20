@@ -16,7 +16,6 @@ const windowStyling = css`
 .window {
     background-color: #f1f1f1;
     display: inline-block;
-    padding: 15px;
     border: solid 5px #444444;
     font-family: sans-serif;
     border-radius: 2px;
@@ -24,9 +23,15 @@ const windowStyling = css`
     text-align: left;
     position: relative;
     z-index: 10000;
+    width: 400px;
 }
 
-button {
+.tab{
+    margin: 15px;
+    display: block;
+}
+
+button[id$=generate] {
     background-color: #f1f1f1;
     border: solid #656565 2px;
     margin: 5px 3px 5px 3px;
@@ -38,7 +43,7 @@ button {
     float: right;
 }
 
-button:hover {
+button[id$=generate]:hover {
     background-color: #d6d6d6;
     cursor: pointer;
 }
@@ -62,13 +67,11 @@ button:hover {
     background-color: #ca5151;
 }
 
-.top-space{
-    margin-top: 50px;
-}
 .tiny{
     font-size: 8pt;
     width: 100%;
     margin: 3px;
+    text-align: left;
 }
 
 input{
@@ -90,6 +93,44 @@ input.error{
     position: fixed;
     top: 15px;
 }
+
+.tabs button{
+    padding: 8px 16px;
+    float: left;
+    width: auto;
+    border: none;
+    outline: 0;
+    vertical-align: middle;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tabs button:hover{
+    background-color: #ccc;
+}
+
+.tabs button.open{
+    background-color: #616161;
+    color: white;
+    border-radius: 0 0 10px 0px;
+}
+
+.tabs{
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    background-color: #dddddd;
+}
+.tabs::after{
+    content: "";
+    display: table;
+    clear: both;
+}
+.tabs::before{
+    content: "";
+    display: table;
+    clear: both;
+}
 `
 
 export class GenerateSequenceWindow extends HTMLElement {
@@ -99,6 +140,8 @@ export class GenerateSequenceWindow extends HTMLElement {
         this._ip = 'IP1';
         this.generator = null;
         this.allInputs = null;
+        this.tabButtons = null;
+        this.allTabs = null;
     }
 
     /**
@@ -211,12 +254,22 @@ export class GenerateSequenceWindow extends HTMLElement {
     connectedCallback() {
         this.render();
         this.generator = new Generator(this.ip);
-        
         this.allInputs = {
             arrays: this.root.querySelector('#arrays').querySelectorAll('input'),
             functions: this.root.querySelector('#functions').querySelectorAll('input'),
         };
+        this.tabButtons = this.root.querySelector('.tabs').querySelectorAll('button');
+        this.allTabs = this.root.querySelectorAll('.tab');
 
+        this.tabButtons.forEach(elem => {
+            elem.addEventListener('click', () => {
+                this.tabButtons.forEach(x => x.classList.remove('open'))
+                this.allTabs.forEach(x => x.style.display = 'none')
+
+                elem.classList.add('open')
+                this.root.getElementById(elem.id.split('-')[0]).style.display = 'block';
+            })
+        })
         this.root.querySelectorAll('input').forEach(elem => {
             elem.addEventListener('change', () => {
                 elem.classList.remove('error');
@@ -256,20 +309,28 @@ export class GenerateSequenceWindow extends HTMLElement {
             <div class="window">
                 <div id="exit-button">x</div>
                 
-                <div id='functions'>
+                <div class='tabs'>
+                    <button id='functions-tab' class='open'>From function</button>
+                    <button id='arrays-tab'>From array</button>
+                    <button id='VDM-tab'>Van Der Meer</button>
+                </div>
+
+                <div class='tab' id='functions'>
                     <div>Generate scan from functions</div>
                     <hr>
                     <div>
-                        <input id="wait-time" type="number" placeholder="Time between trims">
-                        <input id="step-number" type="number" placeholder="Number of steps">
-                    </div>
-                    <div>
-                        <input type="text" placeholder="Beam 1 Separation">
-                        <input type="text" placeholder="Beam 2 Separation">
-                    </div>
-                    <div>
-                        <input type="text" placeholder="Beam 1 Crossing">
-                        <input type="text" placeholder="Beam 2 Crossing">
+                        <div>
+                            <input id="wait-time" type="number" placeholder="Time between trims">
+                            <input id="step-number" type="number" placeholder="Number of steps">
+                        </div>
+                        <div>
+                            <input type="text" placeholder="Beam 1 Separation">
+                            <input type="text" placeholder="Beam 2 Separation">
+                        </div>
+                        <div>
+                            <input type="text" placeholder="Beam 1 Crossing">
+                            <input type="text" placeholder="Beam 2 Crossing">
+                        </div>
                     </div>
                     <div class='tiny'>
                         *Currently supported functions include: constant, linear(startpos, endpos), periodic(period, amplitude) <br>**Function can be a sum. Ex: linear(-4,3) - 1
@@ -277,19 +338,25 @@ export class GenerateSequenceWindow extends HTMLElement {
                     <button id='function-generate'>Generate at cursor</button>
                 </div>
                 
-                <div id='arrays'>
-                    <div class='top-space'>Generate scan from position arrays</div>
+                <div class='tab' id='arrays' style='display: none'>
+                    <div>Generate scan from position arrays</div>
                     <hr>
-                    <input type="number" placeholder="Time between trims">
                     <div>
-                        <input type="text" placeholder="Beam 1 Separation">
-                        <input type="text" placeholder="Beam 2 Separation">
-                    </div>
-                    <div>
-                        <input type="text" placeholder="Beam 1 Crossing">
-                        <input type="text" placeholder="Beam 2 Crossing">
+                        <input type="number" placeholder="Time between trims">
+                        <div>
+                            <input type="text" placeholder="Beam 1 Separation">
+                            <input type="text" placeholder="Beam 2 Separation">
+                        </div>
+                        <div>
+                            <input type="text" placeholder="Beam 1 Crossing">
+                            <input type="text" placeholder="Beam 2 Crossing">
+                        </div>
                     </div>
                     <button id='array-generate'>Generate at cursor</button>
+                </div>
+
+                <div class='tab' id='VDM' style='display: none'>
+                    <button id='VDM-generate'>Generate at cursor</button>
                 </div>
             </div>
             
