@@ -323,7 +323,7 @@ export default class CodeEditor extends HTMLElement {
         const arg1 = [this.ip]; //['IP1', 'IP2', 'IP5', 'IP8'] if we want to suggest any ip
         const arg2 = ['BEAM1', 'BEAM2'];
         const arg3 = ['CROSSING', 'SEPARATION'];
-        const arg4 = ['0.0'];
+        const arg4 = ['0.00'];
         const arg5 = ['SIGMA', 'MM'];
         const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
 
@@ -369,7 +369,7 @@ export default class CodeEditor extends HTMLElement {
                 suggestions = syntaxify(arg2, 10, 'beam', insertSpace)
             } else if (arg2.includes(prevWord)) {
                 suggestions = syntaxify(arg3, 10, 'plane', insertSpace)
-            } else if (arg3.includes(prevWord)) {
+            } else if (arg3.includes(prevWord) && words[words.length - 1] == '') {
                 suggestions = syntaxify(arg4, 10, 'number', insertSpace)
             } else if (isFinite(Number(prevWord))) {
                 suggestions = syntaxify(arg5, 10, 'unit', false)
@@ -381,7 +381,7 @@ export default class CodeEditor extends HTMLElement {
             } else if (arg3.includes(prevWord)) {
                 suggestions = syntaxify(fitTypes, 10, 'fit type', false)
             }
-        } else if (firstWord == 'SECONDS_WAIT' && prevWord == 'SECONDS_WAIT') {
+        } else if (firstWord == 'SECONDS_WAIT' && prevWord == 'SECONDS_WAIT' && words[words.length - 1] == '') {
             suggestions = syntaxify(arg4, 10, 'number', false)
         }
 
