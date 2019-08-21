@@ -66,6 +66,7 @@ button[disabled] {
 #exit-button:hover {
     background-color: #ca5151;
 }
+
 `
 
 export default class ModelWindow extends HTMLElement {

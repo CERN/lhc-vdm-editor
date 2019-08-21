@@ -418,12 +418,16 @@ export class GenerateButton extends HTMLElement {
             this.generateSequenceWindow = wire()`<generate-sequence-window ip=${this.ip}></generate-sequence-window>`
             this.render()
         })
-        this.root.addEventListener("cancelmodel", () => {
-            this.button.classList.remove('active')
-            this.generateSequenceWindow = '';
-            this.render()
-        })
+        this.root.addEventListener("cancelmodel", () => this.removeModel());
+        this.root.addEventListener("generated", () => this.removeModel());
     }
+
+    removeModel(){
+        this.button.classList.remove('active')
+        this.generateSequenceWindow = '';
+        this.render()
+    }
+
     set ip(ip) {
         this._ip = ip;
         this.render()

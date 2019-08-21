@@ -190,7 +190,10 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 return;
             }
 
-            const newName = prompt(`What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`);
+            const newName = prompt(
+                `What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`, 
+                filePath.split("/").slice(2).join('/')
+            );
             if (newName == null) return;
 
             if (newName.includes(" ")) {
