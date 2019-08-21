@@ -23,7 +23,6 @@ const windowStyling = css`
     text-align: left;
     position: relative;
     z-index: 10000;
-    width: 400px;
 }
 
 .tab{

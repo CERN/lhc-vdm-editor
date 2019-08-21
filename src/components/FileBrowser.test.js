@@ -6,7 +6,7 @@ const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
 const TEST_FILE2 = "201806_VdM/IP1/IP1_LSC_B1X_12Nov17.txt";
 const TEST_NO_FILE_FOLDER = "201707_ATLAS_DryRun/IP8";
 const TEST_FOLDER_FILE = "201811_VdM_PbPb/IP8/spare/lhcb_Diag_Nov2018.txt";
-const TEST_FOLDER = "Test_Campaign/IP1";
+const TEST_FOLDER = "201908_Test_Campaign/IP1";
 
 /**
  * @param {GitLab} [gitlab]
@@ -130,7 +130,7 @@ describe("FileBrowser", () => {
         expect(fb.shadowRoot.querySelector("create-file-window")).not.toBeNull();
     })
 
-    it("Can create, rename and delete in one", async () => {
+    xit("Can create, rename and delete in one", async () => {
         await fb.setOpenFile(TEST_FOLDER);
         const TEST_FILENAME = "my_file.txt";
         const RENAMED_FILENAME = "my_new_file.txt";

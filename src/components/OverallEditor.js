@@ -138,8 +138,8 @@ async function getBeamJSON(campaignName, gitlab) {
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
-                // TODO: actually display proper beams.json file here
-                alert(`Campaign ${campaignName} has no beams.json file, using the default file.`)
+                // TODO: actually display proper beam.json file here
+                alert(`Campaign ${campaignName} has no beam.json file, using the default file.`)
                 beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
             } else throw error;
         }
