@@ -22,6 +22,7 @@ button:hover {
 button.active{
     border-style: solid;
     border-width: 2px;
+    background-color: #bfbfbf;
 }
 `
 

@@ -166,6 +166,7 @@ export default class CodeEditor extends HTMLElement {
         // NOTE: this is to tell OverallEditor to parse the header
         this.headerlessParse = true;
         this.VdM = null;
+        this.ip = null;
 
         this.preventAutocompleteClosing();
 
@@ -319,7 +320,7 @@ export default class CodeEditor extends HTMLElement {
         const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
         const others = ['SECONDS_WAIT', 'START_FIT', 'MESSAGE'];
         const noArgCommand = ['END_FIT']
-        const arg1 = ['IP1', 'IP2', 'IP5', 'IP8'];
+        const arg1 = [this.ip]; //['IP1', 'IP2', 'IP5', 'IP8'] if we want to suggest any ip
         const arg2 = ['BEAM1', 'BEAM2'];
         const arg3 = ['CROSSING', 'SEPARATION'];
         const arg4 = ['0.0'];
@@ -339,11 +340,15 @@ export default class CodeEditor extends HTMLElement {
             })
         }
 
+        if (editor.session.getLine(pos.row)[0] == '#') {
+            return
+        };
+
         const words = editor.session
             .getLine(pos.row)
             .slice(0, pos.column)
             .split(/ +/);
-        if (words.length < 2) {
+        if (words.length < 2 && words[0][0] != '#') {
             callback(null,
                 syntaxify(trim.concat(others), 10, 'command')
                     .concat(syntaxify(noArgCommand, 10, 'command', false))
