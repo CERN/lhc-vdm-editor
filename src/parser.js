@@ -148,24 +148,6 @@ export function checkTrimArgs(args) {
     }
     return true
 }
-export function addPos(pos1, pos2) {
-    pos1['BEAM1']['SEPARATION'] += pos2['BEAM1']['SEPARATION'];
-    pos1['BEAM1']['CROSSING'] += pos2['BEAM1']['CROSSING'];
-    pos1['BEAM2']['SEPARATION'] += pos2['BEAM2']['SEPARATION'];
-    pos1['BEAM2']['CROSSING'] += pos2['BEAM2']['CROSSING'];
-}
-export function checkPosLim(pos, limit) {
-    return {
-        BEAM1: {
-            SEPARATION: Math.abs(pos['BEAM1']['SEPARATION']) < limit,
-            CROSSING: Math.abs(pos['BEAM1']['CROSSING']) < limit,
-        },
-        BEAM2: {
-            SEPARATION: Math.abs(pos['BEAM2']['SEPARATION']) < limit,
-            CROSSING: Math.abs(pos['BEAM2']['CROSSING']) < limit,
-        }
-    }
-}
 
 export class VdMcommandObject {
     constructor(commandLine) {
@@ -350,19 +332,22 @@ export class VdMcommandObject {
     stringify() {
         return `${this.index} ${this.command} ${this.args.join(' ')}`.trim()
     }
-    addPos(pos) {
-        addPos(this.position, pos)
+    addPos(posObj) {
+        for (let [beam, x] of Object.entries(posObj)) {
+            for (let [plane, pos] of Object.entries(x)) {
+                this.position[beam][plane] += pos;
+            }
+        }
     }
     checkLimit(limit, sigma) {
         // Limit in sigmas
         let errArr = [];
-        let passed = checkPosLim(this.position, limit * sigma);
-
-        for (let [beam, x] of Object.entries(passed)) {
-            let a = [beam, x]
-            for (let [plane, bool] of Object.entries(x)) {
-                let b = [plane, bool]
-                if (!bool) errArr.push(`* ${beam} ${plane} with position ${(this.position[beam][plane] / sigma).toFixed(2)} sigma`)
+        
+        for (let [beam, x] of Object.entries(this.position)) {
+            for (let [plane, pos] of Object.entries(x)) {
+                if (Math.abs(pos) > limit * sigma) {
+                    errArr.push(`* ${beam} ${plane} with position ${(pos / sigma).toFixed(2)} sigma`)
+                }
             }
         }
 
