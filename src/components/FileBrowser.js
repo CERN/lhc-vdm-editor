@@ -1,5 +1,5 @@
 // @ts-check
-import { css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
+import { css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath, isAFolderOf } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
@@ -80,6 +80,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
         });
         this.ip = "";
         this.campaign = "";
+        // Note: this is a map, as we want undefined to represent not opened or closed and false to represent closed
+        this.openFoldersMap = new Map();
 
         document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
@@ -307,13 +309,13 @@ export default class FileBrowser extends MyHyperHTMLElement {
     }
 
     /**
-     * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} fileStructure
+     * @param {{ files: string[]; folders: Map<string, any> }} fileStructure
      * @param {string} ip
      * @param {string} campaign
      */
     getFileUI(fileStructure, ip, campaign) {
         /**
-         * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} structure
+         * @param {{ files: string[]; folders: Map<string, any> }} structure
          */
         const getElementFromStructure = (structure, prefix = "") => {
             return wire(fileStructure, prefix)`
@@ -338,20 +340,21 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 })}
                 ${Array.from(structure.folders.entries()).map((folderParts) => {
                 const [folderName, folderContent] = folderParts;
-                const isFolderOpen = folderContent.isFolderOpen ||
-                    (folderContent.isFolderOpen === undefined && this.openFile != undefined && this.openFile.startsWith(joinFilePaths(prefix, folderName)));
+                const fullFolderPath = joinFilePaths(prefix, folderName);
+                const isFolderOpen = this.openFoldersMap.get(fullFolderPath) ||
+                    (this.openFoldersMap.get(fullFolderPath) === undefined && this.openFile != undefined && isAFolderOf(this.openFile, fullFolderPath));
 
                 return wire(folderParts)`
                         <div
-                            onclick=${() => { folderContent.isFolderOpen = !folderContent.isFolderOpen; this.render() }}
-                            oncontextmenu=${event => this.onContextMenu(event, joinFilePaths(prefix, folderName), true)}
+                            onclick=${() => { this.openFoldersMap.set(fullFolderPath, !isFolderOpen); this.render() }}
+                            oncontextmenu=${event => this.onContextMenu(event, fullFolderPath, true)}
                             class="item folder">
                             <folder-triangle open=${isFolderOpen}></folder-triangle>
                             <span class="folder-name">${folderName}</span>
                         </div>
                         <span style="display:block" class="folder-content">
                             ${
-                            isFolderOpen ? getElementFromStructure(folderContent, joinFilePaths(prefix, folderName)) : undefined
+                            isFolderOpen ? getElementFromStructure(folderContent, fullFolderPath) : undefined
                             }
                         </span>
                     `

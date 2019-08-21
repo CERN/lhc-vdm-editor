@@ -353,3 +353,10 @@ export function removeLineNumbers(text) {
 
     }).join("\n");
 }
+
+export function isAFolderOf(filePath, folderPath){
+    const fileParts = filePath.split("/").filter(x => x != "");
+    const folderParts = folderPath.split("/").filter(x => x != "");
+    
+    return arrayEquals(fileParts.slice(0, folderParts.length), folderParts);
+}
