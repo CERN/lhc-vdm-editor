@@ -60,6 +60,7 @@ export default class RawEditor extends HTMLElement {
         );
         // Is needed as a placeholder
         this.VdM = null;
+        this.ip = null;
     }
 
     connectedCallback() {

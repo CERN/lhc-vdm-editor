@@ -49,34 +49,6 @@ export default class Generator {
                 return this.functions.periodic(...argArr);
             }
         }
-
-
-        /* These are all examples of how to efficiently use the generator.
-        Functions as well as hardcoded posArrays can easily be added.
-
-        let funcArr
-        let func
-
-        funcArr = [this.functions.linear(-5, 5, 100), this.functions.linear(5, -5, 100)]; // no crossing plane functions supplied still works
-        this.template1 = this.generateFromFunction(funcArr, 50, 100);
-
-        funcArr = Array(4);
-        func = this.prodFunc(this.functions.periodic(6), this.functions.step(40, 60)); // periodic function on the interval [40, 60]
-        funcArr[0] = this.sumFunc(-1, func, this.functions.constant(1));
-        funcArr[1] = 1;
-        this.template2 = this.generateFromFunction(funcArr, 50, 100);
-
-        let arr1 = linspace(3, -3, 5).map(x => Array(3).fill(x)).flat();
-        arr1.unshift(0);
-        arr1.push(0);
-        let arr2 = [0, 4, 3, 1.5, 3, 1.5, 0, 1.5];
-        arr2 = arr2.concat([0]).concat(arr2.map(x => -x).reverse());
-        this.template3 = this.generateFromArray([arr1, arr2], 30);
-
-        arr1 = linspace(-5, 5, 50);
-        arr2 = arr1.slice().reverse();
-        this.template4 = this.generateFromArray([, , arr1, arr2], 10);
-        */
     }
 
     sumFunc(...funcs) {
@@ -99,17 +71,19 @@ export default class Generator {
         string = string.replace(' ', '');
 
         /* if (string.includes('*')) {
-            let arr1 = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))\*(((?=\+)|-)?\d+)/g);
-            let arr2 = string.match(/(((?=\+)|-)?\d+)\*(((?=\+)|-)?(\w+)\(([^)]+)\))/g);
-            let arr3 = string.match(/(((?=\+)|-)?\d+)\*(((?=\+)|-)?\d+)/g);
+            let arr1 = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))\*(((?=\+)|-)?(\d|\.)+)/g);
+            let arr2 = string.match(/(((?=\+)|-)?(\d|\.)+)\*(((?=\+)|-)?(\w+)\(([^)]+)\))/g);
+            let arr3 = string.match(/(((?=\+)|-)?(\d|\.)+)\*(((?=\+)|-)?(\d|\.)+)/g);
             let arr4 = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))\*(((?=\+)|-)?(\w+)\(([^)]+)\))/g);
             
-            let
-            let arr = arr1.concat(arr2, arr3, arr4).map(x => {
-                this.prodFunc(...x.split('*').map(x => this.getFunctionFromString(x)))
-            });
+            let arr = [].concat(arr1,arr2, arr3, arr4).filter(x => x);
+            let funcsToAdd = [];
+            arr.map(x => x.split('*')).forEach(funcs => {
+                let funcsToMult = funcs.map(func => this.getFunctionFromString(func, waitTime, stepNum));
+                funcsToAdd.push(this.prodFunc(...funcsToMult));
+            })
 
-            return this.sumFunc(...arr);
+            return this.sumFunc(...funcsToAdd);
         } */
 
         let tmp = string.match(/(((?=\+)|-)?(\w+)\(([^)]+)\))|(((?=\+)|-)?\d+)/g);
@@ -122,7 +96,7 @@ export default class Generator {
         if(string[0] == '-') return this.prodFunc(-1, this.getFunctionFromString(tmp, waitTime, stepNum))
 
         tmp = Array.from(string.matchAll(/(\w+)\(([^)]+)\)/))[0];
-        if (tmp.length != 3) throw new ArgError('Unknown syntax error');
+        if (!tmp || tmp.length != 3) throw new ArgError('Unknown syntax error');
 
         let args = tmp[2].split(',').map(x => Number(x));
         if (args.some(x => isNaN(x))) throw new ArgError('Invalid argument. Function arguments must be numbers');

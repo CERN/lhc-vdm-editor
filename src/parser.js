@@ -67,7 +67,7 @@ export function toProperUnits(beamParameters, IP) {
         "trim_rate": beamParameters.trim_rate * 1e-3, // m/s
         "intensity": beamParameters.intensity, // particles per bunch
         "bunch_pair_collisions": beamParameters.bunch_pair_collisions[IP],
-        "bunch_length": beamParameters.bunch_length * 1e-3 // m
+        "bunch_length": beamParameters.bunch_length // m
     };
 }
 export class VdMSyntaxError extends Error {
@@ -155,17 +155,16 @@ export function addPos(pos1, pos2) {
     pos1['BEAM2']['CROSSING'] += pos2['BEAM2']['CROSSING'];
 }
 export function checkPosLim(pos, limit) {
-    let errArr = []
-    if (Math.abs(pos['BEAM1']['SEPARATION']) > limit) errArr.push(`* Beam1, separation, ${pos['BEAM1']['SEPARATION'] * 1e3} mm`);
-    if (Math.abs(pos['BEAM1']['CROSSING']) > limit) errArr.push(`* Beam1, crossing, ${pos['BEAM1']['CROSSING'] * 1e3} mm`);
-    if (Math.abs(pos['BEAM2']['SEPARATION']) > limit) errArr.push(`* Beam2, separation, ${pos['BEAM2']['SEPARATION'] * 1e3} mm`);
-    if (Math.abs(pos['BEAM2']['CROSSING']) > limit) errArr.push(`* Beam2, crossing, ${pos['BEAM2']['CROSSING'] * 1e3} mm`);
-    if (errArr.length > 0) {
-        errArr.unshift('Beam out of bounds!')
-        throw errArr.join('\n');
+    return {
+        BEAM1: {
+            SEPARATION: Math.abs(pos['BEAM1']['SEPARATION']) < limit,
+            CROSSING: Math.abs(pos['BEAM1']['CROSSING']) < limit,
+        },
+        BEAM2: {
+            SEPARATION: Math.abs(pos['BEAM2']['SEPARATION']) < limit,
+            CROSSING: Math.abs(pos['BEAM2']['CROSSING']) < limit,
+        }
     }
-
-    return true
 }
 
 export class VdMcommandObject {
@@ -354,9 +353,25 @@ export class VdMcommandObject {
     addPos(pos) {
         addPos(this.position, pos)
     }
-    checkLimit(limit) {
-        // Limit in meters
-        checkPosLim(this.position, limit);
+    checkLimit(limit, sigma) {
+        // Limit in sigmas
+        let errArr = [];
+        let passed = checkPosLim(this.position, limit * sigma);
+
+        for (let [beam, x] of Object.entries(passed)) {
+            let a = [beam, x]
+            for (let [plane, bool] of Object.entries(x)) {
+                let b = [plane, bool]
+                if (!bool) errArr.push(`* ${beam} ${plane} with position ${(this.position[beam][plane] / sigma).toFixed(2)} sigma`)
+            }
+        }
+
+        if (errArr.length > 0) {
+            errArr.unshift('Beam out of bounds:');
+            errArr.push(`exceeds the maximally allowed distance of ${limit} sigma`);
+            throw errArr.join('\n');
+        }
+        else return true
     }
 }
 
@@ -572,7 +587,7 @@ export default class VdM {
         this.structure.forEach((command, i) => {
             if (command.type == 'command') {
                 try {
-                    command.checkLimit(this.param.scan_limits * this.sigma);
+                    command.checkLimit(this.param.scan_limits, this.sigma);
                 } catch (error) {
                     if (typeof error == 'string') this.errors.push(new VdMSyntaxError(i - 1, error))
                     else throw error
@@ -635,7 +650,7 @@ export default class VdM {
                     sequenceTime: line.sequenceTime
                 }, {
                     mm: line.position["BEAM" + beamNumber][sepVScross] * 1e3, // to mm
-                    sigma: line.position["BEAM" + beamNumber][sepVScross] / this.sigma // to sima
+                    sigma: line.position["BEAM" + beamNumber][sepVScross] / this.sigma // to sigma
                 }]
         }).filter(x => x);
     }

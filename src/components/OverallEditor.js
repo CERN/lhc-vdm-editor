@@ -23,8 +23,8 @@ const styling = css`
 
 #editor-button-container{
     position: absolute;
-    top: 49px;
-    right: 1px;
+    top: 46px;
+    right: -1px;
 }
 
 .header {
@@ -485,6 +485,7 @@ export default class OverallEditor extends HTMLElement {
 
         if (setValue) {
             this.editor.VdM = this.VdM;
+            this.editor.ip = this.ip;
             this.editor.value = previousEditor.value;
         }
 
