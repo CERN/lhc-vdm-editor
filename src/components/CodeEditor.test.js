@@ -26,7 +26,7 @@ describe("CodeEditor", () => {
     beforeEach(() => {
         ce = new CodeEditor();
         ce.VdM = new VdM(DEFAULT_BEAM_PARAMS, "IP1");
-
+        ce.ip = "IP1"
         ce.style.visibility = "hidden";
 
         document.body.append(ce);
