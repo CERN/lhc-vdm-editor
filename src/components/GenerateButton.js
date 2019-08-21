@@ -11,7 +11,7 @@ const windowStyling = css`
 button[id$=generate] {
     background-color: #f1f1f1;
     border: solid #656565 2px;
-    margin: 5px 3px 5px 3px;
+    margin: 10px;
     padding: 6px;
     padding-left: 15px;
     padding-right: 15px;
@@ -303,6 +303,8 @@ export class GenerateSequenceWindow extends HTMLElement {
             </div>
 
             <div class='tab' id='VdM'>
+                <div>Generate Van der Meer scan</div>
+                <hr>
                 <select>
                     <option>Beam 1</option>
                     <option>Beam 2</option>
