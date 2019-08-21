@@ -23,7 +23,6 @@ const styling = css`
 .window {
     background-color: #f1f1f1;
     display: inline-block;
-    padding: 15px;
     border: solid 5px #444444;
     font-family: sans-serif;
     border-radius: 2px;

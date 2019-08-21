@@ -10,6 +10,10 @@ const styling = css`
     margin-top: 6px;
 }
 
+.container{
+    padding: 15px;
+}
+
 button {
     background-color: #f1f1f1;
     border: solid #656565 2px;
@@ -240,27 +244,29 @@ export default class CreateFileWindow extends HTMLElement {
             ${styling}
         </style>
         <model-window>
-            <div>Create an empty file</div>
-            <div class="slightly-indented">
-                <input id="file-name" type="text" placeholder="New File Name" />
-            </div>
-            <button id="create-empty">Create</button>
-            <hr>
-            Copy items from folder
-            <div class="slightly-indented">
-                <ip-campaign-selectors allCampaigns=${this.campaigns}></ip-campaign-selectors>
-            </div>
-            <div>
-                <button id="copy-button">Copy files</button>
-            </div>
-            <div id='file-list'>
-                <div id='file-list-button'>
-                    <span id="dropdown">
-                        <folder-triangle></folder-triangle>
-                        <div class="slightly-indented">choose files</div>
-                    </span>
-                    <div id='list-options'></div>
-                    <div id='file-list-content'></div>
+            <div class="container">
+                <div>Create an empty file</div>
+                <div class="slightly-indented">
+                    <input id="file-name" type="text" placeholder="New File Name" />
+                </div>
+                <button id="create-empty">Create</button>
+                <hr>
+                Copy items from folder
+                <div class="slightly-indented">
+                    <ip-campaign-selectors allCampaigns=${this.campaigns}></ip-campaign-selectors>
+                </div>
+                <div>
+                    <button id="copy-button">Copy files</button>
+                </div>
+                <div id='file-list'>
+                    <div id='file-list-button'>
+                        <span id="dropdown">
+                            <folder-triangle></folder-triangle>
+                            <div class="slightly-indented">choose files</div>
+                        </span>
+                        <div id='list-options'></div>
+                        <div id='file-list-content'></div>
+                    </div>
                 </div>
             </div>
         </model-window>
