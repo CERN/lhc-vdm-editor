@@ -269,13 +269,14 @@ export default class OverallEditor extends HTMLElement {
      * @param {string} commitMessage
      */
     tryToCommit(commitMessage) {
-        this.showLoadingIndicator();
-        try{
-            if (this.filePath === null) return;
+        if (this.filePath === null) return;
+        
+        this.VdM.parse(this.value, true);
+        if (this.VdM.isValid) {
+            return (async () => {
+                this.showLoadingIndicator();
 
-            this.VdM.parse(this.value, true);
-            if (this.VdM.isValid) {
-                return (async () => {
+                try{
                     await this.gitlabInterface.writeFile(
                         this.filePath,
                         commitMessage,
@@ -283,15 +284,15 @@ export default class OverallEditor extends HTMLElement {
                     );
                     
                     this.isCommitted = true;
-                })();
-            }
-            else {
-                alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'));
-                return false;
-            }
+                }
+                finally{
+                    this.hideLoadingIndicator();
+                }
+            })();
         }
-        finally{
-            this.hideLoadingIndicator();
+        else {
+            alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'));
+            return false;
         }
     }
 
@@ -426,7 +427,10 @@ export default class OverallEditor extends HTMLElement {
             this.filePath = filePath;
             this.beamJSON = await getBeamJSON(this.campaign, this.gitlabInterface);
             this.VdM = new VdM(this.beamJSON, this.ip);
+
             this.editor.VdM = this.VdM;
+            this.editor.ip = this.ip;
+
             this.root.querySelector('generate-button').ip = this.ip;
 
             this.onEditorContentChange(this.value);
@@ -485,8 +489,6 @@ export default class OverallEditor extends HTMLElement {
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
 
         if (previousEditor) {
-            this.editor.VdM = this.VdM;
-            this.editor.ip = this.ip;
             this.editor.value = previousEditor.value;
         }
 
