@@ -49,8 +49,6 @@ declare namespace AceAjax {
             getText: (session: any, row: any) => string;
             getWidth: (session: any, lastLineNumber: any, config: any) => number;
         }
-
-        replace(range: MinimalRange, text: string): any;
     }
 
     export interface Ace {
@@ -71,6 +69,8 @@ declare namespace AceAjax {
         start: {row: number, column: number},
         end: {row: number, column: number}
     }
+
+    export type Range = MinimalRange;
 }
 
 // This means we can add any properties we like to window

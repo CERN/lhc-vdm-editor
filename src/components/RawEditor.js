@@ -99,7 +99,7 @@ export default class RawEditor extends HTMLElement {
         const cursorPos = this.textarea.selectionEnd;
         const nextNewLine = this.value.slice(cursorPos).search("\n") + cursorPos;
         this.value = addLineNumbers(removeLineNumbers(
-            this.value.slice(0, nextNewLine) + "\n" + newContent + this.value.slice(nextNewLine)
+            this.value.slice(0, nextNewLine) +  (this.value.trim() == "" ? "": "\n") + newContent + this.value.slice(nextNewLine)
         ))
 
         this.textarea.focus();
