@@ -170,7 +170,7 @@ export default class OverallEditor extends HTMLElement {
         this.filePath = null;
         this.editorContainer = this.root.getElementById("editor");
         /** @type {any} */
-        this.editor = this.root.querySelector("raw-editor");
+        this.editor = null;
         this.errorWebWorker = new Worker("./src/worker-vdm.js");
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
@@ -337,6 +337,17 @@ export default class OverallEditor extends HTMLElement {
      * @private
      */
     async loadDataFromLocalStorage() {
+        if (localStorage.getItem("open-file") != null) {
+            if (localStorage.getItem('open-tab') !== null) {
+                const buttonIndex = parseInt(localStorage.getItem('open-tab'));
+
+                this.switchToEditor(buttonIndex);
+            }
+            else {
+                this.switchToEditor(DEFAULT_EDITOR_INDEX);
+            }
+        }
+
         try {
             await this.setCurrentEditorContent(
                 localStorage.getItem("open-file"),
@@ -358,17 +369,6 @@ export default class OverallEditor extends HTMLElement {
             else throw error;
         }
         await this.fileBrowser.setOpenFile(this.filePath);
-
-        if (this.filePath != null) {
-            if (localStorage.getItem('open-tab') !== null) {
-                const buttonIndex = parseInt(localStorage.getItem('open-tab'));
-
-                this.switchToEditor(buttonIndex);
-            }
-            else {
-                this.switchToEditor(DEFAULT_EDITOR_INDEX);
-            }
-        }
     }
 
     showLoadingIndicator(){
@@ -389,6 +389,7 @@ export default class OverallEditor extends HTMLElement {
     async setCurrentEditorContent(filePath, localFileChanges=null, showLoadingIndicator=true, switchEditor=true) {
         if (filePath == null) {
             this.editorContainer.innerHTML = BLANK_EDITOR_HTML;
+            this.editor = null;
             this.filePath = null;
             this.updateFileNameUI(null);
             this.beamJSON = null;
@@ -406,7 +407,7 @@ export default class OverallEditor extends HTMLElement {
         try{
             if (this.filePath == null && switchEditor) {
                 // The filepath has been null and now isn't, so switch to the default editor.
-                this.switchToEditor(DEFAULT_EDITOR_INDEX, false);
+                this.switchToEditor(DEFAULT_EDITOR_INDEX);
             }
 
             const fileContent = await this.gitlabInterface.readFile(filePath);
@@ -476,14 +477,14 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {number} index
      */
-    switchToEditor(index, setValue = true) {
+    switchToEditor(index) {
         const previousEditor = this.editor;
         this.currentEditorIndex = index;
 
         this.root.querySelector("switch-editor-buttons").setActiveButton(index);
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
 
-        if (setValue) {
+        if (previousEditor) {
             this.editor.VdM = this.VdM;
             this.editor.ip = this.ip;
             this.editor.value = previousEditor.value;
@@ -515,7 +516,6 @@ export default class OverallEditor extends HTMLElement {
                 <div id="editor-container">
                     <div id="file-name"></div>
                     <div id="editor">
-                        <raw-editor></raw-editor>
                     </div>
                     <div id='editor-button-container'>
                         <switch-editor-buttons></switch-editor-buttons>

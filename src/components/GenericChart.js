@@ -73,7 +73,10 @@ export const commonChartOptions = {
                 inactive: {
                     opacity: 1
                 }
-            }
+            },
+            marker: {
+                enabled: false
+            },
         },
         area: {
             marker: {
