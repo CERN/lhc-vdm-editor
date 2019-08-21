@@ -5,7 +5,7 @@ import { default as Generator, ArgError } from '../generator.js'
 const windowStyling = css`        
 .tab{
     margin: 15px;
-    display: block;
+    display: none;
 }
 
 button[id$=generate] {
@@ -33,11 +33,11 @@ button[id$=generate]:hover {
     text-align: left;
 }
 
-input{
+input, select{
     padding: 7px;
     border-radius: 3px;
     border: solid 1px grey;
-    margin: 5px 0 5px 0;
+    margin: 5px 5px 5px 5px;
 }
 
 input.error{
@@ -142,6 +142,38 @@ export class GenerateSequenceWindow extends HTMLElement {
         return this.generator.generateFromFunction(funcArr, waitTime, stepNum)
     }
 
+    genFromVdMInput() {
+        const waitTime = Number(this.allInputs.VdM[0].value);
+        const stepNum = Number(this.allInputs.VdM[1].value);
+        const startSep = Number(this.allInputs.VdM[2].value) || 0;
+        const endSep = Number(this.allInputs.VdM[3].value) || 0;
+
+        const beam = this.root.querySelector('#VdM').querySelector('select').value;
+
+        let handleArr = Array(4);
+        if (beam == 'Beam 1') {
+            handleArr[0] = `linear(${startSep},${endSep})`
+        }
+        if (beam == 'Beam 2') {
+            handleArr[1] = `linear(${startSep},${endSep})`
+        }
+        if (beam == 'Both') {
+            handleArr[0] = `linear(${startSep / 2},${endSep / 2})`;
+            handleArr[1] = `linear(${-startSep / 2},${-endSep / 2})`;
+        }
+
+        const funcArr = handleArr.map((handle, index) => {
+            try {
+                return this.generator.getFunctionFromString(handle, waitTime, stepNum)
+            } catch (error) {
+                if (error instanceof ArgError) throw new ArgError(error.message, index)
+                else throw error
+            }
+        })
+
+        return this.generator.generateFromFunction(funcArr, waitTime, stepNum)
+    }
+
     onFunctionGenerateClick() {
         let missingNumber = false;
         Array.from(this.allInputs.functions).slice(0, 2).forEach(x => {
@@ -156,13 +188,13 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
 
         try {    
-            let newLines = this.genFromFunctionInput()
+            let newLines = this.genFromFunctionInput();
             this.onSuccess(newLines);
         }
         catch (error) {
             if (error instanceof ArgError) {
-                this.allInputs.functions[error.where + 2].classList.add('error')
-                alert('Invalid input function: ' + error.message)
+                this.allInputs.functions[error.where + 2].classList.add('error');
+                alert('Invalid input function: ' + error.message);
             }
             else throw error
         }
@@ -176,15 +208,41 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
         
         try {
-            let newLines = this.genFromArrayInput()
+            let newLines = this.genFromArrayInput();
             this.onSuccess(newLines);
         }
         catch (error) {
             if (error instanceof ArgError) {
-                this.allInputs.arrays[error.where + 1].classList.add('error')
-                alert('Invalid input array: ' + error.message)
+                this.allInputs.arrays[error.where + 1].classList.add('error');
+                alert('Invalid input array: ' + error.message);
             }
-            else throw error
+            else throw error;
+        }
+    }
+
+    onVdMGenerateClick() {
+        let missingNumber = false;
+        Array.from(this.allInputs.VdM).slice(0, 2).forEach(x => {
+            if (!x.value) {
+                missingNumber = true;
+                x.classList.add('error')
+            }
+        })
+        if (missingNumber) {
+            alert('Both "Time between trims" and "Number of steps" are required fields');
+            return
+        }
+
+        try {
+            let newLines = this.genFromVdMInput();
+            this.onSuccess(newLines);
+        }
+        catch (error) {
+            if (error instanceof ArgError) {
+                this.allInputs.functions[error.where + 2].classList.add('error');
+                alert('Invalid input function: ' + error.message);
+            }
+            else throw error;
         }
     }
 
@@ -202,6 +260,7 @@ export class GenerateSequenceWindow extends HTMLElement {
         this.allInputs = {
             arrays: this.root.querySelector('#arrays').querySelectorAll('input'),
             functions: this.root.querySelector('#functions').querySelectorAll('input'),
+            VdM: this.root.querySelector('#VdM').querySelectorAll('input'),
         };
         this.tabButtons = this.root.querySelector('.tabs').querySelectorAll('button');
         this.allTabs = this.root.querySelectorAll('.tab');
@@ -221,8 +280,13 @@ export class GenerateSequenceWindow extends HTMLElement {
             })
         })
 
+        this.root.querySelector('#VdM-generate').addEventListener('click', () => this.onVdMGenerateClick());
         this.root.querySelector('#function-generate').addEventListener('click', () => this.onFunctionGenerateClick());
         this.root.querySelector('#array-generate').addEventListener('click', () => this.onArrayGenerateClick());
+
+        // Set default open tab
+        this.root.querySelector('#VdM').style.display = 'block';
+        this.root.querySelector('#VdM-tab').classList.add('open');
     }
 
 
@@ -233,9 +297,43 @@ export class GenerateSequenceWindow extends HTMLElement {
         </style>
         <model-window>
             <div class='tabs'>
-                <button id='functions-tab' class='open'>From function</button>
+                <button id='VdM-tab'>Van Der Meer</button>
                 <button id='arrays-tab'>From array</button>
-                <button id='VDM-tab'>Van Der Meer</button>
+                <button id='functions-tab'>From function</button>
+            </div>
+
+            <div class='tab' id='VdM'>
+                <select>
+                    <option>Beam 1</option>
+                    <option>Beam 2</option>
+                    <option>Both</option>
+                </select>
+                <div>
+                    <input id="wait-time" type="number" placeholder="Time between trims">
+                    <input id="step-number" type="number" placeholder="Number of steps">
+                </div>
+                <div>
+                    <input type="number" placeholder="Initial Separation">
+                    <input type="number" placeholder="Final Separation">
+                </div>
+                <button id='VdM-generate'>Generate at cursor</button>
+            </div>
+
+            <div class='tab' id='arrays'>
+                <div>Generate scan from position arrays</div>
+                <hr>
+                <div>
+                    <input type="number" placeholder="Time between trims">
+                    <div>
+                        <input type="text" placeholder="Beam 1 Separation">
+                        <input type="text" placeholder="Beam 2 Separation">
+                    </div>
+                    <div>
+                        <input type="text" placeholder="Beam 1 Crossing">
+                        <input type="text" placeholder="Beam 2 Crossing">
+                    </div>
+                </div>
+                <button id='array-generate'>Generate at cursor</button>
             </div>
 
             <div class='tab' id='functions'>
@@ -259,27 +357,6 @@ export class GenerateSequenceWindow extends HTMLElement {
                     *Currently supported functions include: constant, linear(startpos, endpos), periodic(period, amplitude) <br>**Function can be a sum. Ex: linear(-4,3) - 1
                 </div>
                 <button id='function-generate'>Generate at cursor</button>
-            </div>
-            
-            <div class='tab' id='arrays' style='display: none'>
-                <div>Generate scan from position arrays</div>
-                <hr>
-                <div>
-                    <input type="number" placeholder="Time between trims">
-                    <div>
-                        <input type="text" placeholder="Beam 1 Separation">
-                        <input type="text" placeholder="Beam 2 Separation">
-                    </div>
-                    <div>
-                        <input type="text" placeholder="Beam 1 Crossing">
-                        <input type="text" placeholder="Beam 2 Crossing">
-                    </div>
-                </div>
-                <button id='array-generate'>Generate at cursor</button>
-            </div>
-
-            <div class='tab' id='VDM' style='display: none'>
-                <button id='VDM-generate'>Generate at cursor</button>
             </div>
         </model-window>
         `
