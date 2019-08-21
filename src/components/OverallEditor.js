@@ -138,8 +138,8 @@ async function getBeamJSON(campaignName, gitlab) {
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
-                // TODO: actually display proper beams.json file here
-                alert(`Campaign ${campaignName} has no beams.json file, using the default file.`)
+                // TODO: actually display proper beam.json file here
+                alert(`Campaign ${campaignName} has no beam.json file, using the default file.`)
                 beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
             } else throw error;
         }
@@ -268,23 +268,26 @@ export default class OverallEditor extends HTMLElement {
     /**
      * @param {string} commitMessage
      */
-    async tryToCommit(commitMessage) {
+    tryToCommit(commitMessage) {
         this.showLoadingIndicator();
         try{
             if (this.filePath === null) return;
 
             this.VdM.parse(this.value, true);
             if (this.VdM.isValid) {
-                await this.gitlabInterface.writeFile(
-                    this.filePath,
-                    commitMessage,
-                    this.VdM.deparse()
-                );
-
-                this.isCommitted = true;
+                return (async () => {
+                    await this.gitlabInterface.writeFile(
+                        this.filePath,
+                        commitMessage,
+                        this.VdM.deparse()
+                    );
+                    
+                    this.isCommitted = true;
+                })();
             }
             else {
-                alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'))
+                alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'));
+                return false;
             }
         }
         finally{
@@ -297,7 +300,9 @@ export default class OverallEditor extends HTMLElement {
      * @private
      */
     addListeners() {
-        this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => this.tryToCommit(ev.detail));
+        this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => {
+            if(!this.tryToCommit(ev.detail)) ev.preventDefault();
+        });
         this.editorContainer.addEventListener('editor-content-change', ev => this.onEditorContentChange(ev.detail))
         this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));

@@ -513,13 +513,16 @@ export default class CodeEditor extends HTMLElement {
      */
     insertGeneratedContent(newContent){
         let currentRow = this.editor.getCursorPosition().row;
+
+        const currentLine = this.editor.session.getLine(currentRow);
+
         this.editor.session.insert({
             row: currentRow,
             column: Infinity
-        }, '\n' + newContent);
+        }, (currentLine.trim() == ""? "" : '\n') + newContent);
 
         this.editor.gotoLine(
-            currentRow + newContent.split("\n").length + 1,
+            currentRow + newContent.split("\n").length + (currentLine.trim() == ""? 0 : 1),
             Infinity
         )
     }

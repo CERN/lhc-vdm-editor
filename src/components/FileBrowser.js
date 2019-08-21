@@ -236,12 +236,12 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 buttons=${[
                 {
                     name: "Delete",
-                    pendingMessage: "Deleting ...",
+                    pendingMessage: "Deleting...",
                     onActivate: (markAsPending) => this.onDeleteButtonPressed(filePath, isFolder, markAsPending)
                 },
                 {
                     name: "Rename",
-                    pendingMessage: "Renaming ...",
+                    pendingMessage: "Renaming...",
                     onActivate: (markAsPending) => this.onRenameButtonPressed(filePath, isFolder, markAsPending)
                 },
             ]}
@@ -270,7 +270,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
         let fromFolderContents;
 
         try {
-            toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, fromFolder));
+            toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, toFolder));
         } catch (error) {
             if (error instanceof NoPathExistsError) toFolderContents = []
             else throw error
@@ -310,12 +310,12 @@ export default class FileBrowser extends MyHyperHTMLElement {
      */
     getFileUI(fileStructure, ip, campaign) {
         /**
-         * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} _structure
+         * @param {{ files: string[]; folders: Map<string, any>, isFolderOpen?: boolean }} structure
          */
-        const getElementFromStructure = (_structure, prefix = "") => {
+        const getElementFromStructure = (structure, prefix = "") => {
             return wire(fileStructure, prefix)`
                 <div>
-                ${_structure.files.map(fileName => {
+                ${structure.files.map(fileName => {
                 const fullFilePath = joinFilePaths(prefix, fileName);
                 const isOpenFile = fullFilePath == this.openFile;
 
@@ -333,13 +333,16 @@ export default class FileBrowser extends MyHyperHTMLElement {
                         ${fileName}</div>`
 
                 })}
-                ${Array.from(_structure.folders.entries()).map((folderParts) => {
+                ${Array.from(structure.folders.entries()).map((folderParts) => {
                 const [folderName, folderContent] = folderParts;
-                const isFolderOpen = _structure.isFolderOpen ||
-                    (_structure.isFolderOpen === undefined && this.openFile != undefined && this.openFile.startsWith(joinFilePaths(prefix, folderName)));
+                const isFolderOpen = folderContent.isFolderOpen ||
+                    (folderContent.isFolderOpen === undefined && this.openFile != undefined && this.openFile.startsWith(joinFilePaths(prefix, folderName)));
 
                 return wire(folderParts)`
-                        <div onclick=${() => { _structure.isFolderOpen = !_structure.isFolderOpen; this.render() }} class="item folder">
+                        <div
+                            onclick=${() => { folderContent.isFolderOpen = !folderContent.isFolderOpen; this.render() }}
+                            oncontextmenu=${event => this.onContextMenu(event, joinFilePaths(prefix, folderName), true)}
+                            class="item folder">
                             <folder-triangle open=${isFolderOpen}></folder-triangle>
                             <span class="folder-name">${folderName}</span>
                         </div>
@@ -406,8 +409,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
                     this.createFileWindow = undefined;
                     this.render();
                 }
-            }}
-                oncancel=${
+                }}
+                oncancelmodel=${
                     () => {
                         this.createFileWindow = undefined;
                         this.render();

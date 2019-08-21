@@ -36,17 +36,20 @@ export default class CommitElement extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.render();
-        this.root.querySelector("form").addEventListener("submit", () => {
-            let message = this.root.querySelector("input[type=text]").value;
-            if (message) {
-                if (confirm("Are you sure you want to commit?")) {
-                    this.dispatchEvent(new CustomEvent("commit-button-press", {
-                        detail: message
-                    }));
+    }
+
+    onCommitButtonPressed(){
+        let message = this.root.querySelector("input[type=text]").value;
+        if (message) {
+            if (confirm("Are you sure you want to commit?")) {
+                if(this.dispatchEvent(new CustomEvent("commit-button-press", {
+                    detail: message,
+                    cancelable: true
+                }))){
                     this.root.querySelector(".commit-message").value = "";
                 }
-            } else { alert("Error! No commit message.") }
-        })
+            }
+        } else { alert("Error! No commit message.") }
     }
 
     render() {
@@ -54,7 +57,7 @@ export default class CommitElement extends HTMLElement {
         <style>
             ${styling}
         </style>
-        <form method="get" action="javascript:void(0)">
+        <form method="get" action="javascript:void(0)" onsubmit=${() => this.onCommitButtonPressed()}>
             <input class="commit-message" type="text" placeholder="Commit message" />
             <input type="submit" class="commit-button" value="Commit"/>
         </form>

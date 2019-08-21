@@ -10,7 +10,7 @@ const styling = css`
     z-index: 100000;
 }
 
-.context-menu-item.disabled {
+.context-menu-item[disabled=true] {
     color: #949494;
     background-color: #f1f1f1;
     cursor: not-allowed;
