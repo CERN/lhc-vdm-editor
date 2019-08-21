@@ -3,28 +3,6 @@ import { css, html } from "../HelperFunctions.js"
 import { default as Generator, ArgError } from '../generator.js'
 
 const windowStyling = css`        
-.cover{
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    background-color: #00000075;
-    z-index: 1000;
-}
-
-.window {
-    background-color: #f1f1f1;
-    display: inline-block;
-    border: solid 5px #444444;
-    font-family: sans-serif;
-    border-radius: 2px;
-    box-shadow: grey 0 0 8px 3px;
-    text-align: left;
-    position: relative;
-    z-index: 10000;
-}
-
 .tab{
     margin: 15px;
     display: block;
@@ -47,24 +25,6 @@ button[id$=generate]:hover {
     cursor: pointer;
 }
 
-#exit-button {
-    width: 34px;
-    height: 20px;
-    background-color: #ff8484;
-    border: 1px solid #ff8484;
-    text-align: center;
-    border-radius: 30px;
-    font-family: monospace;
-    font-size: 15px;
-    position: absolute;
-    right: -19px;
-    top: -13px;
-    color: white;
-    cursor: pointer;
-}
-#exit-button:hover {
-    background-color: #ca5151;
-}
 
 .tiny{
     font-size: 8pt;
@@ -82,15 +42,6 @@ input{
 
 input.error{
     box-shadow: 0 0 0px 1px red;
-}
-
-#container{
-    left: 0;
-    right: 0;
-    text-align: center;
-    z-index: 1000;
-    position: fixed;
-    top: 15px;
 }
 
 .tabs button{
@@ -238,10 +189,6 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
     }
 
-    cancel() {
-        this.dispatchEvent(new CustomEvent("cancel", { bubbles: true }));
-    }
-
     set ip(ip) {
         this._ip = ip;
         this.render()
@@ -277,90 +224,65 @@ export class GenerateSequenceWindow extends HTMLElement {
 
         this.root.querySelector('#function-generate').addEventListener('click', () => this.onFunctionGenerateClick());
         this.root.querySelector('#array-generate').addEventListener('click', () => this.onArrayGenerateClick());
-
-        this.root.querySelector(".cover").addEventListener("click", () => this.cancel())
-
-        /**
-         * @param event {KeyboardEvent}
-         */
-        function onKeyUp(event) {
-            if (event.keyCode == 27/*esc*/) {
-                this.cancel();
-            }
-        }
-
-        this.onKeyUp = onKeyUp.bind(this);
-        document.body.addEventListener("keyup", this.onKeyUp);
-        this.root.querySelector("#exit-button").addEventListener("click", () => this.cancel())
     }
 
-
-    disconnectedCallback() {
-        document.removeEventListener("keyup", this.onKeyUp);
-    }
 
     render() {
         hyper(this.root)`
         <style>
             ${windowStyling}
         </style>
-        <div id='container'>
-            <div class="window">
-                <div id="exit-button">x</div>
-                
-                <div class='tabs'>
-                    <button id='functions-tab' class='open'>From function</button>
-                    <button id='arrays-tab'>From array</button>
-                    <button id='VDM-tab'>Van Der Meer</button>
-                </div>
+        <model-window>
+            <div class='tabs'>
+                <button id='functions-tab' class='open'>From function</button>
+                <button id='arrays-tab'>From array</button>
+                <button id='VDM-tab'>Van Der Meer</button>
+            </div>
 
-                <div class='tab' id='functions'>
-                    <div>Generate scan from functions</div>
-                    <hr>
+            <div class='tab' id='functions'>
+                <div>Generate scan from functions</div>
+                <hr>
+                <div>
                     <div>
-                        <div>
-                            <input id="wait-time" type="number" placeholder="Time between trims">
-                            <input id="step-number" type="number" placeholder="Number of steps">
-                        </div>
-                        <div>
-                            <input type="text" placeholder="Beam 1 Separation">
-                            <input type="text" placeholder="Beam 2 Separation">
-                        </div>
-                        <div>
-                            <input type="text" placeholder="Beam 1 Crossing">
-                            <input type="text" placeholder="Beam 2 Crossing">
-                        </div>
+                        <input id="wait-time" type="number" placeholder="Time between trims">
+                        <input id="step-number" type="number" placeholder="Number of steps">
                     </div>
-                    <div class='tiny'>
-                        *Currently supported functions include: constant, linear(startpos, endpos), periodic(period, amplitude) <br>**Function can be a sum. Ex: linear(-4,3) - 1
-                    </div>
-                    <button id='function-generate'>Generate at cursor</button>
-                </div>
-                
-                <div class='tab' id='arrays' style='display: none'>
-                    <div>Generate scan from position arrays</div>
-                    <hr>
                     <div>
-                        <input type="number" placeholder="Time between trims">
-                        <div>
-                            <input type="text" placeholder="Beam 1 Separation">
-                            <input type="text" placeholder="Beam 2 Separation">
-                        </div>
-                        <div>
-                            <input type="text" placeholder="Beam 1 Crossing">
-                            <input type="text" placeholder="Beam 2 Crossing">
-                        </div>
+                        <input type="text" placeholder="Beam 1 Separation">
+                        <input type="text" placeholder="Beam 2 Separation">
                     </div>
-                    <button id='array-generate'>Generate at cursor</button>
+                    <div>
+                        <input type="text" placeholder="Beam 1 Crossing">
+                        <input type="text" placeholder="Beam 2 Crossing">
+                    </div>
                 </div>
-
-                <div class='tab' id='VDM' style='display: none'>
-                    <button id='VDM-generate'>Generate at cursor</button>
+                <div class='tiny'>
+                    *Currently supported functions include: constant, linear(startpos, endpos), periodic(period, amplitude) <br>**Function can be a sum. Ex: linear(-4,3) - 1
                 </div>
+                <button id='function-generate'>Generate at cursor</button>
             </div>
             
-            <div class="cover">&nbsp;</div>
-        </div>
+            <div class='tab' id='arrays' style='display: none'>
+                <div>Generate scan from position arrays</div>
+                <hr>
+                <div>
+                    <input type="number" placeholder="Time between trims">
+                    <div>
+                        <input type="text" placeholder="Beam 1 Separation">
+                        <input type="text" placeholder="Beam 2 Separation">
+                    </div>
+                    <div>
+                        <input type="text" placeholder="Beam 1 Crossing">
+                        <input type="text" placeholder="Beam 2 Crossing">
+                    </div>
+                </div>
+                <button id='array-generate'>Generate at cursor</button>
+            </div>
+
+            <div class='tab' id='VDM' style='display: none'>
+                <button id='VDM-generate'>Generate at cursor</button>
+            </div>
+        </model-window>
         `
     }
 }
@@ -420,7 +342,7 @@ export class GenerateButton extends HTMLElement {
             this.generateSequenceWindow = wire()`<generate-sequence-window ip=${this.ip}></generate-sequence-window>`
             this.render()
         })
-        this.root.addEventListener('cancel', () => {
+        this.root.addEventListener("cancelmodel", () => {
             this.button.classList.remove('active')
             this.generateSequenceWindow = '';
             this.render()

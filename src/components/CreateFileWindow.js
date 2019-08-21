@@ -2,40 +2,9 @@ import { css, NO_FILES_TEXT } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
 import './FolderTriangle.js';
+import './ModelWindow.js';
 
 const styling = css`        
-.cover{
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    background-color: #00000075;
-    z-index: 1000;
-}
-
-.container {
-    left: 0;
-    right: 0;
-    position: fixed;
-    z-index: 1000;
-    text-align: center;
-    top: 15px;
-}
-
-.window {
-    background-color: #f1f1f1;
-    display: inline-block;
-    padding: 15px;
-    border: solid 5px #444444;
-    font-family: sans-serif;
-    border-radius: 2px;
-    box-shadow: grey 0 0 8px 3px;
-    text-align: left;
-    position: relative;
-    z-index: 10000;
-}
-
 #create-empty {
     display: block;
     margin-top: 6px;
@@ -55,25 +24,6 @@ button {
 button[disabled] {
     box-shadow: none;
     cursor: not-allowed;
-}
-
-#exit-button {
-    width: 34px;
-    height: 20px;
-    background-color: #ff8484;
-    border: 1px solid #ff8484;
-    text-align: center;
-    border-radius: 30px;
-    font-family: monospace;
-    font-size: 15px;
-    position: absolute;
-    right: -19px;
-    top: -13px;
-    color: white;
-    cursor: pointer;
-}
-#exit-button:hover {
-    background-color: #ca5151;
 }
 
 button:hover:not(disabled) {
@@ -128,25 +78,7 @@ export default class CreateFileWindow extends HTMLElement {
     connectedCallback() {
         this.render();
 
-        this.root.querySelector(".cover").addEventListener("click", () => {
-            this.cancel();
-        })
         this.selectionBoxes = this.root.querySelector("ip-campaign-selectors");
-
-        /**
-         * @param event {KeyboardEvent}
-         */
-        function onKeyUp(event) {
-            if (event.keyCode == 27/*esc*/) {
-                this.cancel();
-            }
-        }
-
-        this.onKeyUp = onKeyUp.bind(this);
-        document.body.addEventListener("keyup", this.onKeyUp);
-        this.root.querySelector("#exit-button").addEventListener("click", () => {
-            this.cancel();
-        });
 
         const copyButton = this.root.querySelector("#copy-button");
         const createEmptyButton = this.root.querySelector("#create-empty");
@@ -302,49 +234,36 @@ export default class CreateFileWindow extends HTMLElement {
         this.root.querySelector('#file-list-content').appendChild(list);
     }
 
-    disconnectedCallback() {
-        document.removeEventListener("keyup", this.onKeyUp);
-    }
-
-    cancel() {
-        this.dispatchEvent(new CustomEvent("cancel"));
-    }
-
     render() {
         hyper(this.root)`
         <style>
             ${styling}
         </style>
-        <div class="container">
-            <div class="window">
-                <div id="exit-button">x</div>
-                <div>Create an empty file</div>
-                <div class="slightly-indented">
-                    <input id="file-name" type="text" placeholder="New File Name" />
-                </div>
-                <button id="create-empty">Create</button>
-                <hr>
-                Copy items from folder
-                <div class="slightly-indented">
-                    <ip-campaign-selectors allCampaigns=${this.campaigns}></ip-campaign-selectors>
-                </div>
-                <div>
-                    <button id="copy-button">Copy files</button>
-                </div>
-                <div id='file-list'>
-                    <div id='file-list-button'>
-                        <span id="dropdown">
-                            <folder-triangle></folder-triangle>
-                            <div class="slightly-indented">choose files</div>
-                        </span>
-                        <div id='list-options'></div>
-                        <div id='file-list-content'></div>
-                    </div>
+        <model-window>
+            <div>Create an empty file</div>
+            <div class="slightly-indented">
+                <input id="file-name" type="text" placeholder="New File Name" />
+            </div>
+            <button id="create-empty">Create</button>
+            <hr>
+            Copy items from folder
+            <div class="slightly-indented">
+                <ip-campaign-selectors allCampaigns=${this.campaigns}></ip-campaign-selectors>
+            </div>
+            <div>
+                <button id="copy-button">Copy files</button>
+            </div>
+            <div id='file-list'>
+                <div id='file-list-button'>
+                    <span id="dropdown">
+                        <folder-triangle></folder-triangle>
+                        <div class="slightly-indented">choose files</div>
+                    </span>
+                    <div id='list-options'></div>
+                    <div id='file-list-content'></div>
                 </div>
             </div>
-            
-            <div class="cover">&nbsp;</div>
-        </div>
+        </model-window>
         `
     }
 }

@@ -409,8 +409,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
                     this.createFileWindow = undefined;
                     this.render();
                 }
-            }}
-                oncancel=${
+                }}
+                oncancelmodel=${
                     () => {
                         this.createFileWindow = undefined;
                         this.render();
