@@ -64,7 +64,7 @@ button[disabled] {
     cursor: pointer;
 }
 #exit-button:hover {
-    background-color: #ca5151;
+    background-color: #c71919;
 }
 
 `

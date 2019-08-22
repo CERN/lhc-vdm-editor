@@ -1,6 +1,7 @@
 // @ts-check
-import { css, html } from "../HelperFunctions.js"
-import { default as Generator, ArgError } from '../generator.js'
+import { css, html } from "../HelperFunctions.js";
+import { default as Generator, ArgError } from '../generator.js';
+import './InfoBox.js';
 
 const windowStyling = css`        
 .tab{
@@ -81,6 +82,56 @@ input.error{
     display: table;
     clear: both;
 }
+
+info-box {
+    float: right;
+}
+`
+
+const VdMInfoText = wire()`
+    <div style='width: 300px'>
+        <p>
+            The generated sequence will be inserted at the current position of the cursor in the editor.
+        </p>
+        <p>
+            To generate a Van der Meer type scan, choose which beam(s) that will be moving, and fill in the four numbers.
+        </p>
+    </div>
+`
+const arrayInfoText = wire()`
+    <div style='width: 300px'>
+        <p>
+            The generated sequence will be inserted at the current position of the cursor in the editor.
+        </p>
+        <p>
+            Supply a comma-separated 1-dimentional array of <strong>absolute</strong> beam positions. All four arrays are read simultaneously one entry at a time. If arrays are of unequal lengths, overflow is interpreted as zeros.
+        </p>
+        <p>
+            Empty inputs are equivalent to zero-arrays.
+        </p>
+    </div>
+`
+const functionInfoText = wire()`
+    <div style='width: 300px'>
+        <p>
+            The generated sequence will be inserted at the current position of the cursor in the editor.
+        </p>
+        <p>
+            Put in numbers and functions to define the <strong>absolute</strong> position of the beams. Empty inputs are interpreted as zero-functions.
+        </p>
+        <p>
+            Input functions can be sums, i.e: <br>4 - linear(-4, 4) + periodic(2, 1)
+        </p>
+        <p>
+            A linear scan is equivalent to a Van der Meer scan
+        </p>
+        <p>
+            Currently supported functions include:
+            <div style='margin-left: 40px;'>
+                linear(startpos (&sigma;), endpos (&sigma;))<br>periodic(period (s), amplitude (&sigma;))
+            </div>
+        </p>
+    </div>
 `
 
 export class GenerateSequenceWindow extends HTMLElement {
@@ -113,9 +164,9 @@ export class GenerateSequenceWindow extends HTMLElement {
             let arr = input.replace(/\[|\]/, '').split(',').map(x => Number(x))
             resArr[i] = arr;
         });
-        
+
         return this.generator.generateFromArray(resArr, waitTime);
-        
+
     }
 
     genFromFunctionInput() {
@@ -148,18 +199,20 @@ export class GenerateSequenceWindow extends HTMLElement {
         const startSep = Number(this.allInputs.VdM[2].value) || 0;
         const endSep = Number(this.allInputs.VdM[3].value) || 0;
 
-        const beam = this.root.querySelector('#VdM').querySelector('select').value;
-
+        const beam = this.root.querySelector('#VdM').querySelector('#beam-select').value;
+        const plane = this.root.querySelector('#VdM').querySelector('#plane-select').value;
+        const planeIndex = plane == 'Separation' ? 0 : 2;
+        
         let handleArr = Array(4);
         if (beam == 'Beam 1') {
-            handleArr[0] = `linear(${startSep},${endSep})`
+            handleArr[0 + planeIndex] = `linear(${startSep},${endSep})`
         }
         if (beam == 'Beam 2') {
-            handleArr[1] = `linear(${startSep},${endSep})`
+            handleArr[1 + planeIndex] = `linear(${startSep},${endSep})`
         }
         if (beam == 'Both') {
-            handleArr[0] = `linear(${startSep / 2},${endSep / 2})`;
-            handleArr[1] = `linear(${-startSep / 2},${-endSep / 2})`;
+            handleArr[0 + planeIndex] = `linear(${startSep / 2},${endSep / 2})`;
+            handleArr[1 + planeIndex] = `linear(${-startSep / 2},${-endSep / 2})`;
         }
 
         const funcArr = handleArr.map((handle, index) => {
@@ -187,7 +240,7 @@ export class GenerateSequenceWindow extends HTMLElement {
             return
         }
 
-        try {    
+        try {
             let newLines = this.genFromFunctionInput();
             this.onSuccess(newLines);
         }
@@ -206,7 +259,7 @@ export class GenerateSequenceWindow extends HTMLElement {
             alert('"Time between trims" is a required field');
             return
         }
-        
+
         try {
             let newLines = this.genFromArrayInput();
             this.onSuccess(newLines);
@@ -303,60 +356,70 @@ export class GenerateSequenceWindow extends HTMLElement {
             </div>
 
             <div class='tab' id='VdM'>
-                <div>Generate Van der Meer scan</div>
+                Generate Van der Meer scan
+                <info-box>
+                    ${VdMInfoText}
+                </info-box>
                 <hr>
-                <select>
+                <select id='beam-select'>
                     <option>Beam 1</option>
                     <option>Beam 2</option>
                     <option>Both</option>
                 </select>
+                <select id='plane-select'>
+                    <option>Separation</option>
+                    <option>Crossing</option>
+                </select>
                 <div>
-                    <input id="wait-time" type="number" placeholder="Time between trims">
+                    <input id="wait-time" type="number" placeholder="Time between steps (s)">
                     <input id="step-number" type="number" placeholder="Number of steps">
                 </div>
                 <div>
-                    <input type="number" placeholder="Initial Separation">
-                    <input type="number" placeholder="Final Separation">
+                    <input type="number" placeholder="Initial Separation (&sigma;)">
+                    <input type="number" placeholder="Final Separation (&sigma;)">
                 </div>
                 <button id='VdM-generate'>Generate at cursor</button>
             </div>
 
             <div class='tab' id='arrays'>
-                <div>Generate scan from position arrays</div>
+                Generate scan from position arrays
+                <info-box>
+                    ${arrayInfoText}
+                </info-box>
                 <hr>
                 <div>
-                    <input type="number" placeholder="Time between trims">
+                    <input type="number" placeholder="Time between steps (s)">
                     <div>
-                        <input type="text" placeholder="Beam 1 Separation">
-                        <input type="text" placeholder="Beam 2 Separation">
+                        <input type="text" placeholder="Beam 1 Separation (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Separation (&sigma;)">
                     </div>
                     <div>
-                        <input type="text" placeholder="Beam 1 Crossing">
-                        <input type="text" placeholder="Beam 2 Crossing">
+                        <input type="text" placeholder="Beam 1 Crossing (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Crossing (&sigma;)">
                     </div>
                 </div>
                 <button id='array-generate'>Generate at cursor</button>
             </div>
 
             <div class='tab' id='functions'>
-                <div>Generate scan from functions</div>
+                Generate scan from functions
+                <info-box>
+                    ${functionInfoText}
+                </info-box>
                 <hr>
                 <div>
                     <div>
-                        <input id="wait-time" type="number" placeholder="Time between trims">
+                        <input id="wait-time" type="number" placeholder="Time between steps (s)">
                         <input id="step-number" type="number" placeholder="Number of steps">
                     </div>
                     <div>
-                        <input type="text" placeholder="Beam 1 Separation">
-                        <input type="text" placeholder="Beam 2 Separation">
+                        <input type="text" placeholder="Beam 1 Separation (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Separation (&sigma;)">
                     </div>
                     <div>
-                        <input type="text" placeholder="Beam 1 Crossing">
-                        <input type="text" placeholder="Beam 2 Crossing">
+                        <input type="text" placeholder="Beam 1 Crossing (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Crossing (&sigma;)">
                     </div>
-                </div>
-                <div class='tiny'>
-                    *Currently supported functions include: constant, linear(startpos, endpos), periodic(period, amplitude) <br>**Function can be a sum. Ex: linear(-4,3) - 1
                 </div>
                 <button id='function-generate'>Generate at cursor</button>
             </div>
@@ -424,7 +487,7 @@ export class GenerateButton extends HTMLElement {
         this.root.addEventListener("generated", () => this.removeModel());
     }
 
-    removeModel(){
+    removeModel() {
         this.button.classList.remove('active')
         this.generateSequenceWindow = '';
         this.render()
