@@ -24,5 +24,8 @@
     "jasmine": "^3.4.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^1.19.0"
   }
 }
