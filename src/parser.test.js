@@ -66,6 +66,7 @@ const faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION
 // Tests on the parser and deparser functions
 describe("Parser", () => {
     let inst = new VdM()
+    let sigma = inst.sigma;
 
     // Tests on isSubsetOf()
     it('returns of isSubsetOf', () => {
@@ -100,7 +101,8 @@ describe("Parser", () => {
 
     // Test position manipulations
     // ----------------------------------REDO THESE WHEN TIME ALLOWS, DO NOT WORK AFTER CHANGES ON PARSER-----------------------------------------
-    xit('Position adding', () => {
+    it('Position adding', () => {
+        let obj = new script.VdMcommandObject('SECONDS_WAIT 0.00')
         let pos = {
             'BEAM1': {
                 'SEPARATION': 1,
@@ -121,10 +123,13 @@ describe("Parser", () => {
                 'CROSSING': 8,
             }
         }
-        script.addPos(pos, pos);
-        expect(pos).toEqual(pos2)
+        obj.addPos(pos);
+        expect(obj.position).toEqual(pos)
+        obj.addPos(pos)
+        expect(obj.position).toEqual(pos2)
     })
-    xit('Position boundary test', () => {
+    it('Position boundary test', () => {
+        let obj = new script.VdMcommandObject('SECONDS_WAIT 0.00')
         let pos = {
             'BEAM1': {
                 'SEPARATION': 1,
@@ -135,8 +140,9 @@ describe("Parser", () => {
                 'CROSSING': 4,
             }
         }
-        expect(() => script.checkPosLim(pos, 2)).toThrow(jasmine.any(String))
-        expect(script.checkPosLim(pos, 5)).toBeTruthy()
+        obj.addPos(pos)
+        expect(() => obj.checkLimit(2, sigma)).toThrow(jasmine.any(String))
+        expect(obj.checkLimit(5, sigma)).toBeTruthy()
     })
 
 
