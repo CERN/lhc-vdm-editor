@@ -132,12 +132,12 @@ describe("Parser", () => {
         let obj = new script.VdMcommandObject('SECONDS_WAIT 0.00')
         let pos = {
             'BEAM1': {
-                'SEPARATION': 1,
-                'CROSSING': 2,
+                'SEPARATION': 1 * sigma,
+                'CROSSING': 2 * sigma,
             },
             'BEAM2': {
-                'SEPARATION': 3,
-                'CROSSING': 4,
+                'SEPARATION': 3 * sigma,
+                'CROSSING': 4 * sigma,
             }
         }
         obj.addPos(pos)
