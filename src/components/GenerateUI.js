@@ -39,6 +39,8 @@ input, select{
     border-radius: 3px;
     border: solid 1px grey;
     margin: 5px 5px 5px 5px;
+    width: 180px;
+    box-sizing: border-box;
 }
 
 input.error{
