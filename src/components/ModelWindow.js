@@ -52,13 +52,12 @@ button[disabled] {
     width: 34px;
     height: 20px;
     background-color: #ff8484;
-    border: 1px solid #ff8484;
     text-align: center;
     border-radius: 30px;
     font-family: monospace;
     font-size: 15px;
     position: absolute;
-    right: -19px;
+    right: -15px;
     top: -13px;
     color: white;
     cursor: pointer;
