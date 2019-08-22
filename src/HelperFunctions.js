@@ -360,3 +360,31 @@ export function isAFolderOf(filePath, folderPath){
     
     return arrayEquals(fileParts.slice(0, folderParts.length), folderParts);
 }
+
+/**
+ * @param {any} value
+ */
+export function properTypeOf(value){
+    return Object.prototype.toString.call(value).match(/^\[object (.*)\]$/)[1];
+}
+
+/**
+ * @param {any} thisValue
+ * @param {{[key: string]: Function}} obj
+ */
+export function assertRequiredParameters(thisValue, obj){
+    for(let [key, expectedType] of Object.entries(obj)){
+        if(thisValue[key] === undefined && obj[key] !== undefined){
+            throw Error(`${properTypeOf(this)} expected ${key} to be populated and it is not.`)
+        }
+        else{
+            if(typeof thisValue[key] == "object"){
+                if(expectedType == null) return thisValue[key] === null;
+                else return thisValue[key] instanceof expectedType;
+            }
+            else{
+                return typeof thisValue[key] == expectedType.name.toLowerCase();
+            }
+        }
+    }
+}

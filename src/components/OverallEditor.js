@@ -10,7 +10,7 @@ import GitLab, { NoPathExistsError } from "../GitLab.js"
 import VdM from "../parser.js"
 import './RevertButton.js'
 import "./ChartsComponent.js"
-import './GenerateButton.js'
+import './GenerateUI.js'
 
 const styling = css`
 #editor-container {
@@ -487,11 +487,13 @@ export default class OverallEditor extends HTMLElement {
 
         this.root.querySelector("switch-editor-buttons").setActiveButton(index);
         this.editor = document.createElement(EDITOR_TAG_NAMES[index]);
+        this.editor.VdM = this.VdM;
+        this.editor.ip = this.ip;
 
         if (previousEditor) {
             this.editor.value = previousEditor.value;
         }
-
+        
         this.editorContainer.innerHTML = "";
         this.editorContainer.appendChild(this.editor);
     }

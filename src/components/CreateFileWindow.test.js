@@ -6,15 +6,16 @@ import { NO_FILES_TEXT } from "../HelperFunctions.js";
  * @param {GitLab} [gitlab]
  */
 async function getNewCreateFileWindow(gitlab) {
-    let fb = new CreateFileWindow();
-    fb.gitlab = gitlab;
-    fb.style.display = "none";
-    document.body.appendChild(fb);
+    let cfw = new CreateFileWindow();
+    cfw.gitlab = gitlab;
+    cfw.campaigns = (await gitlab.listCampaigns()).reverse()
+    cfw.style.display = "none";
+    document.body.appendChild(cfw);
 
-    return fb;
+    return cfw;
 }
 
-describe("FileBrowser", () => {
+describe("CreateFileWindow", () => {
     /** @type {CreateFileWindow} */
     let cfw;
     /** @type {GitLab} */
@@ -43,6 +44,7 @@ describe("FileBrowser", () => {
     })
 
     it("can setFileUI of no files", () => {
-        cfw.setFileUI([NO_FILES_TEXT])
+        cfw.setFileUI([NO_FILES_TEXT]);
+        expect().nothing();
     })
 })
