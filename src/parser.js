@@ -345,8 +345,9 @@ export class VdMcommandObject {
         
         for (let [beam, x] of Object.entries(this.position)) {
             for (let [plane, pos] of Object.entries(x)) {
-                if (Math.abs(pos) > limit * sigma) {
-                    errArr.push(`* ${beam} ${plane} with position ${(pos / sigma).toFixed(2)} sigma`)
+                const dist = (pos / sigma).toFixed(2) // dist to 0 in sigma
+                if ( Math.abs(Number(dist)) > limit) {
+                    errArr.push(`* ${beam} ${plane} with position ${dist} sigma`)
                 }
             }
         }
