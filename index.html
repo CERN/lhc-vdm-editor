@@ -19,12 +19,12 @@
         })
         window.addEventListener('unhandledrejection', async function (err) {
             try{
-                let errorText;
-
-                if(err.reason.body.locked) errorText = "";
-                else errorText = await err.reason.text();
-
                 if (err.reason instanceof Response) {
+                    let errorText;
+
+                    if(err.reason.body.locked) errorText = "";
+                    else errorText = await err.reason.text();
+
                     try {
                         const obj = JSON.parse(errorText);
                         if (typeof obj.message !== "undefined") {
@@ -40,7 +40,7 @@
                     alert(err.type + err.filename + ":" + err.lineno + "\n" + err.message);
                 }
             }
-            catch {}
+            catch (e){console.error(e)}
         });
     </script>
     <link rel="preload" as="script" href="./extern/ace-17.06.19/ace.js">

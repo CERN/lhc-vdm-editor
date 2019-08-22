@@ -5,7 +5,7 @@ import { NO_FILES_TEXT, HTMLHasText, getHTMLElementWithText, wait, joinFilePaths
 const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
 const TEST_FILE2 = "201806_VdM/IP1/IP1_LSC_B1X_12Nov17.txt";
 const TEST_NO_FILE_FOLDER = "201707_ATLAS_DryRun/IP8";
-const TEST_FOLDER_FILE = "201811_VdM_PbPb/IP8/spare/lhcb_Diag_Nov2018.txt";
+const TEST_FOLDER_FILE = "201606_muscan/IP1/fallback/muScan_x_stdrd.txt";
 const TEST_FOLDER = "201908_Test_Campaign/IP1";
 
 /**
@@ -112,12 +112,10 @@ describe("FileBrowser", () => {
         const [campaign, ip, folderName, fileName] = TEST_FOLDER_FILE.split("/");
         await fb.setOpenFile(`${campaign}/${ip}`);
 
-        const folderElement = getHTMLElementWithText(fb, folderName);
-
-        folderElement.click();
+        getHTMLElementWithText(fb, folderName).click();
         await wait(1); // wait for async to resolve
         const hasFile1 = HTMLHasText(fb, fileName);
-        folderElement.click();
+        getHTMLElementWithText(fb, folderName).click();
         await wait(1);
         const hasFile2 = HTMLHasText(fb, fileName);
 

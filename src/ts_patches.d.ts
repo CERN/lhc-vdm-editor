@@ -32,6 +32,14 @@ interface EventTarget {
     ): void;
 }
 
+interface HTMLElement {
+    addEventListener(
+        type: string,
+        listener: (ev: Event & CustomEvent & MouseEvent & KeyboardEvent) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+}
+
 // Note: this is needed as targetOrigin is implicit for web workers
 declare function postMessage(message: any, targetOrigin?: string, transfer?: Transferable[]): void;
 

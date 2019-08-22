@@ -1,5 +1,5 @@
 // @ts-check
-import { css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath, isAFolderOf } from "../HelperFunctions.js";
+import { css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath, isAFolderOf, assertRequiredParameters } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
 import './IPCampaignSelectors.js';
 import "./CreateFileWindow.js";
