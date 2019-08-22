@@ -66,7 +66,6 @@ const faultyFile = `0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM3) PLANE(SEPARATION
 // Tests on the parser and deparser functions
 describe("Parser", () => {
     let inst = new VdM()
-    let sigma = inst.sigma;
 
     // Tests on isSubsetOf()
     it('returns of isSubsetOf', () => {
@@ -132,17 +131,17 @@ describe("Parser", () => {
         let obj = new script.VdMcommandObject('SECONDS_WAIT 0.00')
         let pos = {
             'BEAM1': {
-                'SEPARATION': 1 * sigma,
-                'CROSSING': 2 * sigma,
+                'SEPARATION': 1,
+                'CROSSING': 2,
             },
             'BEAM2': {
-                'SEPARATION': 3 * sigma,
-                'CROSSING': 4 * sigma,
+                'SEPARATION': 3,
+                'CROSSING': 4,
             }
         }
         obj.addPos(pos)
-        expect(() => obj.checkLimit(2, sigma)).toThrow(jasmine.any(String))
-        expect(obj.checkLimit(5, sigma)).toBeTruthy()
+        expect(() => obj.checkLimit(2, 1)).toThrow(jasmine.any(String))
+        expect(obj.checkLimit(5, 1)).toBeTruthy()
     })
 
 
