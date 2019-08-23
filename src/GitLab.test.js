@@ -1,4 +1,4 @@
-import GitLab from "./GitLab.js"
+import GitLab from "./GitLab.js";
 
 describe("GitLab", () => {
     /** @type {GitLab} */
@@ -10,45 +10,45 @@ describe("GitLab", () => {
             // NOTE: we need to commit to the test branch so we don't mess up master
             "vdm-editor-test"
         );
-    })
+    });
 
     it("can get files", async () => {
         expect(await gitlab.readFile(
             "201605_VdM/IP5/HobbitCrossing.txt",
-        )).toEqual(jasmine.any(String))
-    })
+        )).toEqual(jasmine.any(String));
+    });
 
     it("doesn't get incorrect files", async () => {
         expect(await gitlab.readFile(
             "KJSNDKJASDK_not_a_file.txt",
-        ).catch(() => -1)).toBe(-1)
-    })
+        ).catch(() => -1)).toBe(-1);
+    });
 
     it("can commit something", async () => {
         expect(await gitlab.writeFile(
             "201605_VdM/IP5/TestFile.txt",
             "Test commit",
             Math.random().toString()
-        )).toBeUndefined()
-    })
+        )).toBeUndefined();
+    });
 
-    it('listing campaigns', async () => {
-        expect(await gitlab.listCampaigns()).toEqual(jasmine.any(Array))
-    })
+    it("listing campaigns", async () => {
+        expect(await gitlab.listCampaigns()).toEqual(jasmine.any(Array));
+    });
 
     it("listing IPs", async () => {
-        expect(await gitlab.listIPs('201605_VdM')).toEqual(jasmine.any(Array))
-    })
+        expect(await gitlab.listIPs("201605_VdM")).toEqual(jasmine.any(Array));
+    });
 
     it("can create and delete something", async () => {
         const fileName = `201605_VdM/IP5/${Math.random()}`;
 
         expect(await gitlab.createFile(
             fileName
-        )).toBeUndefined()
+        )).toBeUndefined();
 
         expect(await gitlab.deleteFile(
             fileName
-        )).toBeUndefined()
-    })
-})
+        )).toBeUndefined();
+    });
+});

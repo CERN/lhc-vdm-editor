@@ -22,7 +22,7 @@ const styling = css`
 :root{
     display: block;
 }
-`
+`;
 
 export default class ResizeablePanel extends HTMLElement {
     constructor() {
@@ -47,16 +47,15 @@ export default class ResizeablePanel extends HTMLElement {
             }
             container.style.width = newWidth + "px";
 
-
             Array.from(this.children).forEach(child => {
                 // @ts-ignore
                 if (typeof child.reflow == "function") {
                     // @ts-ignore
                     child.reflow();
                 }
-            })
+            });
 
-        }
+        };
     }
 
     connectedCallback(){
@@ -84,7 +83,7 @@ export default class ResizeablePanel extends HTMLElement {
             <slot></slot>
         </div>
         ${this.side == "left" ? wire()`<div id="resize-handle">&nbsp;</div>` : ""}
-    `
+    `;
     }
 }
-customElements.define('resizeable-panel', ResizeablePanel);
+customElements.define("resizeable-panel", ResizeablePanel);

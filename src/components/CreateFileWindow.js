@@ -1,10 +1,10 @@
 import { css, NO_FILES_TEXT } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
-import './FolderTriangle.js';
-import './ModelWindow.js';
+import "./FolderTriangle.js";
+import "./ModelWindow.js";
 
-const styling = css`        
+const styling = css`
 #create-empty {
     display: block;
     margin-top: 6px;
@@ -68,7 +68,7 @@ label {
 label *{
     vertical-align: middle;
 }
-`
+`;
 
 export default class CreateFileWindow extends HTMLElement {
     constructor() {
@@ -97,13 +97,13 @@ export default class CreateFileWindow extends HTMLElement {
                 detail: {
                     ip: this.selectionBoxes.ip,
                     campaign: this.selectionBoxes.campaign,
-                    filePaths: this.root.querySelector('folder-triangle').open ? this.chosenFiles : []
+                    filePaths: this.root.querySelector("folder-triangle").open ? this.chosenFiles : []
                 }
             }));
         });
 
         function _onEmptySubmit() {
-            const fileName = (/**@type HTMLInputElement*/(this.root.querySelector("#file-name"))).value;
+            const fileName = (/** @type HTMLInputElement */(this.root.querySelector("#file-name"))).value;
             if(fileName == null){
                 alert("Cannot create a file without a file name");
                 return;
@@ -120,40 +120,39 @@ export default class CreateFileWindow extends HTMLElement {
         }
         const onEmptySubmit = _onEmptySubmit.bind(this);
 
-
         createEmptyButton.addEventListener("click", onEmptySubmit);
-        this.root.querySelector("#file-name").addEventListener("keydown", /**@param {KeyboardEvent} event */event => {
+        this.root.querySelector("#file-name").addEventListener("keydown", /** @param {KeyboardEvent} event */event => {
             if (event.key == "Enter") {
                 onEmptySubmit();
             }
         });
 
-        this.fileListContent = this.root.querySelector('#file-list-content');
-        this.root.querySelector('#dropdown').addEventListener('click', () => this.onDropdownClick())
-        this.selectionBoxes.addEventListener('change', () => {
+        this.fileListContent = this.root.querySelector("#file-list-content");
+        this.root.querySelector("#dropdown").addEventListener("click", () => this.onDropdownClick());
+        this.selectionBoxes.addEventListener("change", () => {
             if (this.dropdownOpen) {
                 this.setFilesFromPath(this.selectionBoxes.path);
             }
-        })
+        });
 
         this.fileListContent.onchange = () => {
-            let truthArr = Array.from(this.fileListContent.querySelectorAll('input')).map(x => x.checked);
-            let checkboxSelector = this.root.querySelector('#list-options').querySelector('input');
+            let truthArr = Array.from(this.fileListContent.querySelectorAll("input")).map(x => x.checked);
+            let checkboxSelector = this.root.querySelector("#list-options").querySelector("input");
 
             checkboxSelector.indeterminate = false;
-            if (truthArr.every(x => x)) checkboxSelector.checked = true
-            else if (truthArr.every(x => !x)) checkboxSelector.checked = false
+            if (truthArr.every(x => x)) checkboxSelector.checked = true;
+            else if (truthArr.every(x => !x)) checkboxSelector.checked = false;
             else checkboxSelector.indeterminate = true;
-        }
+        };
     }
 
     async onDropdownClick(){
-        const triangle = this.root.querySelector('folder-triangle');
+        const triangle = this.root.querySelector("folder-triangle");
         if (this.dropdownOpen) {
             this.dropdownOpen = false;
             triangle.open = this.dropdownOpen;
             this.fileListContent.innerHTML = "";
-            this.root.querySelector('#list-options').innerHTML = "";
+            this.root.querySelector("#list-options").innerHTML = "";
         }
         else {
             this.dropdownOpen = true;
@@ -165,9 +164,9 @@ export default class CreateFileWindow extends HTMLElement {
 
     get chosenFiles() {
         let arr = [];
-        this.root.querySelector('#file-list-content').querySelectorAll('input').forEach(x => {
-            if (x.checked) arr.push(x.value)
-        })
+        this.root.querySelector("#file-list-content").querySelectorAll("input").forEach(x => {
+            if (x.checked) arr.push(x.value);
+        });
         return arr;
     }
 
@@ -177,12 +176,10 @@ export default class CreateFileWindow extends HTMLElement {
     async setFilesFromPath(path) {
         let files = [NO_FILES_TEXT];
         try {
-            files = await this.gitlab.listFiles(path, true, false)
+            files = await this.gitlab.listFiles(path, true, false);
         }
         catch (error) {
-            if (error instanceof NoPathExistsError) {
-
-            } else {
+            if (!(error instanceof NoPathExistsError)) {
                 throw error;
             }
         }
@@ -199,27 +196,27 @@ export default class CreateFileWindow extends HTMLElement {
             </label>
         `;
 
-        this.root.querySelector('#list-options').appendChild(element);
+        this.root.querySelector("#list-options").appendChild(element);
 
-        element.querySelector('input').onchange = (event) => this.selectAll(event);
+        element.querySelector("input").onchange = (event) => this.selectAll(event);
     }
 
     /**
      * @param {any} changeEvent
      */
     selectAll(changeEvent) {
-        this.root.querySelector('#file-list-content').querySelectorAll('input').forEach(x => {
+        this.root.querySelector("#file-list-content").querySelectorAll("input").forEach(x => {
             x.checked = changeEvent.target.checked;
-        })
+        });
     }
-    
+
     /**
      * @param {string[]} files
      */
     setFileUI(files) {
         let list = document.createDocumentFragment();
         for (let file of files) {
-            let line = document.createElement('div');
+            let line = document.createElement("div");
             if (file == NO_FILES_TEXT) {
                 line = wire()`
                     <span>${NO_FILES_TEXT}</span>
@@ -234,8 +231,8 @@ export default class CreateFileWindow extends HTMLElement {
             }
             list.appendChild(line);
         }
-        this.root.querySelector('#file-list-content').innerHTML = '';
-        this.root.querySelector('#file-list-content').appendChild(list);
+        this.root.querySelector("#file-list-content").innerHTML = "";
+        this.root.querySelector("#file-list-content").appendChild(list);
     }
 
     render() {
@@ -270,7 +267,7 @@ export default class CreateFileWindow extends HTMLElement {
                 </div>
             </div>
         </model-window>
-        `
+        `;
     }
 }
-customElements.define('create-file-window', CreateFileWindow);
+customElements.define("create-file-window", CreateFileWindow);

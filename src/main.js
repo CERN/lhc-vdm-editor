@@ -1,8 +1,8 @@
 
-import GitLab from "./GitLab.js"
-import { getJSON } from "./HelperFunctions.js"
-import OverallEditor from "./components/OverallEditor.js"
-import { OAuth } from "./OAuth.js"
+import GitLab from "./GitLab.js";
+import { getJSON } from "./HelperFunctions.js";
+import OverallEditor from "./components/OverallEditor.js";
+import { OAuth } from "./OAuth.js";
 
 $(async () => {
     let token;
@@ -30,4 +30,4 @@ $(async () => {
     window.oe = overallEditor;
 
     document.body.appendChild(overallEditor);
-})
+});

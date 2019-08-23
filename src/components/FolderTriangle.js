@@ -28,14 +28,14 @@ const styling = css`
     height: 0px;
     width: 0px;
 }
-`
+`;
 
 export default class FolderTriangle extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
         this.render();
-        this.triangle = this.root.querySelector('.triangle');
+        this.triangle = this.root.querySelector(".triangle");
         this.openState = false;
     }
 
@@ -62,7 +62,7 @@ export default class FolderTriangle extends HTMLElement {
     }
 
     get open() {
-        return this.openState
+        return this.openState;
     }
 
     render() {
@@ -73,10 +73,10 @@ export default class FolderTriangle extends HTMLElement {
         <div class="triangle-container">
             <span class="triangle triangle-closed"></span>
         </div>
-    `
+    `;
     }
 }
 
 FolderTriangle.observedAttributes = ["open"];
 
-customElements.define('folder-triangle', FolderTriangle);
+customElements.define("folder-triangle", FolderTriangle);

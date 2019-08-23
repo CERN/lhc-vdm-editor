@@ -1,4 +1,4 @@
-import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunctions.js"
+import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunctions.js";
 
 export class NoPathExistsError extends Error {
     constructor(message = "No Path exists") {
@@ -13,19 +13,19 @@ export class FileAlreadyExistsError extends Error {
 
 export default class GitLab {
     /**
-     * 
-     * @param {string} token 
+     *
+     * @param {string} token
      */
     constructor(token, branch="master", oauth=false, urlStart="https://gitlab.cern.ch/api/v4/projects/72000") {
         if (oauth) {
             this.authHeader = {
                 "Authorization": `Bearer ${token}`
-            }
+            };
         }
         else {
             this.authHeader = {
-                'Private-Token': token
-            }
+                "Private-Token": token
+            };
         }
         /** @private */
         this.token = token;
@@ -37,7 +37,7 @@ export default class GitLab {
 
     /**
      * Returns the plaintext of the given file
-     * 
+     *
      * @param {string} filePath
      */
 
@@ -58,13 +58,13 @@ export default class GitLab {
             }
             else throw error;
         }
-    };
+    }
 
     /**
-     * 
+     *
      * @param {string} filePath
-     * @param {string} commitMessage 
-     * @param {string} fileText 
+     * @param {string} commitMessage
+     * @param {string} fileText
      */
     async writeFile(filePath, commitMessage, fileText) {
         await gFetch(
@@ -72,7 +72,7 @@ export default class GitLab {
             {
                 headers: new Headers({
                     ...this.authHeader,
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 }),
                 method: "POST",
                 body: JSON.stringify({
@@ -85,11 +85,11 @@ export default class GitLab {
                     }]
                 })
             }
-        )
+        );
     }
 
     /**
-     * 
+     *
      * @param {string} filePath
      */
     async createFile(filePath) {
@@ -99,7 +99,7 @@ export default class GitLab {
                 {
                     headers: new Headers({
                         ...this.authHeader,
-                        'Content-Type': 'application/json'
+                        "Content-Type": "application/json"
                     }),
                     method: "POST",
                     body: JSON.stringify({
@@ -108,11 +108,11 @@ export default class GitLab {
                         actions: [{
                             action: "create",
                             file_path: filePath,
-                            content: ''
+                            content: ""
                         }]
                     })
                 }
-            )
+            );
         }
         catch (error) {
             if (error instanceof Response && (await error.clone().json()).message == "A file with this name already exists") {
@@ -125,7 +125,7 @@ export default class GitLab {
     }
 
     async listCampaigns() {
-        return Array.from((await this.listFiles('/', false)).folders.keys());
+        return Array.from((await this.listFiles("/", false)).folders.keys());
     }
 
     /**
@@ -138,7 +138,7 @@ export default class GitLab {
     /**
      * @param {string} path
      * @param {boolean} recursive
-     * @param {boolean} returnStructure whether to return a structure of type 
+     * @param {boolean} returnStructure whether to return a structure of type
      *  {files: string[], folders: Map<string, Structure>}. Note, if this is false,
      *  only file paths are returned, not folders
      */
@@ -150,8 +150,7 @@ export default class GitLab {
             {
                 headers: new Headers(this.authHeader)
             }
-        )
-
+        );
 
         function getStructureFolder(filePath, root) {
             let currentFolder = root;
@@ -179,7 +178,7 @@ export default class GitLab {
                     getStructureFolder(relativeFilePath, structure).folders.set(item.name, { files: [], folders: new Map() });
                 }
                 else {
-                    throw Error(`Unknown type ${item.type}`)
+                    throw Error(`Unknown type ${item.type}`);
                 }
             }
 
@@ -189,10 +188,10 @@ export default class GitLab {
         let fileList = await page.json();
 
         if (fileList.length == 0) {
-            throw new NoPathExistsError(`Invalid path ${path} (GitLab request returned no information)`)
+            throw new NoPathExistsError(`Invalid path ${path} (GitLab request returned no information)`);
         }
 
-        let lastPage = Math.ceil(parseInt(page.headers.get('X-Total')) / perPage);
+        let lastPage = Math.ceil(parseInt(page.headers.get("X-Total")) / perPage);
 
         for (let i = 2; i <= lastPage; i++) {
             const page = await gFetch(
@@ -203,7 +202,7 @@ export default class GitLab {
                 }
             );
 
-            fileList = fileList.concat(await page.json())
+            fileList = fileList.concat(await page.json());
         }
 
         if (returnStructure) {
@@ -223,7 +222,7 @@ export default class GitLab {
     async copyFilesFromFolder(fromFolder, toFolder, fileArr = []) {
         const fromFolderContents = (fileArr.length > 0 ? fileArr : await this.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
         let toFolderContents;
-        try { toFolderContents = (await this.listFiles(toFolder, true, false)).map(x => getRelativePath(x, toFolder)) }
+        try { toFolderContents = (await this.listFiles(toFolder, true, false)).map(x => getRelativePath(x, toFolder)); }
         catch (error) {
             if (error instanceof NoPathExistsError) {
                 toFolderContents = [];
@@ -231,23 +230,22 @@ export default class GitLab {
             else {
                 throw error;
             }
-        };
+        }
 
         const actions = (await awaitArray(fromFolderContents.filter(x => !toFolderContents.includes(x))
             .map(async filePath => ({
                 action: "create",
                 file_path: toFolder + "/" + filePath,
-                content: await this.readFile(fromFolder + '/' + filePath)
+                content: await this.readFile(fromFolder + "/" + filePath)
             }))
-        ))
-
+        ));
 
         await gFetch(
             `${this.urlStart}/repository/commits`,
             {
                 headers: new Headers({
                     ...this.authHeader,
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 }),
                 method: "POST",
                 body: JSON.stringify({
@@ -256,7 +254,7 @@ export default class GitLab {
                     actions: actions
                 })
             }
-        )
+        );
     }
 
     /**
@@ -268,7 +266,7 @@ export default class GitLab {
             {
                 headers: new Headers({
                     ...this.authHeader,
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 }),
                 method: "POST",
                 body: JSON.stringify({
@@ -280,7 +278,7 @@ export default class GitLab {
                     }]
                 })
             }
-        )
+        );
     }
 
     async deleteFolder(path) {
@@ -303,7 +301,7 @@ export default class GitLab {
             {
                 headers: new Headers({
                     ...this.authHeader,
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 }),
                 method: "POST",
                 body: JSON.stringify({
@@ -316,13 +314,13 @@ export default class GitLab {
                     }]
                 })
             }
-        )
+        );
     }
 
     async renameFolder(path, newName) {
         const filePaths = await this.listFiles(path, true, false);
         for (let file of filePaths) {
-            await this.renameFile(file, `${newName}/${file.split(path + '/').pop()}`);
+            await this.renameFile(file, `${newName}/${file.split(path + "/").pop()}`);
         }
     }
 }

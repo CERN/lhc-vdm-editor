@@ -16,15 +16,12 @@ export function repeat(element, numberOfTimes) {
 }
 
 function interpolate(literals, ...expressions) {
-    let string = ``
+    let string = ``;
     for (const [i, val] of expressions.entries()) {
-        if (typeof val == "function") {
-
-        }
-        string += literals[i] + val
+        string += literals[i] + val;
     }
-    string += literals[literals.length - 1]
-    return string
+    string += literals[literals.length - 1];
+    return string;
 }
 
 export function getFragmentOfChildNodes(node) {
@@ -42,7 +39,7 @@ export function getFragmentOfChildNodes(node) {
  */
 export function getRelativePath(absPath, prefix) {
     return absPath.split("/").filter(x => x != "").slice(
-        prefix.split("/").filter(x => x != "").length).join("/")
+        prefix.split("/").filter(x => x != "").length).join("/");
 }
 
 /**
@@ -52,14 +49,13 @@ export function getFilenameFromPath(filePath) {
     return filePath.split("/").pop();
 }
 
-
 /**
  * @params {Map} map1
  * @params {Map} map2
  */
 export function mergeMaps(map1, map2) {
     return new Map(Array.from(map1.entries()).concat(
-        Array.from(map2.entries())))
+        Array.from(map2.entries())));
 }
 
 /** @type {(x: TemplateStringsArray, ...xs: string[]) => string} */
@@ -116,7 +112,7 @@ export const preventSelectCSS = `
 -moz-user-select: none;
 -ms-user-select: none;
 user-select: none;
-`
+`;
 
 /**
  * @params {number} milliseconds
@@ -124,7 +120,7 @@ user-select: none;
 export async function wait(milliseconds) {
     return new Promise((resolve, _) => {
         setTimeout(resolve, milliseconds);
-    })
+    });
 }
 
 export const NO_FILES_TEXT = "--- NO FILES ---";
@@ -136,10 +132,10 @@ let throttleIDs = new Set();
  * @param {number} time
  * @param {() => any} func
  * @param {any} uid
- * @param {boolean} callLast Calls the function every `time` milliseconds (to make 
+ * @param {boolean} callLast Calls the function every `time` milliseconds (to make
  * sure the function is always called after throttle is stopped being called)
  */
-export async function throttle(func, time, uid, callLast = false) {
+export function throttle(func, time, uid, callLast = false) {
     if (!throttleIDs.has(uid)) {
         throttleIDs.add(uid);
         func();
@@ -149,13 +145,13 @@ export async function throttle(func, time, uid, callLast = false) {
             throttleIDs.delete(uid);
 
             if (callLast) func();
-        })()
+        })();
     }
 }
 
 /**
  * Adds the VDM line numbers to a file without line numbers
- * 
+ *
  * @params {string} text
  */
 export function addLineNumbers(text, start = 1) {
@@ -191,12 +187,12 @@ export function sigFigRound(num, sigFigs) {
  * Merges the propeties from two objects recursively, only if they
  * are pure objects, not instances of classes
  * @params {Object} obA Note: this function modifies this paramseter
- * @params {Object} obB 
+ * @params {Object} obB
  */
 export function deepMerge(obA, obB) {
     for (let [key, value] of Object.entries(obB)) {
         if (obA[key] == undefined || obA[key].__proto__ != Object.prototype) obA[key] = value;
-        else deepMerge(obA[key], obB[key])
+        else deepMerge(obA[key], obB[key]);
     }
 
     return obA;
@@ -204,7 +200,7 @@ export function deepMerge(obA, obB) {
 
 /**
  * Makes a deep copy of an object
- * @params {Object} object 
+ * @params {Object} object
  */
 export function deepCopy(object) {
     if (typeof object !== "object" || object == null) return object;
@@ -247,7 +243,7 @@ export const DEFAULT_BEAM_PARAMS = {
         "IP8": 50
     },
     "bunch_length": 0.0787
-}
+};
 
 /**
  * @template T
@@ -263,11 +259,11 @@ export function groupBy(arr, func) {
             groups.set(key, [element]);
         }
         else {
-            groups.set(key, groups.get(key).concat([element]))
+            groups.set(key, groups.get(key).concat([element]));
         }
-    })
+    });
 
-    return Array.from(groups.values())
+    return Array.from(groups.values());
 }
 
 /**
@@ -275,7 +271,7 @@ export function groupBy(arr, func) {
  * @param {any[]} ob2
  */
 export function arrayEquals(ob1, ob2){
-    return ob1.every((x, i) => x == ob2[i])
+    return ob1.every((x, i) => x == ob2[i]);
 }
 
 /**
@@ -283,8 +279,8 @@ export function arrayEquals(ob1, ob2){
  * @param {string} filePath2
  */
 export function joinFilePaths(filePath1, filePath2) {
-    if (filePath1.endsWith("/")) return filePath1 + filePath2
-    else return filePath1 + "/" + filePath2
+    if (filePath1.endsWith("/")) return filePath1 + filePath2;
+    else return filePath1 + "/" + filePath2;
 }
 
 export var sigmaChar = "\u03C3";
@@ -338,8 +334,8 @@ export function HTMLHasText(element, text){
 
 /**
  * Removes the line numbers from the text of a VDM file
- * 
- * @param {string} text 
+ *
+ * @param {string} text
  */
 export function removeLineNumbers(text) {
     return text.split("\n").map(x => {
@@ -358,7 +354,7 @@ export function removeLineNumbers(text) {
 export function isAFolderOf(filePath, folderPath){
     const fileParts = filePath.split("/").filter(x => x != "");
     const folderParts = folderPath.split("/").filter(x => x != "");
-    
+
     return arrayEquals(fileParts.slice(0, folderParts.length), folderParts);
 }
 
@@ -376,7 +372,7 @@ export function properTypeOf(value){
 export function assertRequiredParameters(thisValue, obj){
     for(let [key, expectedType] of Object.entries(obj)){
         if(thisValue[key] === undefined && obj[key] !== undefined){
-            throw Error(`${properTypeOf(this)} expected ${key} to be populated and it is not.`)
+            throw Error(`${properTypeOf(this)} expected ${key} to be populated and it is not.`);
         }
         else{
             if(typeof thisValue[key] == "object"){

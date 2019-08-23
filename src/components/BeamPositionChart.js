@@ -2,13 +2,12 @@
 import { css, html, wait, deepCopy, deepMerge, sigmaChar, removeSubsequentDuplicates, arrayEquals } from "../HelperFunctions.js";
 import { commonChartOptions, GenericChart } from "./GenericChart.js";
 
-
 const styling = css`
 :host {
     display: inline-block;
     width: 100%;
 }
-`
+`;
 
 export default class BeamPositionChart extends GenericChart {
     constructor() {
@@ -39,7 +38,7 @@ export default class BeamPositionChart extends GenericChart {
         this.refresh();
     }
     get timeType() {
-        return this._timeType
+        return this._timeType;
     }
 
     /**
@@ -55,25 +54,25 @@ export default class BeamPositionChart extends GenericChart {
         this.refresh();
     }
     get unit() {
-        return this._unit
+        return this._unit;
     }
 
     set limit(limit) {
         this._limit = limit;
-        this.renderLimit(limit)
+        this.renderLimit(limit);
     }
 
     get limit() {
-        return this._limit
+        return this._limit;
     }
 
     set data(data) {
         this._data = data;
-        this.refresh()
+        this.refresh();
     }
 
     get data() {
-        return this._data
+        return this._data;
     }
 
     refresh() {
@@ -92,21 +91,21 @@ export default class BeamPositionChart extends GenericChart {
         const putInUnit = (number) => {
             if (this.unit == "sigma") return number;
             else return number * this.sigmaInMM;
-        }
+        };
 
         this.chart.series[2].setData(
             [
                 [0, putInUnit(newLimit)],
                 [this.maxTime, putInUnit(newLimit)]
             ]
-        )
+        );
 
         this.chart.series[3].setData(
             [
                 [0, -putInUnit(newLimit)],
                 [this.maxTime, -putInUnit(newLimit)]
             ]
-        )
+        );
 
         this.limits = newLimit;
     }
@@ -131,7 +130,7 @@ export default class BeamPositionChart extends GenericChart {
         this.chart.series[1].setData(newData[1].map(x => this.theirDataPointToOurs(x)).slice(0, -1));
 
         if (newData[0].length != 0) {
-            this.maxTime = this.theirDataPointToOurs(newData[0].slice(-1)[0])[0]
+            this.maxTime = this.theirDataPointToOurs(newData[0].slice(-1)[0])[0];
         }
         else {
             this.maxTime = null;
@@ -173,12 +172,12 @@ export default class BeamPositionChart extends GenericChart {
 
             series: [{
                 type: "line",
-                name: 'Beam 1',
+                name: "Beam 1",
                 data: [],
                 color: "hsl(240, 70%, 70%)"
             }, {
                 type: "line",
-                name: 'Beam 2',
+                name: "Beam 2",
                 data: [],
                 color: "hsl(0, 70%, 70%)"
             }, {
@@ -214,10 +213,10 @@ export default class BeamPositionChart extends GenericChart {
         if(lineNumber >= this.chart.series[0].data.length) return;
 
         // @ts-ignore
-        this.chart.series[0].data[lineNumber].onMouseOver()
+        this.chart.series[0].data[lineNumber].onMouseOver();
         await wait(1000);
         // @ts-ignore
-        this.chart.tooltip.hide()
+        this.chart.tooltip.hide();
     }
 
     render() {
@@ -226,7 +225,7 @@ export default class BeamPositionChart extends GenericChart {
             ${styling}
         </style>
         <div id="container"></div>
-    `
+    `;
     }
 }
-customElements.define('beam-position-chart', BeamPositionChart);
+customElements.define("beam-position-chart", BeamPositionChart);

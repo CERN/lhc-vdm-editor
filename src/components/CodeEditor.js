@@ -1,14 +1,13 @@
-import { css, addLineNumbers, removeLineNumbers, groupBy, assertRequiredParameters } from "../HelperFunctions.js"
-import "../mode-vdm.js"
-import VdM from "../parser.js"
-import "../token_tooltip.js"
+import { css, addLineNumbers, removeLineNumbers, groupBy, assertRequiredParameters } from "../HelperFunctions.js";
+import "../mode-vdm.js";
+import VdM from "../parser.js";
+import "../token_tooltip.js";
 const token_tooltip = ace.require("ace/token_tooltip");
 const Autocomplete = ace.require("ace/autocomplete").Autocomplete;
 const langTools = ace.require("ace/ext/language_tools");
 
-
 const styling = css`
-#editor { 
+#editor {
     min-height: 400px;
 }
 
@@ -56,13 +55,13 @@ const styling = css`
 .ace_vdm-command-marker{
     background: lightgrey;
 }
-`
+`;
 
 /**
  * Calculates the line number used in vdm (empty lines and comments don't have line numbers).
- * 
+ *
  * @param {string} file
- * @param {number} absLineNum For this parameter, putting -1 determines what the last 
+ * @param {number} absLineNum For this parameter, putting -1 determines what the last
  * numbered line is
  */
 function calculateLineNumber(file, absLineNum) {
@@ -94,7 +93,7 @@ function calculateLineNumber(file, absLineNum) {
  * Converts a VDM file into a portion including INITIALIZE_TRIM and comments above it
  * and the main body of the VDM file, excluding END_SEQUENCE. All of this text has line
  * numbers removed.
- * 
+ *
  * @param {string} text
  * @returns {[string, string]} [The top lines, The main text]
  */
@@ -141,11 +140,11 @@ function getDefaultFontSize() {
 const commandHints = {
     "RELATIVE_TRIM": "(command) RELATIVE_TRIM <IP> <BEAM> <PLANE> <UNITS>",
     "ABSOLUTE_TRIM": "(command) ABSOLUTE_TRIM <IP> <BEAM> <PLANE> <UNITS>",
-    'SECONDS_WAIT': "(command) SECONDS_WAIT <NUMBER>",
-    'START_FIT': "(command) START_FIT <PLANE> <FIT_TYPE>",
-    'END_FIT': "(command) END_FIT",
-    'MESSAGE': "(command) MESSAGE <STRING>"
-}
+    "SECONDS_WAIT": "(command) SECONDS_WAIT <NUMBER>",
+    "START_FIT": "(command) START_FIT <PLANE> <FIT_TYPE>",
+    "END_FIT": "(command) END_FIT",
+    "MESSAGE": "(command) MESSAGE <STRING>"
+};
 
 const DEFAULT_HEADER = "INITIALIZE_TRIM IP() BEAM() PLANE() UNITS()";
 
@@ -238,9 +237,9 @@ export default class CodeEditor extends HTMLElement {
         this.editor.renderer.attachToShadowRoot();
         this.editor.focus();
         this.editor.session.setMode("ace/mode/vdm");
-        ace.config.set('basePath', './extern');
+        ace.config.set("basePath", "./extern");
         this.editor.setTheme("ace/theme/xcode");
-        ace.config.set('basePath', './src');
+        ace.config.set("basePath", "./src");
         this.editor.setOptions({
             minLines: 20,
             maxLines: Infinity,
@@ -248,11 +247,11 @@ export default class CodeEditor extends HTMLElement {
             enableLiveAutocompletion: true,
             showPrintMargin: false,
             fontSize: this.defaultFontSize
-        })
+        });
 
         this.editor.session.on("change", () => {
             this.editorChange();
-        })
+        });
 
         this.editor.selection.on("changeCursor", (_, selection) => {
             let currentRow = calculateLineNumber(this.rawValue, selection.getRange().end.row);
@@ -260,9 +259,9 @@ export default class CodeEditor extends HTMLElement {
                 this.dispatchEvent(new CustomEvent("change-row-selected", {
                     detail: currentRow,
                     bubbles: true
-                }))
+                }));
             }
-        })
+        });
 
         let VDMNumberRenderer = {
             getText: (_session, row) => {
@@ -289,7 +288,7 @@ export default class CodeEditor extends HTMLElement {
             //--- LINE NOT NEEDED --- identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/]
             getCompletions: (editor, session, pos, prefix, callback) =>
                 this.getAutocompletions(editor, session, pos, prefix, callback)
-        }
+        };
         langTools.setCompleters([testCompleter]);
         this.editor.setOptions({ enableBasicAutocompletion: true, enableLiveAutocompletion: true });
     }
@@ -297,19 +296,19 @@ export default class CodeEditor extends HTMLElement {
     preventAutocompleteClosing() {
         this.editor.commands.on("afterExec", event => {
             const hadCompleter = this.editor.completer !== undefined;
-            if (event.command.name == "insertstring" && event.args != 'GAUSSIAN') {
+            if (event.command.name == "insertstring" && event.args != "GAUSSIAN") {
                 setTimeout(() => {
                     if (hadCompleter) {
                         Autocomplete.for(this.editor).showPopup(this.editor);
                     }
-                }, 0)
+                }, 0);
             }
-        })
+        });
     }
 
     /**
      * Function to be used by ace to get the completions.
-     * 
+     *
      * @param {AceAjax.Editor} editor
      * @param {any} _session
      * @param {{ row: any; column: any; }} pos
@@ -317,41 +316,41 @@ export default class CodeEditor extends HTMLElement {
      * @param {(err: any, completions: object) => any} callback
      */
     getAutocompletions(editor, _session, pos, prefix, callback) {
-        const trim = ['RELATIVE_TRIM', 'ABSOLUTE_TRIM']
-        const others = ['SECONDS_WAIT', 'START_FIT', 'MESSAGE'];
-        const noArgCommand = ['END_FIT']
+        const trim = ["RELATIVE_TRIM", "ABSOLUTE_TRIM"];
+        const others = ["SECONDS_WAIT", "START_FIT", "MESSAGE"];
+        const noArgCommand = ["END_FIT"];
         const arg1 = [this.ip]; //['IP1', 'IP2', 'IP5', 'IP8'] if we want to suggest any ip
-        const arg2 = ['BEAM1', 'BEAM2'];
-        const arg3 = ['CROSSING', 'SEPARATION'];
-        const arg4 = ['0.0'];
-        const arg5 = ['SIGMA', 'MM'];
-        const fitTypes = ['GAUSSIAN', 'GAUSSIAN_PLUS_CONSTANT'];
+        const arg2 = ["BEAM1", "BEAM2"];
+        const arg3 = ["CROSSING", "SEPARATION"];
+        const arg4 = ["0.0"];
+        const arg5 = ["SIGMA", "MM"];
+        const fitTypes = ["GAUSSIAN", "GAUSSIAN_PLUS_CONSTANT"];
 
         // Syntax of a suggestion
         function syntaxify(arr, score, meta, addSpaceAfter = true) {
             return arr.map(x => {
                 if (prefix == " ") {
-                    x = ' ' + x;
+                    x = " " + x;
                 }
                 if (addSpaceAfter) {
-                    x += ' ';
+                    x += " ";
                 }
-                return { value: x, score: score, meta: meta }
-            })
+                return { value: x, score: score, meta: meta };
+            });
         }
 
-        if (editor.session.getLine(pos.row)[0] == '#') {
-            return
-        };
+        if (editor.session.getLine(pos.row)[0] == "#") {
+            return;
+        }
 
         const words = editor.session
             .getLine(pos.row)
             .slice(0, pos.column)
             .split(/ +/);
-        if (words.length < 2 && words[0][0] != '#') {
+        if (words.length < 2 && words[0][0] != "#") {
             callback(null,
-                syntaxify(trim.concat(others), 10, 'command')
-                    .concat(syntaxify(noArgCommand, 10, 'command', false))
+                syntaxify(trim.concat(others), 10, "command")
+                    .concat(syntaxify(noArgCommand, 10, "command", false))
             );
             return;
         }
@@ -359,30 +358,30 @@ export default class CodeEditor extends HTMLElement {
         let suggestions = [];
         const firstWord = words[0];
         const prevWord = words[words.length - 2];
-        const insertSpace = Boolean(editor.session.getLine(pos.row)[pos.column] != ' ');
+        const insertSpace = Boolean(editor.session.getLine(pos.row)[pos.column] != " ");
 
         // Check _TRIM command context
         if (trim.includes(firstWord)) {
             if (trim.includes(prevWord) || arg5.includes(prevWord)) {
-                suggestions = syntaxify(arg1, 10, 'IP', insertSpace)
+                suggestions = syntaxify(arg1, 10, "IP", insertSpace);
             } else if (arg1.includes(prevWord)) {
-                suggestions = syntaxify(arg2, 10, 'beam', insertSpace)
+                suggestions = syntaxify(arg2, 10, "beam", insertSpace);
             } else if (arg2.includes(prevWord)) {
-                suggestions = syntaxify(arg3, 10, 'plane', insertSpace)
+                suggestions = syntaxify(arg3, 10, "plane", insertSpace);
             } else if (arg3.includes(prevWord)) {
-                suggestions = syntaxify(arg4, 10, 'number', insertSpace)
+                suggestions = syntaxify(arg4, 10, "number", insertSpace);
             } else if (isFinite(Number(prevWord))) {
-                suggestions = syntaxify(arg5, 10, 'unit', false)
+                suggestions = syntaxify(arg5, 10, "unit", false);
             }
             // Check START_FIT command context
-        } else if (firstWord == 'START_FIT') {
-            if (prevWord == 'START_FIT') {
-                suggestions = syntaxify(arg3, 10, 'plane', insertSpace)
+        } else if (firstWord == "START_FIT") {
+            if (prevWord == "START_FIT") {
+                suggestions = syntaxify(arg3, 10, "plane", insertSpace);
             } else if (arg3.includes(prevWord)) {
-                suggestions = syntaxify(fitTypes, 10, 'fit type', false)
+                suggestions = syntaxify(fitTypes, 10, "fit type", false);
             }
-        } else if (firstWord == 'SECONDS_WAIT' && prevWord == 'SECONDS_WAIT') {
-            suggestions = syntaxify(arg4, 10, 'number', false)
+        } else if (firstWord == "SECONDS_WAIT" && prevWord == "SECONDS_WAIT") {
+            suggestions = syntaxify(arg4, 10, "number", false);
         }
 
         // State autocompletion suggestions
@@ -391,7 +390,7 @@ export default class CodeEditor extends HTMLElement {
 
     /**
      * Sets the new header (note: this is just one line, not any comments before it).
-     * 
+     *
      * @param {string} newHeader
      */
     setNewHeader(newHeader) {
@@ -399,11 +398,11 @@ export default class CodeEditor extends HTMLElement {
         this.topLineEditor.session.replace({
             start: { row: this.topLineHeaderPosition, column: 0 },
             end: { row: this.topLineHeaderPosition, column: Number.MAX_VALUE }
-        }, newHeader)
+        }, newHeader);
     }
 
     /**
-     * 
+     *
      * @param {any} message
      */
     setCurrentParsedResult(message) {
@@ -423,7 +422,7 @@ export default class CodeEditor extends HTMLElement {
                             this.lastLineEditor.getSession().setAnnotations([{
                                 ...error,
                                 row: 0
-                            }])
+                            }]);
 
                             return false;
                         }
@@ -431,7 +430,7 @@ export default class CodeEditor extends HTMLElement {
                             this.topLineEditor.getSession().setAnnotations([{
                                 ...error,
                                 row: this.topLineHeaderPosition
-                            }])
+                            }]);
 
                             return false;
                         }
@@ -458,7 +457,7 @@ export default class CodeEditor extends HTMLElement {
         this.dispatchEvent(new CustomEvent("editor-content-change", {
             bubbles: true,
             detail: this.noParseValue
-        }))
+        }));
     }
 
     get rawValue() {
@@ -489,7 +488,7 @@ export default class CodeEditor extends HTMLElement {
             const commentsAboveHeader = this.topLineEditor.getValue().split("\n")
                 .slice(0, this.topLineHeaderPosition).join("\n");
             // Add the headers (we don't know if this.lastHeader is stale
-            return (commentsAboveHeader == "" ? "" : (commentsAboveHeader + '\n'))
+            return (commentsAboveHeader == "" ? "" : (commentsAboveHeader + "\n"))
                 + this.VdM.deparse();
         }
     }
@@ -521,12 +520,12 @@ export default class CodeEditor extends HTMLElement {
         this.editor.session.insert({
             row: currentRow,
             column: Infinity
-        }, (currentLine.trim() == ""? "" : '\n') + newContent);
+        }, (currentLine.trim() == ""? "" : "\n") + newContent);
 
         this.editor.gotoLine(
             currentRow + newContent.split("\n").length + (currentLine.trim() == ""? 0 : 1),
             Infinity
-        )
+        );
     }
 
     /**
@@ -549,7 +548,7 @@ export default class CodeEditor extends HTMLElement {
                 <div id="editor"></div>
                 <div class="ace-no-select" id="last-line-editor">END_SEQUENCE</div>
             </div>
-        `
+        `;
     }
 }
-customElements.define('code-editor', CodeEditor);
+customElements.define("code-editor", CodeEditor);

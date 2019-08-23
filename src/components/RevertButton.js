@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html } from "../HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js";
 
 const styling = css`
 button {
@@ -20,7 +20,7 @@ button {
 button:hover {
     background-color: #bfbfbf;
 }
-`
+`;
 
 export default class RevertButton extends HTMLElement {
     constructor() {
@@ -28,9 +28,9 @@ export default class RevertButton extends HTMLElement {
         this.root = this.attachShadow({ mode: "open" });
         this.render();
         this.button = this.root.querySelector("button");
-        this.button.addEventListener('click', () => {
-            this.dispatchEvent(new Event('revert-changes'))
-        })
+        this.button.addEventListener("click", () => {
+            this.dispatchEvent(new Event("revert-changes"));
+        });
     }
 
     render() {
@@ -41,8 +41,8 @@ export default class RevertButton extends HTMLElement {
         <div class="container">
             <button>Revert</button>
         </div>
-        `
+        `;
     }
 }
 
-customElements.define('revert-button', RevertButton);
+customElements.define("revert-button", RevertButton);

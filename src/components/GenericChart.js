@@ -1,6 +1,6 @@
 import { sigFigRound } from "../HelperFunctions.js";
 import { throttle } from "../HelperFunctions.js";
-import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js"
+import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js";
 
 const sigFigFormatter = x => sigFigRound(x.value, 3);
 
@@ -13,9 +13,9 @@ export class GenericChart extends MyHyperHTMLElement {
         this.reflow();
     }
 
-    async reflow() {
+    reflow() {
         throttle(() => {
-            this.chart.reflow()
+            this.chart.reflow();
         }, 500, this, true);
     }
 }
@@ -101,6 +101,6 @@ export const commonChartOptions = {
     },
 
     legend: {
-        verticalAlign: 'top'
+        verticalAlign: "top"
     },
-}
+};

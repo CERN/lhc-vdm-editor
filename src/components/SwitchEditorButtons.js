@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html } from "../HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js";
 
 const styling = css`
 button {
@@ -24,7 +24,7 @@ button.active{
     border-width: 2px;
     background-color: #bfbfbf;
 }
-`
+`;
 
 export default class SwitchEditorButtons extends HTMLElement {
     constructor() {
@@ -39,8 +39,8 @@ export default class SwitchEditorButtons extends HTMLElement {
         this.DOMbuttons.map((x, i) => {
             x.addEventListener("click", () => {
                 this.selectButton(i);
-            })
-        })
+            });
+        });
     }
 
     /**
@@ -63,7 +63,7 @@ export default class SwitchEditorButtons extends HTMLElement {
 
         this.dispatchEvent(new CustomEvent("editor-button-press", {
             detail: buttonIndex
-        }))
+        }));
     }
 
     render() {
@@ -75,8 +75,8 @@ export default class SwitchEditorButtons extends HTMLElement {
             <button>Raw</button>
             <button>Code</button>
         </div>
-        `
+        `;
     }
 }
 
-customElements.define('switch-editor-buttons', SwitchEditorButtons);
+customElements.define("switch-editor-buttons", SwitchEditorButtons);

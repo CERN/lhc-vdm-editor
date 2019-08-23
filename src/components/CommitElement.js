@@ -1,5 +1,5 @@
 // @ts-check
-import { css, html } from "../HelperFunctions.js"
+import { css, html } from "../HelperFunctions.js";
 
 const styling = css`
 .commit-button {
@@ -29,7 +29,7 @@ const styling = css`
     margin-right: 7px;
     width: 350px;
 }
-`
+`;
 
 export default class CommitElement extends HTMLElement {
     constructor() {
@@ -49,7 +49,7 @@ export default class CommitElement extends HTMLElement {
                     this.root.querySelector(".commit-message").value = "";
                 }
             }
-        } else { alert("Error! No commit message.") }
+        } else { alert("Error! No commit message."); }
     }
 
     render() {
@@ -61,7 +61,7 @@ export default class CommitElement extends HTMLElement {
             <input class="commit-message" type="text" placeholder="Commit message" />
             <input type="submit" class="commit-button" value="Commit"/>
         </form>
-        `
+        `;
     }
 }
-customElements.define('commit-element', CommitElement);
+customElements.define("commit-element", CommitElement);

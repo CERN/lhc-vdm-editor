@@ -1,6 +1,6 @@
 import { css } from "../HelperFunctions.js";
 
-const styling = css`        
+const styling = css`
 .cover{
     position: fixed;
     top: 0;
@@ -66,7 +66,7 @@ button[disabled] {
     background-color: #c71919;
 }
 
-`
+`;
 
 export default class ModelWindow extends HTMLElement {
     constructor() {
@@ -113,10 +113,10 @@ export default class ModelWindow extends HTMLElement {
                 <div onclick=${() => this.cancel()} id="exit-button">x</div>
                 <slot></slot>
             </div>
-            
+
             <div onclick=${() => this.cancel()} class="cover">&nbsp;</div>
         </div>
-        `
+        `;
     }
 }
-customElements.define('model-window', ModelWindow);
+customElements.define("model-window", ModelWindow);

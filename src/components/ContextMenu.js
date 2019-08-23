@@ -31,7 +31,7 @@ const styling = css`
 .context-menu-item:active{
     background-color: #cccccc;
 }
-`
+`;
 
 export default class ContextMenu extends HTMLElement {
     constructor() {
@@ -78,7 +78,7 @@ export default class ContextMenu extends HTMLElement {
             )
             }
         </div>
-    `
+    `;
     }
 }
-customElements.define('context-menu', ContextMenu);
+customElements.define("context-menu", ContextMenu);

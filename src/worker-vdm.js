@@ -1,6 +1,6 @@
 /**
  * Gets the file "./parser.js"
- * 
+ *
  * NOTE: This is necessary as modules and therefore "import" statements are not implemented
  * in major browsers for web workers at the moment.
  */
@@ -20,10 +20,10 @@ async function getParser() {
         if (message.data.type == "text_change") {
             let messageToSend = {
                 type: "lint"
-            }
+            };
 
             let VdMinstance = new parser.VdM(message.data.beamParams, message.data.ip)
-                .parse(message.data.text, message.data.hasHeaders);;
+                .parse(message.data.text, message.data.hasHeaders);
             const result = VdMinstance.deparse();
             messageToSend.header = result.split("\n")[0];
 
@@ -33,22 +33,22 @@ async function getParser() {
                     column: 0,
                     text: error.message,
                     type: "error"
-                }))
+                }));
             }
 
             messageToSend.beamSeparationData = [
                 VdMinstance.toBeamGraph(1, "SEPARATION"),
                 VdMinstance.toBeamGraph(2, "SEPARATION")
-            ]
+            ];
 
             messageToSend.beamCrossingData = [
                 VdMinstance.toBeamGraph(1, "CROSSING"),
                 VdMinstance.toBeamGraph(2, "CROSSING")
-            ]
+            ];
 
             messageToSend.luminosityData = VdMinstance.toLumiGraph();
 
             postMessage(messageToSend);
         }
-    })
-})()
+    });
+})();

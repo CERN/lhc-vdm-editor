@@ -4,7 +4,7 @@ import { NO_FILES_TEXT, getHTMLElementWithText, wait } from "../HelperFunctions.
 async function getNewCreateFileWindow(gitlab) {
     let cfw = new CreateFileWindow();
     cfw.gitlab = gitlab;
-    cfw.campaigns = Promise.resolve(["CampaignA", "CampaignB"])
+    cfw.campaigns = Promise.resolve(["CampaignA", "CampaignB"]);
     cfw.style.display = "none";
     document.body.appendChild(cfw);
 
@@ -19,11 +19,11 @@ describe("CreateFileWindow", () => {
         cfw = await getNewCreateFileWindow({
             listFiles: () => Promise.resolve(["my_new_fileA", "my_new_fileB"])
         });
-    })
+    });
 
     afterEach(() => {
         document.body.removeChild(cfw);
-    })
+    });
 
     it("can click on the dropdown, select a file and copy", async (done) => {
         await cfw.onDropdownClick();
@@ -35,32 +35,32 @@ describe("CreateFileWindow", () => {
                 ip: "IP1",
                 campaign: "CampaignA",
                 filePaths: ["my_new_fileA"]
-            })
+            });
 
             done();
-        })
+        });
 
         getHTMLElementWithText(cfw, "Copy files").click();
-    })
+    });
 
     it("can setFileUI of no files", () => {
         cfw.setFileUI([NO_FILES_TEXT]);
         expect().nothing();
-    })
+    });
 
-    it("Dispatches copy event", async () => {
-        let copySpy = jasmine.createSpy('copySpy');
-        cfw.addEventListener('submit', copySpy);
+    it("Dispatches copy event", () => {
+        let copySpy = jasmine.createSpy("copySpy");
+        cfw.addEventListener("submit", copySpy);
 
-        cfw.shadowRoot.querySelector('#copy-button').click();
-        expect(copySpy).toHaveBeenCalled()
-    })
+        cfw.shadowRoot.querySelector("#copy-button").click();
+        expect(copySpy).toHaveBeenCalled();
+    });
 
-    it("Dispatches empty create event", async () => {
-        let createSpy = jasmine.createSpy('createSpy');
-        cfw.addEventListener('create-empty', createSpy);
+    it("Dispatches empty create event", () => {
+        let createSpy = jasmine.createSpy("createSpy");
+        cfw.addEventListener("create-empty", createSpy);
 
-        cfw.shadowRoot.querySelector('#create-empty').click();
-        expect(createSpy).toHaveBeenCalled()
-    })
-})
+        cfw.shadowRoot.querySelector("#create-empty").click();
+        expect(createSpy).toHaveBeenCalled();
+    });
+});

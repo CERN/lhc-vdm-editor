@@ -14,7 +14,7 @@ const styling = css`
     .selection-name {
         padding-bottom: 3px;
     }
-`
+`;
 
 export default class IPCampaignSelectors extends MyHyperHTMLElement {
     constructor() {
@@ -22,7 +22,7 @@ export default class IPCampaignSelectors extends MyHyperHTMLElement {
             ip: "IP1",
             campaign: undefined
         });
-        this.root = this.attachShadow({ mode: 'open' });
+        this.root = this.attachShadow({ mode: "open" });
         this.waitForInit = new Promise((resolve, _) => {
             this.onInitFinished = resolve;
         });
@@ -31,11 +31,11 @@ export default class IPCampaignSelectors extends MyHyperHTMLElement {
     }
 
     get path() {
-        return joinFilePaths(this.campaign, this.ip)
+        return joinFilePaths(this.campaign, this.ip);
     }
 
     get name() {
-        return this.getAttribute("name")
+        return this.getAttribute("name");
     }
 
     async connectedCallback() {
@@ -48,7 +48,7 @@ export default class IPCampaignSelectors extends MyHyperHTMLElement {
         return {
             ip: this.ip,
             campaign: this.campaign
-        }
+        };
     }
 
     /**
@@ -84,9 +84,8 @@ export default class IPCampaignSelectors extends MyHyperHTMLElement {
             </select>
         </div>
     </div>
-    `
+    `;
     }
 }
 
-
-customElements.define('ip-campaign-selectors', IPCampaignSelectors);
+customElements.define("ip-campaign-selectors", IPCampaignSelectors);

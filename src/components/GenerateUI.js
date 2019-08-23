@@ -1,9 +1,9 @@
 // @ts-check
 import { css, html } from "../HelperFunctions.js";
-import { default as Generator, ArgError } from '../generator.js';
-import './InfoBox.js';
+import { default as Generator, ArgError } from "../generator.js";
+import "./InfoBox.js";
 
-const windowStyling = css`        
+const windowStyling = css`
 .tab{
     margin: 15px;
     display: none;
@@ -88,7 +88,7 @@ input.error{
 info-box {
     float: right;
 }
-`
+`;
 
 const VdMInfoText = wire()`
     <div style='width: 300px'>
@@ -99,7 +99,7 @@ const VdMInfoText = wire()`
             To generate a Van der Meer type scan, choose which beam(s) that will be moving, and fill in the four numbers.
         </p>
     </div>
-`
+`;
 const arrayInfoText = wire()`
     <div style='width: 300px'>
         <p>
@@ -112,7 +112,7 @@ const arrayInfoText = wire()`
             Empty inputs are equivalent to zero-arrays.
         </p>
     </div>
-`
+`;
 const functionInfoText = wire()`
     <div style='width: 300px'>
         <p>
@@ -134,13 +134,13 @@ const functionInfoText = wire()`
             </div>
         </p>
     </div>
-`
+`;
 
 export class GenerateSequenceWindow extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this._ip = 'IP1';
+        this._ip = "IP1";
         this.generator = null;
         this.allInputs = null;
         this.tabButtons = null;
@@ -151,7 +151,7 @@ export class GenerateSequenceWindow extends HTMLElement {
      * @param {string} newLines
      */
     onSuccess(newLines) {
-        this.dispatchEvent(new CustomEvent('generated', { detail: newLines, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent("generated", { detail: newLines, bubbles: true, composed: true }));
     }
 
     genFromArrayInput() {
@@ -161,9 +161,9 @@ export class GenerateSequenceWindow extends HTMLElement {
         const arrayInputs = Array.from(this.allInputs.arrays).slice(1);
         arrayInputs.forEach((elem, i) => {
             const input = elem.value;
-            if (!input) return
+            if (!input) return;
 
-            let arr = input.replace(/\[|\]/, '').split(',').map(x => Number(x))
+            let arr = input.replace(/\[|\]/, "").split(",").map(x => Number(x));
             resArr[i] = arr;
         });
 
@@ -179,20 +179,20 @@ export class GenerateSequenceWindow extends HTMLElement {
         const funcInputs = Array.from(this.allInputs.functions).slice(2);
         funcInputs.forEach((elem, i) => {
             const handle = elem.value;
-            if (!handle) return
+            if (!handle) return;
             else handleArr[i] = handle;
         });
 
         const funcArr = handleArr.map((handle, index) => {
             try {
-                return this.generator.getFunctionFromString(handle, waitTime, stepNum)
+                return this.generator.getFunctionFromString(handle, waitTime, stepNum);
             } catch (error) {
-                if (error instanceof ArgError) throw new ArgError(error.message, index)
-                else throw error
+                if (error instanceof ArgError) throw new ArgError(error.message, index);
+                else throw error;
             }
-        })
+        });
 
-        return this.generator.generateFromFunction(funcArr, waitTime, stepNum)
+        return this.generator.generateFromFunction(funcArr, waitTime, stepNum);
     }
 
     genFromVdMInput() {
@@ -201,32 +201,32 @@ export class GenerateSequenceWindow extends HTMLElement {
         const startSep = Number(this.allInputs.VdM[2].value) || 0;
         const endSep = Number(this.allInputs.VdM[3].value) || 0;
 
-        const beam = this.root.querySelector('#VdM').querySelector('#beam-select').value;
-        const plane = this.root.querySelector('#VdM').querySelector('#plane-select').value;
-        const planeIndex = plane == 'Separation' ? 0 : 2;
-        
+        const beam = this.root.querySelector("#VdM").querySelector("#beam-select").value;
+        const plane = this.root.querySelector("#VdM").querySelector("#plane-select").value;
+        const planeIndex = plane == "Separation" ? 0 : 2;
+
         let handleArr = Array(4);
-        if (beam == 'Beam 1') {
-            handleArr[0 + planeIndex] = `linear(${startSep},${endSep})`
+        if (beam == "Beam 1") {
+            handleArr[0 + planeIndex] = `linear(${startSep},${endSep})`;
         }
-        if (beam == 'Beam 2') {
-            handleArr[1 + planeIndex] = `linear(${startSep},${endSep})`
+        if (beam == "Beam 2") {
+            handleArr[1 + planeIndex] = `linear(${startSep},${endSep})`;
         }
-        if (beam == 'Both') {
+        if (beam == "Both") {
             handleArr[0 + planeIndex] = `linear(${startSep / 2},${endSep / 2})`;
             handleArr[1 + planeIndex] = `linear(${-startSep / 2},${-endSep / 2})`;
         }
 
         const funcArr = handleArr.map((handle, index) => {
             try {
-                return this.generator.getFunctionFromString(handle, waitTime, stepNum)
+                return this.generator.getFunctionFromString(handle, waitTime, stepNum);
             } catch (error) {
-                if (error instanceof ArgError) throw new ArgError(error.message, index)
-                else throw error
+                if (error instanceof ArgError) throw new ArgError(error.message, index);
+                else throw error;
             }
-        })
+        });
 
-        return this.generator.generateFromFunction(funcArr, waitTime, stepNum)
+        return this.generator.generateFromFunction(funcArr, waitTime, stepNum);
     }
 
     onFunctionGenerateClick() {
@@ -234,12 +234,12 @@ export class GenerateSequenceWindow extends HTMLElement {
         Array.from(this.allInputs.functions).slice(0, 2).forEach(x => {
             if (!x.value) {
                 missingNumber = true;
-                x.classList.add('error')
+                x.classList.add("error");
             }
-        })
+        });
         if (missingNumber) {
             alert('Both "Time between trims" and "Number of steps" are required fields');
-            return
+            return;
         }
 
         try {
@@ -248,18 +248,18 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
         catch (error) {
             if (error instanceof ArgError) {
-                this.allInputs.functions[error.where + 2].classList.add('error');
-                alert('Invalid input function: ' + error.message);
+                this.allInputs.functions[error.where + 2].classList.add("error");
+                alert("Invalid input function: " + error.message);
             }
-            else throw error
+            else throw error;
         }
     }
 
     onArrayGenerateClick() {
         if (!this.allInputs.arrays[0].value) {
-            this.allInputs.arrays[0].classList.add('error')
+            this.allInputs.arrays[0].classList.add("error");
             alert('"Time between trims" is a required field');
-            return
+            return;
         }
 
         try {
@@ -268,8 +268,8 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
         catch (error) {
             if (error instanceof ArgError) {
-                this.allInputs.arrays[error.where + 1].classList.add('error');
-                alert('Invalid input array: ' + error.message);
+                this.allInputs.arrays[error.where + 1].classList.add("error");
+                alert("Invalid input array: " + error.message);
             }
             else throw error;
         }
@@ -280,12 +280,12 @@ export class GenerateSequenceWindow extends HTMLElement {
         Array.from(this.allInputs.VdM).slice(0, 2).forEach(x => {
             if (!x.value) {
                 missingNumber = true;
-                x.classList.add('error')
+                x.classList.add("error");
             }
-        })
+        });
         if (missingNumber) {
             alert('Both "Time between trims" and "Number of steps" are required fields');
-            return
+            return;
         }
 
         try {
@@ -294,8 +294,8 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
         catch (error) {
             if (error instanceof ArgError) {
-                this.allInputs.functions[error.where + 2].classList.add('error');
-                alert('Invalid input function: ' + error.message);
+                this.allInputs.functions[error.where + 2].classList.add("error");
+                alert("Invalid input function: " + error.message);
             }
             else throw error;
         }
@@ -303,47 +303,46 @@ export class GenerateSequenceWindow extends HTMLElement {
 
     set ip(ip) {
         this._ip = ip;
-        this.render()
+        this.render();
     }
     get ip() {
-        return this._ip
+        return this._ip;
     }
 
     connectedCallback() {
         this.render();
         this.generator = new Generator(this.ip);
         this.allInputs = {
-            arrays: this.root.querySelector('#arrays').querySelectorAll('input'),
-            functions: this.root.querySelector('#functions').querySelectorAll('input'),
-            VdM: this.root.querySelector('#VdM').querySelectorAll('input'),
+            arrays: this.root.querySelector("#arrays").querySelectorAll("input"),
+            functions: this.root.querySelector("#functions").querySelectorAll("input"),
+            VdM: this.root.querySelector("#VdM").querySelectorAll("input"),
         };
-        this.tabButtons = this.root.querySelector('.tabs').querySelectorAll('button');
-        this.allTabs = this.root.querySelectorAll('.tab');
+        this.tabButtons = this.root.querySelector(".tabs").querySelectorAll("button");
+        this.allTabs = this.root.querySelectorAll(".tab");
 
         this.tabButtons.forEach(elem => {
-            elem.addEventListener('click', () => {
-                this.tabButtons.forEach(x => x.classList.remove('open'))
-                this.allTabs.forEach(x => x.style.display = 'none')
+            elem.addEventListener("click", () => {
+                this.tabButtons.forEach(x => x.classList.remove("open"));
+                this.allTabs.forEach(x => x.style.display = "none");
 
-                elem.classList.add('open')
-                this.root.getElementById(elem.id.split('-')[0]).style.display = 'block';
-            })
-        })
-        this.root.querySelectorAll('input').forEach(elem => {
-            elem.addEventListener('change', () => {
-                elem.classList.remove('error');
-            })
-        })
+                elem.classList.add("open");
+                this.root.getElementById(elem.id.split("-")[0]).style.display = "block";
+            });
+        });
+        this.root.querySelectorAll("input").forEach(elem => {
+            elem.addEventListener("change", () => {
+                elem.classList.remove("error");
+            });
+        });
 
-        this.root.querySelector('#VdM-generate').addEventListener('click', () => this.onVdMGenerateClick());
-        this.root.querySelector('#function-generate').addEventListener('click', () => this.onFunctionGenerateClick());
-        this.root.querySelector('#array-generate').addEventListener('click', () => this.onArrayGenerateClick());
+        this.root.querySelector("#VdM-generate").addEventListener("click", () => this.onVdMGenerateClick());
+        this.root.querySelector("#function-generate").addEventListener("click", () => this.onFunctionGenerateClick());
+        this.root.querySelector("#array-generate").addEventListener("click", () => this.onArrayGenerateClick());
 
         // Set default open tab
-        this.root.querySelector('#VdM').style.display = 'block';
-        this.root.querySelector('#VdM-tab').classList.add('open');
+        this.root.querySelector("#VdM").style.display = "block";
+        this.root.querySelector("#VdM-tab").classList.add("open");
     }
-
 
     render() {
         hyper(this.root)`
@@ -426,24 +425,10 @@ export class GenerateSequenceWindow extends HTMLElement {
                 <button id='function-generate'>Generate at cursor</button>
             </div>
         </model-window>
-        `
+        `;
     }
 }
-customElements.define('generate-sequence-window', GenerateSequenceWindow);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+customElements.define("generate-sequence-window", GenerateSequenceWindow);
 
 const buttonStyling = css`
 button {
@@ -469,38 +454,38 @@ button.active{
     border-width: 2px;
     background-color: #bfbfbf;
 }
-`
+`;
 export class GenerateButton extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.render()
+        this.render();
 
         this.button = this.root.querySelector("button");
-        this.generateSequenceWindow = '';
-        this._ip = 'IP1';
+        this.generateSequenceWindow = "";
+        this._ip = "IP1";
 
         this.button.addEventListener("click", () => {
-            this.button.classList.add('active')
-            this.generateSequenceWindow = wire()`<generate-sequence-window ip=${this.ip}></generate-sequence-window>`
-            this.render()
-        })
+            this.button.classList.add("active");
+            this.generateSequenceWindow = wire()`<generate-sequence-window ip=${this.ip}></generate-sequence-window>`;
+            this.render();
+        });
         this.root.addEventListener("cancelmodel", () => this.removeModel());
         this.root.addEventListener("generated", () => this.removeModel());
     }
 
     removeModel() {
-        this.button.classList.remove('active')
-        this.generateSequenceWindow = '';
-        this.render()
+        this.button.classList.remove("active");
+        this.generateSequenceWindow = "";
+        this.render();
     }
 
     set ip(ip) {
         this._ip = ip;
-        this.render()
+        this.render();
     }
     get ip() {
-        return this._ip
+        return this._ip;
     }
 
     render() {
@@ -510,7 +495,7 @@ export class GenerateButton extends HTMLElement {
         </style>
         <button>Generate</button>
         ${this.generateSequenceWindow}
-        `
+        `;
     }
 }
-customElements.define('generate-button', GenerateButton);
+customElements.define("generate-button", GenerateButton);

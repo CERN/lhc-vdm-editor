@@ -29,7 +29,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-ace.define("ace/token_tooltip", function (require, exports, module) {
+ace.define("ace/token_tooltip", function(require, exports, module) {
     "use strict";
 
     var oop = require("ace/lib/oop");
@@ -38,8 +38,9 @@ ace.define("ace/token_tooltip", function (require, exports, module) {
     var Tooltip = require("ace/tooltip").Tooltip;
 
     function TokenTooltip(editor, getText) {
-        if (typeof editor.tokenTooltip != "undefined")
+        if (typeof editor.tokenTooltip != "undefined") {
             return;
+        }
         Tooltip.call(this, editor.container);
         editor.tokenTooltip = this;
         this.editor = editor;
@@ -54,11 +55,11 @@ ace.define("ace/token_tooltip", function (require, exports, module) {
 
     oop.inherits(TokenTooltip, Tooltip);
 
-    (function () {
+    (function() {
         this.token = {};
         this.range = new Range();
 
-        this.update = function () {
+        this.update = function() {
             this.$timer = null;
 
             var r = this.editor.renderer;
@@ -94,7 +95,7 @@ ace.define("ace/token_tooltip", function (require, exports, module) {
 
             let tokenText;
             if (token.type == "keyword") {
-                tokenText = this.getText(token.value)
+                tokenText = this.getText(token.value);
             }
             else {
                 this.hide();
@@ -119,35 +120,39 @@ ace.define("ace/token_tooltip", function (require, exports, module) {
             this.marker = session.addMarker(this.range, "ace_vdm-command-marker ace_bracket", "text");
         };
 
-        this.onMouseMove = function (e) {
+        this.onMouseMove = function(e) {
             this.x = e.clientX;
             this.y = e.clientY;
             if (this.isOpen) {
                 this.lastT = e.timeStamp;
                 this.setPosition(this.x, this.y);
             }
-            if (!this.$timer)
+            if (!this.$timer) {
                 this.$timer = setTimeout(this.update, 100);
+            }
         };
 
-        this.onMouseOut = function (e) {
-            if (e && e.currentTarget.contains(e.relatedTarget))
+        this.onMouseOut = function(e) {
+            if (e && e.currentTarget.contains(e.relatedTarget)) {
                 return;
+            }
             this.hide();
             this.editor.session.removeMarker(this.marker);
             this.$timer = clearTimeout(this.$timer);
         };
 
-        this.setPosition = function (x, y) {
-            if (x + 10 + this.width > this.maxWidth)
+        this.setPosition = function(x, y) {
+            if (x + 10 + this.width > this.maxWidth) {
                 x = window.innerWidth - this.width - 10;
-            if (y > window.innerHeight * 0.75 || y + 20 + this.height > this.maxHeight)
+            }
+            if (y > window.innerHeight * 0.75 || y + 20 + this.height > this.maxHeight) {
                 y = y - this.height - 30;
+            }
 
             Tooltip.prototype.setPosition.call(this, x + 10, y + 20);
         };
 
-        this.destroy = function () {
+        this.destroy = function() {
             this.onMouseOut();
             event.removeListener(this.editor.renderer.scroller, "mousemove", this.onMouseMove);
             event.removeListener(this.editor.renderer.content, "mouseout", this.onMouseOut);

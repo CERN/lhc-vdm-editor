@@ -1,10 +1,10 @@
 // @ts-check
 import { css, joinFilePaths, preventSelectCSS, NO_FILES_TEXT, getRelativePath, isAFolderOf, assertRequiredParameters } from "../HelperFunctions.js";
 import { NoPathExistsError, default as GitLab, FileAlreadyExistsError } from "../GitLab.js";
-import './IPCampaignSelectors.js';
+import "./IPCampaignSelectors.js";
 import "./CreateFileWindow.js";
-import './FolderTriangle.js';
-import "./ContextMenu.js"
+import "./FolderTriangle.js";
+import "./ContextMenu.js";
 import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js";
 
 const styling = css`
@@ -59,7 +59,7 @@ const styling = css`
 .folder-content > div {
     border-bottom: 1px solid grey;
 }
-`
+`;
 
 export default class FileBrowser extends MyHyperHTMLElement {
     constructor() {
@@ -83,7 +83,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
         // Note: this is a map, as we want undefined to represent not opened or closed and false to represent closed
         this.openFoldersMap = new Map();
 
-        document.body.addEventListener("mousedown", /**@type MouseEvent*/event => {
+        document.body.addEventListener("mousedown", /** @type MouseEvent */event => {
             if (this.myContextMenu !== null && !(event.composedPath().includes(this.myContextMenu))) {
                 this.myContextMenu = null;
                 this.render();
@@ -98,7 +98,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
     }
 
     get loadedPromise(){
-        return Promise.all([this.fileStructure, this.campaigns])
+        return Promise.all([this.fileStructure, this.campaigns]);
     }
 
     /**
@@ -193,8 +193,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
             }
 
             const newName = prompt(
-                `What do you want to rename ${filePath.split("/").slice(2).join('/')} to? (including sub-folder path)`, 
-                filePath.split("/").slice(2).join('/')
+                `What do you want to rename ${filePath.split("/").slice(2).join("/")} to? (including sub-folder path)`,
+                filePath.split("/").slice(2).join("/")
             );
             if (newName == null) return;
 
@@ -235,7 +235,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
      */
     onContextMenu(event, filePath, isFolder) {
         this.myContextMenu = wire()`
-            <context-menu 
+            <context-menu
                 x=${event.clientX}
                 y=${event.clientY}
                 buttons=${[
@@ -251,7 +251,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 },
             ]}
             ></context-menu>
-        `
+        `;
         this.render();
 
         event.preventDefault();
@@ -277,10 +277,10 @@ export default class FileBrowser extends MyHyperHTMLElement {
         try {
             toFolderContents = (await this.gitlab.listFiles(toFolder, true, false)).map(x => getRelativePath(x, toFolder));
         } catch (error) {
-            if (error instanceof NoPathExistsError) toFolderContents = []
-            else throw error
+            if (error instanceof NoPathExistsError) toFolderContents = [];
+            else throw error;
         }
-        
+
         try {
             if(files.length == 0){
                 fromFolderContents = (await this.gitlab.listFiles(fromFolder, true, false)).map(x => getRelativePath(x, fromFolder));
@@ -291,13 +291,13 @@ export default class FileBrowser extends MyHyperHTMLElement {
 
             const commonFileNames = fromFolderContents.filter(x => toFolderContents.includes(x));
             if (commonFileNames.length != 0) {
-                alert(`Note:\n"${commonFileNames.join(", ")}"\nare in common with the source and destination folders, and will not be copied.`)
+                alert(`Note:\n"${commonFileNames.join(", ")}"\nare in common with the source and destination folders, and will not be copied.`);
             }
             await this.gitlab.copyFilesFromFolder(
                 fromFolder,
                 toFolder, // remove the end slash from the folder name
                 files
-            )
+            );
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
@@ -331,11 +331,11 @@ export default class FileBrowser extends MyHyperHTMLElement {
                         this.render();
                     }}
                     oncontextmenu=${event => {
-                        if(fileName == NO_FILES_TEXT) return; 
+                        if(fileName == NO_FILES_TEXT) return;
                         this.onContextMenu(event, fullFilePath, false);
                     }}
                     class="${isOpenFile?"item-open":""} item ${fileName == NO_FILES_TEXT?"no-files-item":""}">
-                        ${fileName}</div>`
+                        ${fileName}</div>`;
 
                 })}
                 ${Array.from(structure.folders.entries()).map((folderParts) => {
@@ -346,7 +346,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
 
                 return wire(folderParts)`
                         <div
-                            onclick=${() => { this.openFoldersMap.set(fullFolderPath, !isFolderOpen); this.render() }}
+                            onclick=${() => { this.openFoldersMap.set(fullFolderPath, !isFolderOpen); this.render(); }}
                             oncontextmenu=${event => this.onContextMenu(event, fullFolderPath, true)}
                             class="item folder">
                             <folder-triangle open=${isFolderOpen}></folder-triangle>
@@ -357,7 +357,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
                             isFolderOpen ? getElementFromStructure(folderContent, fullFolderPath) : undefined
                             }
                         </span>
-                    `
+                    `;
                 })}
                     <div onclick=${() => this.clickNewFile(prefix)} class="item" style="font-weight: bold">
                         <span style="font-size: 20px; vertical-align: middle; padding: 0px 0px 0px 0px;">
@@ -368,8 +368,8 @@ export default class FileBrowser extends MyHyperHTMLElement {
                         </span>
                     </div>
                 </div>
-            `
-        }
+            `;
+        };
 
         return getElementFromStructure(fileStructure, joinFilePaths(campaign, ip));
     }
@@ -423,7 +423,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
                     }
                 }
                 oncreate-empty=${event => this.tryCreateEmptyFile(containingFolder, event.detail)}
-            />`
+            />`;
 
         this.render();
     }
@@ -434,18 +434,18 @@ export default class FileBrowser extends MyHyperHTMLElement {
     onFileClick(fullFileName) {
         if (!this.isCommitted) {
             if (confirm(`Changes not committed. Are you sure you want to open ${fullFileName}? All current changes will be discarded.`)) {
-                this.dispatchEvent(new CustomEvent('open-file', {
+                this.dispatchEvent(new CustomEvent("open-file", {
                     detail: fullFileName,
-                }))
+                }));
             }
             else {
                 return;
             }
         }
         else {
-            this.dispatchEvent(new CustomEvent('open-file', {
+            this.dispatchEvent(new CustomEvent("open-file", {
                 detail: fullFileName,
-            }))
+            }));
         }
 
         this.openFile = fullFileName;
@@ -484,7 +484,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
         </div>
         ${this.myContextMenu}
         ${this.createFileWindow}
-        `
+        `;
     }
 }
-customElements.define('file-browser', FileBrowser);
+customElements.define("file-browser", FileBrowser);

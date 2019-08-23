@@ -1,5 +1,5 @@
-import { css, removeLineNumbers, addLineNumbers } from "../HelperFunctions.js"
-import "./SwitchEditorButtons.js"
+import { css, removeLineNumbers, addLineNumbers } from "../HelperFunctions.js";
+import "./SwitchEditorButtons.js";
 
 const styling = css`
 textarea {
@@ -40,15 +40,15 @@ button.active{
     border-style: solid;
     border-width: 2px;
 }
-`
+`;
 
 export default class RawEditor extends HTMLElement {
     constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        this.render()
+        this.render();
         this.textarea = this.root.querySelector("textarea");
-        this.textarea.addEventListener('input',
+        this.textarea.addEventListener("input",
             () => {
                 this.dispatchEvent(new CustomEvent("editor-content-change", {
                     bubbles: true,
@@ -71,7 +71,7 @@ export default class RawEditor extends HTMLElement {
     resizeTextArea() {
         // Hack to make sure that the textarea always has the height of the content
         this.textarea.style.height = "0px";
-        this.textarea.style.height = this.textarea.scrollHeight + 'px';
+        this.textarea.style.height = this.textarea.scrollHeight + "px";
     }
 
     get rawValue() {
@@ -101,7 +101,7 @@ export default class RawEditor extends HTMLElement {
         const nextNewLine = this.value.slice(cursorPos).search("\n") + cursorPos;
         this.value = addLineNumbers(removeLineNumbers(
             this.value.slice(0, nextNewLine) +  (this.value.trim() == "" ? "": "\n") + newContent + this.value.slice(nextNewLine)
-        ))
+        ));
 
         this.textarea.focus();
     }
@@ -114,7 +114,7 @@ export default class RawEditor extends HTMLElement {
             </style>
             <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
         </div>
-        `
+        `;
     }
 }
-customElements.define('raw-editor', RawEditor);
+customElements.define("raw-editor", RawEditor);

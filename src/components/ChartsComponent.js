@@ -1,7 +1,7 @@
 import { css, sigmaChar } from "../HelperFunctions.js";
-import "./BeamPositionChart.js"
-import "./LuminosityChart.js"
-import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js"
+import "./BeamPositionChart.js";
+import "./LuminosityChart.js";
+import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js";
 
 const styling = css`
 :host {
@@ -28,28 +28,28 @@ input[type="radio"]{
 .switchingRow{
     display: table-row;
 }
-`
+`;
 
 export default class ChartsComponent extends MyHyperHTMLElement {
     constructor() {
         super({
-            'unit': 'sigma',
-            'scale': 'linear',
-            'timeType': 'real',
-            'data': {
+            "unit": "sigma",
+            "scale": "linear",
+            "timeType": "real",
+            "data": {
                 beamSeparation: null,
                 beamCrossing: null,
                 luminosity: null
             },
-            'limit': Infinity,
-            'sigmaInMM': 1
+            "limit": Infinity,
+            "sigmaInMM": 1
         });
         this.root = this.attachShadow({ mode: "open" });
     }
 
     connectedCallback() {
         super.connectedCallback();
-        this.allCharts = Array.from(this.root.querySelectorAll('beam-position-chart, luminosity-chart'))
+        this.allCharts = Array.from(this.root.querySelectorAll("beam-position-chart, luminosity-chart"));
     }
 
     reflow() {
@@ -69,10 +69,10 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             timeType: this.timeType,
             limit: this.limit,
             sigmaInMM: this.sigmaInMM
-        }
+        };
 
         let timeToLumiPositionMap = new Map();
-        let realPositionToTime = _ => null
+        let realPositionToTime = _ => null;
         if(this.data.luminosity != null){
             for(let [statementNum, luminosityEntry] of this.data.luminosity.entries()){
                 // NOTE: in this, the last entry will always be set, which is what we want
@@ -81,11 +81,10 @@ export default class ChartsComponent extends MyHyperHTMLElement {
 
             realPositionToTime = position => {
                 if(position >= this.data.beamSeparation[0].length) return null;
-            
-                return this.data.beamSeparation[0][position][0][this.timeType + "Time"];
-            }
-        }
 
+                return this.data.beamSeparation[0][position][0][this.timeType + "Time"];
+            };
+        }
 
         hyper(this.root)`
         <style>
@@ -136,9 +135,9 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             positionToLumiPosition=${pos => {
                 const time = realPositionToTime(pos);
                 if(time == null) return null;
-                else return timeToLumiPositionMap.get(time)
+                else return timeToLumiPositionMap.get(time);
             }} id="luminosity-chart"></luminosity-chart>
-    `
+    `;
     }
 }
-customElements.define('charts-component', ChartsComponent);
+customElements.define("charts-component", ChartsComponent);

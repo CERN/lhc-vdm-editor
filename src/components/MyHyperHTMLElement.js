@@ -19,11 +19,11 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
                 Object.defineProperty(this, propertyName, {
                     set: value => {
                         this._properties[propertyName] = value;
-                        this.render()
+                        this.render();
                     },
                     get: () => this._properties[propertyName]
-                })
-            })
+                });
+            });
         }
         else if (args.length == 1) {
             this._properties = args[0];
@@ -35,8 +35,8 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
                         this.render();
                     },
                     get: () => this._properties[propertyName]
-                })
-            })
+                });
+            });
         }
     }
 
@@ -70,4 +70,4 @@ export var MyHyperHTMLElement = class MyHyperHTMLElement extends HTMLElement {
     render() {
         // define non-empty renderer on components extending this one
     }
-}
+};

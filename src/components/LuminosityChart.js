@@ -1,12 +1,12 @@
 import { css, html, throttle, deepCopy, deepMerge, removeSubsequentDuplicates, arrayEquals } from "../HelperFunctions.js";
-import { commonChartOptions, GenericChart } from "./GenericChart.js"
+import { commonChartOptions, GenericChart } from "./GenericChart.js";
 
 const styling = css`
 :host {
     display: inline-block;
     width: 100%;
 }
-`
+`;
 
 export default class LuminosityChart extends GenericChart {
     constructor() {
@@ -81,7 +81,7 @@ export default class LuminosityChart extends GenericChart {
         this.refresh();
     }
     get data() {
-        return this._data
+        return this._data;
     }
 
     refresh() {
@@ -100,21 +100,21 @@ export default class LuminosityChart extends GenericChart {
 
         this.chart.xAxis[0].setTitle({
             text: `${newTimeType[0].toUpperCase()}${newTimeType.slice(1)} time [s]`
-        })
+        });
 
         this.refresh();
     }
     get timeType() {
-        return this._timeType
+        return this._timeType;
     }
 
     connectedCallback() {
         this.reflow();
     }
 
-    async reflow() {
+    reflow() {
         throttle(() => {
-            this.chart.reflow()
+            this.chart.reflow();
         }, 500, this, true);
     }
 
@@ -124,7 +124,7 @@ export default class LuminosityChart extends GenericChart {
     set scale(newScale){
         this.chart.yAxis[0].update({
             type: newScale == "log" ? "logarithmic" : "linear"
-        })
+        });
     }
 
     render() {
@@ -133,7 +133,7 @@ export default class LuminosityChart extends GenericChart {
             ${styling}
         </style>
         <div id="container"></div>
-    `
+    `;
     }
 }
-customElements.define('luminosity-chart', LuminosityChart);
+customElements.define("luminosity-chart", LuminosityChart);

@@ -1,16 +1,16 @@
 // @ts-check
-import { css, html, addLineNumbers, DEFAULT_BEAM_PARAMS, deepCopy } from "../HelperFunctions.js"
-import "./RawEditor.js"
-import "./CodeEditor.js"
-import "./SwitchEditorButtons.js"
-import "./CommitElement.js"
-import "./FileBrowser.js"
-import "./ResizeablePanel.js"
-import GitLab, { NoPathExistsError } from "../GitLab.js"
-import VdM from "../parser.js"
-import './RevertButton.js'
-import "./ChartsComponent.js"
-import './GenerateUI.js'
+import { css, html, addLineNumbers, DEFAULT_BEAM_PARAMS, deepCopy } from "../HelperFunctions.js";
+import "./RawEditor.js";
+import "./CodeEditor.js";
+import "./SwitchEditorButtons.js";
+import "./CommitElement.js";
+import "./FileBrowser.js";
+import "./ResizeablePanel.js";
+import GitLab, { NoPathExistsError } from "../GitLab.js";
+import VdM from "../parser.js";
+import "./RevertButton.js";
+import "./ChartsComponent.js";
+import "./GenerateUI.js";
 
 const styling = css`
 #editor-container {
@@ -119,7 +119,7 @@ resizeable-panel{
     display: inline;
     margin: 0px 2px 0px 4px;
 }
-`
+`;
 
 const beamJSONCache = new Map();
 
@@ -139,7 +139,7 @@ async function getBeamJSON(campaignName, gitlab) {
         catch (error) {
             if (error instanceof NoPathExistsError) {
                 // TODO: actually display proper beam.json file here
-                alert(`Campaign ${campaignName} has no beam.json file, using the default file.`)
+                alert(`Campaign ${campaignName} has no beam.json file, using the default file.`);
                 beamJSONFile = deepCopy(DEFAULT_BEAM_PARAMS);
             } else throw error;
         }
@@ -153,7 +153,7 @@ const BLANK_EDITOR_HTML = html`<div class="blank-editor">No File Selected</div>`
 const EDITOR_TAG_NAMES = [
     "raw-editor",
     "code-editor",
-]
+];
 const DEFAULT_EDITOR_INDEX = 1;
 
 export default class OverallEditor extends HTMLElement {
@@ -175,7 +175,7 @@ export default class OverallEditor extends HTMLElement {
         this.errorWebWorker.addEventListener("message", message => this.onWebWorkerMessage(message));
         this.lastEditorChangeTimeout = null;
         this.initEditorContent = "";
-        this.loadingIndicator = this.root.querySelector("#loading-indicator")
+        this.loadingIndicator = this.root.querySelector("#loading-indicator");
 
         this.chartsComponent = this.root.querySelector("charts-component");
         this.fileBrowser = this.root.querySelector("file-browser");
@@ -208,19 +208,19 @@ export default class OverallEditor extends HTMLElement {
     }
 
     get ip() {
-        if (this.filePath == null) return null
+        if (this.filePath == null) return null;
         else return this.filePath.split("/")[1];
     }
 
     get campaign() {
-        if (this.filePath == null) return null
+        if (this.filePath == null) return null;
         else return this.filePath.split("/")[0];
     }
 
     onWebWorkerMessage(message) {
         if (message.data.type == "lint") {
             if (typeof this.editor.setCurrentParsedResult == "function") {
-                this.editor.setCurrentParsedResult(message.data)
+                this.editor.setCurrentParsedResult(message.data);
             }
             const sigmaInMM = this.VdM.sigma * 1e3;
             this.chartsComponent.sigmaInMM = sigmaInMM;
@@ -243,16 +243,18 @@ export default class OverallEditor extends HTMLElement {
             text: this.editor.headerlessParse ? addLineNumbers(this.editor.rawValue) : this.editor.value,
             beamParams: this.beamJSON,
             ip: this.ip
-        })
+        });
     }
 
     onEditorContentChange(newValue) {
-        localStorage.setItem('content', newValue);
+        localStorage.setItem("content", newValue);
         if ((this.editor.isChangedFrom !== undefined && !this.editor.isChangedFrom(this.initEditorContent))
-             || newValue == this.initEditorContent)
+             || newValue == this.initEditorContent) {
             this.isCommitted = true;
-        else
+        }
+        else {
             this.isCommitted = false;
+        }
 
         const TIMEOUT = 1000;
         clearTimeout(this.lastEditorChangeTimeout);
@@ -270,7 +272,7 @@ export default class OverallEditor extends HTMLElement {
      */
     tryToCommit(commitMessage) {
         if (this.filePath === null) return;
-        
+
         this.VdM.parse(this.value, true);
         if (this.VdM.isValid) {
             return (async () => {
@@ -282,7 +284,7 @@ export default class OverallEditor extends HTMLElement {
                         commitMessage,
                         this.VdM.deparse()
                     );
-                    
+
                     this.isCommitted = true;
                 }
                 finally{
@@ -291,24 +293,24 @@ export default class OverallEditor extends HTMLElement {
             })();
         }
         else {
-            alert('Commit failed! Following errors encountered:\n\n' + this.VdM.errors.map(x => x.message).join('\n'));
+            alert("Commit failed! Following errors encountered:\n\n" + this.VdM.errors.map(x => x.message).join("\n"));
             return false;
         }
     }
 
     /**
-     * Adds event listeners for all the elements 
+     * Adds event listeners for all the elements
      * @private
      */
     addListeners() {
         this.root.querySelector("commit-element").addEventListener("commit-button-press", ev => {
             if(!this.tryToCommit(ev.detail)) ev.preventDefault();
         });
-        this.editorContainer.addEventListener('editor-content-change', ev => this.onEditorContentChange(ev.detail))
-        this.root.querySelector('revert-button').addEventListener('revert-changes', () => this.tryToRevert());
+        this.editorContainer.addEventListener("editor-content-change", ev => this.onEditorContentChange(ev.detail));
+        this.root.querySelector("revert-button").addEventListener("revert-changes", () => this.tryToRevert());
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));
-        this.fileBrowser.addEventListener('open-file', event => this.setCurrentEditorContent(event.detail));
-        this.editorContainer.addEventListener('change-row-selected', event => this.chartsComponent.showTooltips(event.detail));
+        this.fileBrowser.addEventListener("open-file", event => this.setCurrentEditorContent(event.detail));
+        this.editorContainer.addEventListener("change-row-selected", event => this.chartsComponent.showTooltips(event.detail));
         this.root.querySelector("generate-button").addEventListener("generated", ev => this.editor.insertGeneratedContent(ev.detail));
     }
 
@@ -316,7 +318,7 @@ export default class OverallEditor extends HTMLElement {
         if (this.filePath === null) return;
 
         this.switchToEditor(editorIndex);
-        localStorage.setItem('open-tab', editorIndex.toString());
+        localStorage.setItem("open-tab", editorIndex.toString());
     }
 
     async tryToRevert() {
@@ -325,13 +327,13 @@ export default class OverallEditor extends HTMLElement {
 
         try{
             if (!this.isCommitted) {
-                if (confirm('Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.')) {
-                    await this.setCurrentEditorContent(this.filePath)
+                if (confirm("Changes not committed. Are you sure you want to revert to repository version? All current changes will be discarded.")) {
+                    await this.setCurrentEditorContent(this.filePath);
                 }
             } else {
-                await this.setCurrentEditorContent(this.filePath)
+                await this.setCurrentEditorContent(this.filePath);
             }
-        } finally {this.hideLoadingIndicator()};
+        } finally {this.hideLoadingIndicator();}
     }
 
     /**
@@ -339,8 +341,8 @@ export default class OverallEditor extends HTMLElement {
      */
     async loadDataFromLocalStorage() {
         if (localStorage.getItem("open-file") != null) {
-            if (localStorage.getItem('open-tab') !== null) {
-                const buttonIndex = parseInt(localStorage.getItem('open-tab'));
+            if (localStorage.getItem("open-tab") !== null) {
+                const buttonIndex = parseInt(localStorage.getItem("open-tab"));
 
                 this.switchToEditor(buttonIndex);
             }
@@ -355,17 +357,17 @@ export default class OverallEditor extends HTMLElement {
                 localStorage.getItem("content"),
                 false,
                 false
-            )
+            );
         }
         catch (error) {
             if (error instanceof NoPathExistsError) {
                 alert(`Last edited file deleted in the repository, please recreate if required. The locally stored file was: \n${
                     localStorage.getItem("content")
-                    }`)
+                    }`);
                 await this.setCurrentEditorContent(
                     null,
                     null
-                )
+                );
             }
             else throw error;
         }
@@ -382,9 +384,9 @@ export default class OverallEditor extends HTMLElement {
 
     /**
      * Function to set the file the editor is editing.
-     * 
+     *
      * @param {string | null} filePath If filepath is null, this means no file is to be loaded.
-     * @param {string | null} localFileChanges If set, set the editor content to this values, for 
+     * @param {string | null} localFileChanges If set, set the editor content to this values, for
      * loading from local storage
      */
     async setCurrentEditorContent(filePath, localFileChanges=null, showLoadingIndicator=true, switchEditor=true) {
@@ -397,7 +399,7 @@ export default class OverallEditor extends HTMLElement {
             this.VdM = null;
             this.currentEditorIndex = null;
 
-            this.isCommitted = true
+            this.isCommitted = true;
             return;
         }
 
@@ -431,15 +433,15 @@ export default class OverallEditor extends HTMLElement {
             this.editor.VdM = this.VdM;
             this.editor.ip = this.ip;
 
-            this.root.querySelector('generate-button').ip = this.ip;
+            this.root.querySelector("generate-button").ip = this.ip;
 
             this.onEditorContentChange(this.value);
             this.updateFileNameUI(filePath);
 
             this.makeWebWorkerParse();
 
-            localStorage.setItem('open-file', filePath);
-            localStorage.setItem('content', this.value);
+            localStorage.setItem("open-file", filePath);
+            localStorage.setItem("content", this.value);
         }
         finally{
             if (showLoadingIndicator) {
@@ -493,7 +495,7 @@ export default class OverallEditor extends HTMLElement {
         if (previousEditor) {
             this.editor.value = previousEditor.value;
         }
-        
+
         this.editorContainer.innerHTML = "";
         this.editorContainer.appendChild(this.editor);
     }
@@ -511,7 +513,7 @@ export default class OverallEditor extends HTMLElement {
                     <div class="vr">&nbsp;</div>
                     <revert-button></revert-button>
                 </div>
-                
+
             </div>
             <div class="body">
                 <resizeable-panel>
@@ -530,9 +532,8 @@ export default class OverallEditor extends HTMLElement {
                     <charts-component></charts-component>
                 </resizeable-panel>
             <div>
-        </div>`
+        </div>`;
     }
 
-
 }
-customElements.define('overall-editor', OverallEditor);
+customElements.define("overall-editor", OverallEditor);

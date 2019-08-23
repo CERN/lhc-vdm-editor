@@ -30,8 +30,7 @@ describe("OverallEditor", () => {
             // NOTE: we need to commit to the test branch so we don't mess up master
             "vdm-editor-test"
         );
-    })
-
+    });
 
     beforeEach(() => {
         fakeLocalStorage = {};
@@ -55,11 +54,11 @@ describe("OverallEditor", () => {
 
     beforeEach(async () => {
         oe = await getNewOverallEditor(gitlab);
-    })
+    });
 
     afterEach(() => {
         document.body.removeChild(oe);
-    })
+    });
 
     describe("Initial state (without localStorage)", () => {
         it("doesn't do anything when pressing buttons on default view", () => {
@@ -70,18 +69,18 @@ describe("OverallEditor", () => {
             oe.onSwitchEditorButtonPress(0);
             oe.chartsComponent.timeType = "sequence";
             expect().nothing();
-        })
+        });
 
         it("can load a file from no local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE);
             expect().nothing();
-        })
+        });
 
         it("can load a file from no local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE);
             expect().nothing();
-        })
-    })
+        });
+    });
 
     describe("Local storage loading", () => {
         it("loads the same file from local storage", async () => {
@@ -89,14 +88,14 @@ describe("OverallEditor", () => {
 
             oe = await getNewOverallEditor(gitlab);
             expect(oe.filePath).toBe(TEST_FILE);
-        })
+        });
 
         it("loads the same content from local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
 
             oe = await getNewOverallEditor(gitlab);
             expect(oe.value).toBe(TEST_FILE_CONTENT);
-        })
+        });
 
         it("saves the current open editor index", async () => {
             await oe.setCurrentEditorContent(TEST_FILE);
@@ -106,8 +105,8 @@ describe("OverallEditor", () => {
 
             oe = await getNewOverallEditor(gitlab);
             expect(oe.currentEditorIndex).toBe(editorToSwitchTo);
-        })
-    })
+        });
+    });
 
     describe("Reverting and committing works", () => {
         it("commits to gitlab", async () => {
@@ -117,17 +116,17 @@ describe("OverallEditor", () => {
 
             await oe.tryToCommit("Test message");
             expect(oe.isCommitted).toBe(true);
-        })
+        });
 
         it("reverts the current file", async () => {
             await oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
             oe.onSwitchEditorButtonPress(1/** The code editor */);
             oe.editor.rawValue += " ";
-            spyOn(window, "confirm").and.callFake(_ => true)
+            spyOn(window, "confirm").and.callFake(_ => true);
             await oe.tryToRevert();
 
             expect(oe.value).toBe(await gitlab.readFile(TEST_FILE));
             expect(oe.isCommitted).toBe(true);
-        })
-    })
-})
+        });
+    });
+});
