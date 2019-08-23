@@ -32,15 +32,21 @@ function calculateAllCoverages(data){
 }
 
 const puppeteer = require("puppeteer");
+const util = require("util");
 
 async function tryFindCoverage() {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.coverage.startJSCoverage()
+    await page.coverage.startJSCoverage();
+    await page.exposeFunction("printExternalMessage", message => {
+        process.stdout.write(message);
+    });
     await page.goto('http://127.0.0.1:8080/SpecRunner.html', {waitUntil: 'networkidle2'});
     await page.waitForFunction(`jsApiReporter.status() == "done"`)
     const coverage = await page.coverage.stopJSCoverage();
+    console.log("\nCoverage:");
     calculateAllCoverages(coverage);
+    process.exit(await page.evaluate(`jsApiReporter.runDetails.overallStatus`) == "passed"? 0 : 1);
 }
 
 tryFindCoverage()
