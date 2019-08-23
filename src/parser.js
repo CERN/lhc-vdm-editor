@@ -560,7 +560,7 @@ export default class VdM {
     }
     checkBeamPositionLimits() {
         this.structure.forEach((command, i) => {
-            if (command.type == "command") {
+            if (command.type == "command" && command.command != "END_SEQUENCE") {
                 try {
                     command.checkLimit(this.param.scan_limits, this.sigma);
                 } catch (error) {
