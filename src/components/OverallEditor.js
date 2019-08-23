@@ -311,7 +311,9 @@ export default class OverallEditor extends HTMLElement {
         this.root.querySelector("switch-editor-buttons").addEventListener("editor-button-press", ev => this.onSwitchEditorButtonPress(ev.detail));
         this.fileBrowser.addEventListener("open-file", event => this.setCurrentEditorContent(event.detail));
         this.editorContainer.addEventListener("change-row-selected", event => this.chartsComponent.showTooltips(event.detail));
-        this.root.querySelector("generate-button").addEventListener("generated", ev => this.editor.insertGeneratedContent(ev.detail));
+        this.root.querySelector("generate-button").addEventListener("generated", ev => {
+            if(this.filePath != null) this.editor.insertGeneratedContent(ev.detail)
+        });
     }
 
     onSwitchEditorButtonPress(editorIndex) {
