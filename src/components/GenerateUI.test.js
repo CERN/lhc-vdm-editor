@@ -1,8 +1,4 @@
 import { GenerateSequenceWindow } from "./GenerateUI.js";
-import GitLab from "../GitLab.js";
-import { getHTMLElementWithText, assertRequiredParameters } from "../HelperFunctions.js";
-
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000000;
 
 async function getNewGenerateSequenceWindow() {
     let gsw = new GenerateSequenceWindow();
@@ -13,7 +9,7 @@ async function getNewGenerateSequenceWindow() {
     return gsw;
 }
 
-describe("CreateFileWindow", () => {
+describe("GenerateUI", () => {
     /** @type {GenerateSequenceWindow} */
     let gsw;
 
