@@ -13,8 +13,8 @@ export class OAuth {
     }
 
     getAccessToken() {
-        const access_token = window.location.hash.match(/access_token=(.*?)(?:&|$)/)[1];
-        const state = window.location.hash.match(/state=(.*?)(?:&|$)/)[1];
+        const access_token = window.location.hash.match(/(?:&|#)access_token=(.*?)(?:&|$)/)[1];
+        const state = window.location.hash.match(/(?:&|#)state=(.*?)(?:&|$)/)[1];
 
         if (state !== localStorage.getItem("oauth_state")) {
             throw new OAuthError("OAuth state parameter doesn't match stored state");
