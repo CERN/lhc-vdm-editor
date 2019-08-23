@@ -32,16 +32,16 @@ function calculateAllCoverages(data){
 }
 
 const puppeteer = require("puppeteer");
-const util = require("util");
+const process = require("process");
 
-async function tryFindCoverage() {
+async function tryFindCoverage(useNetworkTests) {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.coverage.startJSCoverage();
     await page.exposeFunction("printExternalMessage", message => {
         process.stdout.write(message);
     });
-    await page.goto('http://127.0.0.1:8080/SpecRunner.html', {waitUntil: 'networkidle2'});
+    await page.goto(`http://127.0.0.1:8080/SpecRunner.html${useNetworkTests?"?spec="}`, {waitUntil: 'networkidle2'});
     await page.waitForFunction(`jsApiReporter.status() == "done"`)
     const coverage = await page.coverage.stopJSCoverage();
     console.log("\nCoverage:");
@@ -49,4 +49,9 @@ async function tryFindCoverage() {
     process.exit(await page.evaluate(`jsApiReporter.runDetails.overallStatus`) == "passed"? 0 : 1);
 }
 
-tryFindCoverage()
+let useNetworkTests = true;
+if(){
+    useNetworkTests = false;
+}
+
+tryFindCoverage(process.argv[2] != "--no-network");
