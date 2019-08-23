@@ -22,4 +22,4 @@ jobs:
         npm install
         npm run-script test-server &
         sleep 3
-        npm console_test.js --no-network
+        node console_test.js --no-network
