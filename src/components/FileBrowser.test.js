@@ -1,20 +1,17 @@
 import FileBrowser from "./FileBrowser.js";
-import GitLab from "../GitLab.js";
-import { NO_FILES_TEXT, HTMLHasText, getHTMLElementWithText, wait, joinFilePaths } from "../HelperFunctions.js";
+import {InMemoryGitLab} from "../GitLab.js"
+import { NO_FILES_TEXT, HTMLHasText, getHTMLElementWithText, wait, joinFilePaths, isAFolderOf } from "../HelperFunctions.js";
 
-const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
-const TEST_FILE2 = "201806_VdM/IP1/IP1_LSC_B1X_12Nov17.txt";
+const TEST_FILE = "CampaignA/IP1/my_file";
+const TEST_FILE2 = "CampaignB/IP1/my_file";
 const TEST_NO_FILE_FOLDER = "201707_ATLAS_DryRun/IP8";
 const TEST_FOLDER_FILE = "201606_muscan/IP1/fallback/muScan_x_stdrd.txt";
 const TEST_FOLDER = "201908_Test_Campaign/IP1";
 
-/**
- * @param {GitLab} [gitlab]
- */
 async function getNewFileBrowser(gitlab) {
     let fb = new FileBrowser();
     fb.gitlab = gitlab;
-    fb.style.display = "none";
+    //fb.style.display = "none";
     document.body.appendChild(fb);
     await fb.loadedPromise;
 
@@ -24,20 +21,18 @@ async function getNewFileBrowser(gitlab) {
 describe("FileBrowser", () => {
     /** @type {FileBrowser} */
     let fb;
-    /** @type {GitLab} */
-    let gitlab;
-
-    beforeAll(async () => {
-        const token = (await (await fetch("../secrets.json")).json()).token;
-        gitlab = new GitLab(
-            token,
-            // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test"
-        );
-    })
+    const testGitLab = new InMemoryGitLab([
+        {name: "CampaignA", path: "CampaignA", type: "tree"},
+        {name: "IP1", path: "CampaignA/IP1", type: "tree"},
+        {name: "my_file", path: "CampaignA/IP1/my_file", type: "blob"},
+        {name: "CampaignB", path: "CampaignB", type: "tree"},
+        {name: "IP1", path: "CampaignB/IP1", type: "tree"},
+        {name: "my_file", path: "CampaignB/IP1/my_file", type: "blob"}
+    ])
 
     beforeEach(async () => {
-        fb = await getNewFileBrowser(gitlab);
+        // @ts-ignore
+        fb = await getNewFileBrowser(testGitLab);
     })
 
     afterEach(() => {

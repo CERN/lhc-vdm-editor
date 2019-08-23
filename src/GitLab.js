@@ -1,4 +1,4 @@
-import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunctions.js"
+import { gFetch, getRelativePath, mergeMaps, awaitArray, isAFolderOf, stripPath } from "./HelperFunctions.js"
 
 const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
 
@@ -11,6 +11,39 @@ export class FileAlreadyExistsError extends Error {
     constructor(message = "File already exists") {
         super(message);
     }
+}
+
+function getStructureFolder(filePath, root) {
+    let currentFolder = root;
+
+    for (let folder of filePath.split("/").filter(x => x != "").slice(0, -1)) {
+        currentFolder = currentFolder.folders.get(folder);
+    }
+
+    return currentFolder;
+}
+
+/**
+ * @param {object[]} fileList
+ */
+function fileListToFileStructure(fileList, basePath) {
+    let structure = { files: [], folders: new Map() };
+
+    for (let item of fileList) {
+        const relativeFilePath = getRelativePath(item.path, basePath);
+
+        if (item.type == "blob") {
+            getStructureFolder(relativeFilePath, structure).files.push(item.name);
+        }
+        else if (item.type == "tree") {
+            getStructureFolder(relativeFilePath, structure).folders.set(item.name, { files: [], folders: new Map() });
+        }
+        else {
+            throw Error(`Unknown type ${item.type}`)
+        }
+    }
+
+    return structure;
 }
 
 export default class GitLab {
@@ -124,12 +157,16 @@ export default class GitLab {
         }
     }
 
+    /**
+     * @returns {Promise<string[]>}
+     */
     async listCampaigns() {
         return Array.from((await this.listFiles('/', false)).folders.keys());
     }
 
     /**
      * @param {string} campaign
+     * @returns {Promise<string[]>}
      */
     async listIPs(campaign) {
         return Array.from((await this.listFiles(campaign, false)).folders.keys());
@@ -152,40 +189,6 @@ export default class GitLab {
             }
         )
 
-
-        function getStructureFolder(filePath, root) {
-            let currentFolder = root;
-
-            for (let folder of filePath.split("/").filter(x => x != "").slice(0, -1)) {
-                currentFolder = currentFolder.folders.get(folder);
-            }
-
-            return currentFolder;
-        }
-
-        /**
-         * @param {object[]} fileList
-         */
-        function getGitLabFileStructure(fileList) {
-            let structure = { files: [], folders: new Map() };
-
-            for (let item of fileList) {
-                const relativeFilePath = getRelativePath(item.path, path);
-
-                if (item.type == "blob") {
-                    getStructureFolder(relativeFilePath, structure).files.push(item.name);
-                }
-                else if (item.type == "tree") {
-                    getStructureFolder(relativeFilePath, structure).folders.set(item.name, { files: [], folders: new Map() });
-                }
-                else {
-                    throw Error(`Unknown type ${item.type}`)
-                }
-            }
-
-            return structure;
-        }
-
         let fileList = await page.json();
 
         if (fileList.length == 0) {
@@ -207,7 +210,7 @@ export default class GitLab {
         }
 
         if (returnStructure) {
-            return getGitLabFileStructure(fileList);
+            return fileListToFileStructure(fileList, path);
         }
         else {
             return fileList.filter(x => x.type == "blob")
@@ -324,6 +327,33 @@ export default class GitLab {
         for (let file of filePaths) {
             await this.renameFile(file, `${newName}/${file.split(path + '/').pop()}`);
         }
+    }
+}
+
+/**
+ * Defines stubbing class for GitLab
+ */
+export class InMemoryGitLab extends GitLab{
+    constructor(startingObject){
+        // we shouldn't be using the token
+        super(undefined, undefined);
+
+        this.fileList = startingObject;
+    }
+
+    listFiles(path, recursive=true, returnStructure=true){
+        let fileList = this.fileList.map(file => {
+            if(isAFolderOf(file.path, path, recursive)){
+                return {
+                    ...file,
+                    path: stripPath(file.path).slice(stripPath(path))
+                }
+            }
+            else return false
+        }).filter(x => x !== false);
+
+        if(returnStructure) return fileListToFileStructure(fileList, path);
+        else return fileList.filter(x => x.type == "blob").map(x => x.path);
     }
 }
 

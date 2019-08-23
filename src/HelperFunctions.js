@@ -354,9 +354,10 @@ export function removeLineNumbers(text) {
     }).join("\n");
 }
 
-export function isAFolderOf(filePath, folderPath){
+export function isAFolderOf(filePath, folderPath, shouldBeImmediate){
     const fileParts = filePath.split("/").filter(x => x != "");
     const folderParts = folderPath.split("/").filter(x => x != "");
+    if(shouldBeImmediate && fileParts.length - folderParts.length != 1) return false;
     
     return arrayEquals(fileParts.slice(0, folderParts.length), folderParts);
 }
@@ -387,4 +388,8 @@ export function assertRequiredParameters(thisValue, obj){
             }
         }
     }
+}
+
+export function stripPath(path){
+    return path.split("/").filter(x => x != "").join("/")
 }
