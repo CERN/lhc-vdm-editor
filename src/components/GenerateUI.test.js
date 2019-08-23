@@ -7,7 +7,7 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000000;
 async function getNewGenerateSequenceWindow() {
     let gsw = new GenerateSequenceWindow();
     gsw.ip = "IP1";
-    //gsw.style.display = "none";
+    gsw.style.display = "none";
     document.body.appendChild(gsw);
 
     return gsw;

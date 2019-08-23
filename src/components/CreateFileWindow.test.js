@@ -1,6 +1,6 @@
 import CreateFileWindow from "./CreateFileWindow.js";
 import GitLab from "../GitLab.js";
-import { NO_FILES_TEXT } from "../HelperFunctions.js";
+import { NO_FILES_TEXT, getHTMLElementWithText } from "../HelperFunctions.js";
 
 /**
  * @param {GitLab} [gitlab]
@@ -46,5 +46,21 @@ describe("CreateFileWindow", () => {
     it("can setFileUI of no files", () => {
         cfw.setFileUI([NO_FILES_TEXT]);
         expect().nothing();
+    })
+
+    it("Dispatches copy event", async () => {
+        let copySpy = jasmine.createSpy('copySpy');
+        cfw.addEventListener('submit', copySpy);
+
+        cfw.shadowRoot.querySelector('#copy-button').click();
+        expect(copySpy).toHaveBeenCalled()
+    })
+
+    it("Dispatches empty create event", async () => {
+        let createSpy = jasmine.createSpy('createSpy');
+        cfw.addEventListener('create-empty', createSpy);
+
+        cfw.shadowRoot.querySelector('#create-empty').click();
+        expect(createSpy).toHaveBeenCalled()
     })
 })
