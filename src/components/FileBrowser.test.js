@@ -128,7 +128,7 @@ describe("FileBrowser", () => {
         expect(fb.shadowRoot.querySelector("create-file-window")).not.toBeNull();
     })
 
-    xit("Can create, rename and delete in one", async () => {
+    it("Can create, rename and delete in one", async () => {
         await fb.setOpenFile(TEST_FOLDER);
         const TEST_FILENAME = "my_file.txt";
         const RENAMED_FILENAME = "my_new_file.txt";
@@ -153,5 +153,25 @@ describe("FileBrowser", () => {
         await wait(1);
         expect(deleteChangeSpy).toHaveBeenCalled();
         expect(HTMLHasText(fb, RENAMED_FILENAME)).not.toBeTruthy();
+    })
+
+    it("Can copy and delete sub-folder", async () => {
+        await fb.setOpenFile(TEST_FOLDER);
+        
+        const [COPY_CAMPAIGN, COPY_IP, ...subPath] = TEST_FOLDER_FILE.split('/');
+        const TOP_SUB_FOLDER_NAME = subPath[0];
+        const FULL_NEW_FOLDERPATH = `${TEST_FOLDER}/${TOP_SUB_FOLDER_NAME}`
+        
+        spyOn(window, "confirm").and.callFake(() => true);
+        await fb.tryCopyFolder(TEST_FOLDER, COPY_IP, COPY_CAMPAIGN, [TEST_FOLDER_FILE]);
+        await fb.refresh();
+        await wait(1);
+        expect(HTMLHasText(fb, TOP_SUB_FOLDER_NAME)).toBeTruthy();
+
+        const deleteChangeSpy = jasmine.createSpy("deleteChangeSpy");
+        await fb.onDeleteButtonPressed(FULL_NEW_FOLDERPATH, true, deleteChangeSpy);
+        await wait(1);
+        expect(deleteChangeSpy).toHaveBeenCalled();
+        expect(HTMLHasText(fb, TOP_SUB_FOLDER_NAME)).toBeFalsy();
     })
 })

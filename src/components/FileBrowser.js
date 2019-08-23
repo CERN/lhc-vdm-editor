@@ -116,14 +116,14 @@ export default class FileBrowser extends MyHyperHTMLElement {
         }
         this.openFile = newOpenFile;
 
-        await this.setFileStructure(this.ip, this.campaign);
-        this.render();
+        await this.refresh();
 
         await this.loadedPromise;
     }
 
     async refresh() {
         await this.setFileStructure(this.ip, this.campaign);
+        this.render();
     }
 
     /**
@@ -407,14 +407,14 @@ export default class FileBrowser extends MyHyperHTMLElement {
                 gitlab=${this.gitlab}
                 campaigns=${(async () => [...await this.campaigns]/*we need to deep copy here to prevent wire moving elements*/)()}
                 onsubmit=${async event => {
-                try {
-                    await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
-                    this.refresh();
-                }
-                finally {
-                    this.createFileWindow = undefined;
-                    this.render();
-                }
+                    try {
+                        await this.tryCopyFolder(containingFolder, event.detail.ip, event.detail.campaign, event.detail.filePaths);
+                        await this.refresh();
+                    }
+                    finally {
+                        this.createFileWindow = undefined;
+                        this.render();
+                    }
                 }}
                 oncancelmodel=${
                     () => {

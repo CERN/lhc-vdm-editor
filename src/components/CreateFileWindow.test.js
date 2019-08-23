@@ -47,4 +47,20 @@ describe("CreateFileWindow", () => {
         cfw.setFileUI([NO_FILES_TEXT]);
         expect().nothing();
     })
+
+    it("Dispatches copy event", async () => {
+        let copySpy = jasmine.createSpy('copySpy');
+        cfw.addEventListener('submit', copySpy);
+
+        cfw.shadowRoot.querySelector('#copy-button').click();
+        expect(copySpy).toHaveBeenCalled()
+    })
+
+    it("Dispatches empty create event", async () => {
+        let createSpy = jasmine.createSpy('createSpy');
+        cfw.addEventListener('create-empty', createSpy);
+
+        cfw.shadowRoot.querySelector('#create-empty').click();
+        expect(createSpy).toHaveBeenCalled()
+    })
 })
