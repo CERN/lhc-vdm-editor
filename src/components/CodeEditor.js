@@ -285,7 +285,7 @@ export default class CodeEditor extends HTMLElement {
         this.editor.session.gutterRenderer = VDMNumberRenderer;
 
         var testCompleter = {
-            //--- LINE NOT NEEDED --- identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/]
+            //identifierRegexps: [/ /, /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/],
             getCompletions: (editor, session, pos, prefix, callback) =>
                 this.getAutocompletions(editor, session, pos, prefix, callback)
         };
@@ -346,7 +346,7 @@ export default class CodeEditor extends HTMLElement {
         const words = editor.session
             .getLine(pos.row)
             .slice(0, pos.column)
-            .split(/ +/);
+            .split(/ /);
         if (words.length < 2 && words[0][0] != "#") {
             callback(null,
                 syntaxify(trim.concat(others), 10, "command")
@@ -357,9 +357,10 @@ export default class CodeEditor extends HTMLElement {
 
         let suggestions = [];
         const firstWord = words[0];
+        const thisWord = words[words.length - 1];
         const prevWord = words[words.length - 2];
         const insertSpace = Boolean(editor.session.getLine(pos.row)[pos.column] != " ");
-
+        //debugger
         // Check _TRIM command context
         if (trim.includes(firstWord)) {
             if (trim.includes(prevWord) || arg5.includes(prevWord)) {
@@ -368,7 +369,7 @@ export default class CodeEditor extends HTMLElement {
                 suggestions = syntaxify(arg2, 10, "beam", insertSpace);
             } else if (arg2.includes(prevWord)) {
                 suggestions = syntaxify(arg3, 10, "plane", insertSpace);
-            } else if (arg3.includes(prevWord)) {
+            } else if (arg3.includes(prevWord) && thisWord == "") {
                 suggestions = syntaxify(arg4, 10, "number", insertSpace);
             } else if (isFinite(Number(prevWord))) {
                 suggestions = syntaxify(arg5, 10, "unit", false);
@@ -380,7 +381,7 @@ export default class CodeEditor extends HTMLElement {
             } else if (arg3.includes(prevWord)) {
                 suggestions = syntaxify(fitTypes, 10, "fit type", false);
             }
-        } else if (firstWord == "SECONDS_WAIT" && prevWord == "SECONDS_WAIT") {
+        } else if (firstWord == "SECONDS_WAIT" && prevWord == "SECONDS_WAIT" && thisWord == "") {
             suggestions = syntaxify(arg4, 10, "number", false);
         }
 

@@ -363,21 +363,21 @@ export class GenerateSequenceWindow extends HTMLElement {
                 </info-box>
                 <hr>
                 <select id='beam-select'>
+                    <option>Both beams</option>
                     <option>Beam 1</option>
                     <option>Beam 2</option>
-                    <option>Both</option>
                 </select>
                 <select id='plane-select'>
                     <option>Separation</option>
                     <option>Crossing</option>
                 </select>
                 <div>
-                    <input id="wait-time" type="number" placeholder="Time between steps (s)">
-                    <input id="step-number" type="number" placeholder="Number of steps">
+                    <input id="wait-time" type="number" placeholder="Time between steps (s)" title="Time between steps (s)">
+                    <input id="step-number" type="number" placeholder="Number of steps" title="Number of steps">
                 </div>
                 <div>
-                    <input type="number" placeholder="Initial Separation (&sigma;)">
-                    <input type="number" placeholder="Final Separation (&sigma;)">
+                    <input type="number" placeholder="Initial Separation (&sigma;)" title="Initial Separation (&sigma;)">
+                    <input type="number" placeholder="Final Separation (&sigma;)" title="Final Separation (&sigma;)">
                 </div>
                 <button id='VdM-generate'>Generate at cursor</button>
             </div>
@@ -389,14 +389,14 @@ export class GenerateSequenceWindow extends HTMLElement {
                 </info-box>
                 <hr>
                 <div>
-                    <input type="number" placeholder="Time between steps (s)">
+                    <input type="number" placeholder="Time between steps (s)" title="Time between steps (s)">
                     <div>
-                        <input type="text" placeholder="Beam 1 Separation (&sigma;)">
-                        <input type="text" placeholder="Beam 2 Separation (&sigma;)">
+                        <input type="text" placeholder="Beam 1 Separation (&sigma;)" title="Beam 1 Separation (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Separation (&sigma;)" title="Beam 2 Separation (&sigma;)">
                     </div>
                     <div>
-                        <input type="text" placeholder="Beam 1 Crossing (&sigma;)">
-                        <input type="text" placeholder="Beam 2 Crossing (&sigma;)">
+                        <input type="text" placeholder="Beam 1 Crossing (&sigma;)" title="Beam 1 Crossing (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Crossing (&sigma;)" title="Beam 2 Crossing (&sigma;)">
                     </div>
                 </div>
                 <button id='array-generate'>Generate at cursor</button>
@@ -410,16 +410,16 @@ export class GenerateSequenceWindow extends HTMLElement {
                 <hr>
                 <div>
                     <div>
-                        <input id="wait-time" type="number" placeholder="Time between steps (s)">
-                        <input id="step-number" type="number" placeholder="Number of steps">
+                        <input id="wait-time" type="number" placeholder="Time between steps (s)" title="Time between steps (s)">
+                        <input id="step-number" type="number" placeholder="Number of steps" title="Number of steps">
                     </div>
                     <div>
-                        <input type="text" placeholder="Beam 1 Separation (&sigma;)">
-                        <input type="text" placeholder="Beam 2 Separation (&sigma;)">
+                        <input type="text" placeholder="Beam 1 Separation (&sigma;)" title="Beam 1 Separation (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Separation (&sigma;)" title="Beam 2 Separation (&sigma;)">
                     </div>
                     <div>
-                        <input type="text" placeholder="Beam 1 Crossing (&sigma;)">
-                        <input type="text" placeholder="Beam 2 Crossing (&sigma;)">
+                        <input type="text" placeholder="Beam 1 Crossing (&sigma;)" title="Beam 1 Crossing (&sigma;)">
+                        <input type="text" placeholder="Beam 2 Crossing (&sigma;)" title="Beam 2 Crossing (&sigma;)">
                     </div>
                 </div>
                 <button id='function-generate'>Generate at cursor</button>
