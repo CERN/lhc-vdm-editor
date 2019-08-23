@@ -34,10 +34,10 @@
             };
         }
         var browser_version = get_browser();
-        if(!((browser_version.name == "chrome" && parseInt(browser_version.version) >= 54)
-        ||   (browser_version.name == "firefox" && parseInt(browser_version.version) >= 63))){
-            if(!((browser_version.name == "safari" && parseInt(browser_version.version) >= 11)
-            ||   (browser_version.name == "opera" && parseInt(browser_version.version) >= 41))){
+        if(!((browser_version.name == "Chrome" && parseInt(browser_version.version) >= 54)
+        ||   (browser_version.name == "Firefox" && parseInt(browser_version.version) >= 63))){
+            if(!((browser_version.name == "Safari" && parseInt(browser_version.version) >= 11)
+            ||   (browser_version.name == "Opera" && parseInt(browser_version.version) >= 41))){
                 alert("Your browser doesn't seem to use support web components - the application may error.")
             }
             else{
