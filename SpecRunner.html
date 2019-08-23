@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <title>Jasmine Spec Runner v3.4.0</title>
 
-  <link rel="shortcut icon" type="image/png" href="node_modules/jasmine-core/lib/jasmine-core/jasmine_favicon.png">
   <link rel="stylesheet" href="node_modules/jasmine-core/lib/jasmine-core/jasmine.css">
 
   <script src="node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script> <!--jasmine-3.4.0/jasmine.js-->
@@ -33,6 +32,16 @@
   <script type="module" src="src/components/FileBrowser.test.js"></script>
   <script type="module" src="src/components/CreateFileWindow.test.js"></script>
   <script type="module" src="src/components/GenerateUI.test.js"></script>
+  <script>var module= {}; var exports = {};</script>
+  <script src="node_modules/jasmine/lib/reporters/console_reporter.js"></script>
+  <script>
+    if(typeof printExternalMessage !== "undefined"){
+      let str = "";
+      const cr = new ConsoleReporter();
+      cr.setOptions({print: x => printExternalMessage(x), showColors: true});
+      jasmine.getEnv().addReporter(cr);
+    }
+  </script>
 
 </head>
 

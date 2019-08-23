@@ -1,7 +1,5 @@
 import { gFetch, getRelativePath, mergeMaps, awaitArray } from "./HelperFunctions.js"
 
-const URL_START = "https://gitlab.cern.ch/api/v4/projects/72000"
-
 export class NoPathExistsError extends Error {
     constructor(message = "No Path exists") {
         super(message);
@@ -18,7 +16,7 @@ export default class GitLab {
      * 
      * @param {string} token 
      */
-    constructor(token, branch = "master", oauth = false) {
+    constructor(token, branch="master", oauth=false, urlStart="https://gitlab.cern.ch/api/v4/projects/72000") {
         if (oauth) {
             this.authHeader = {
                 "Authorization": `Bearer ${token}`
@@ -33,6 +31,8 @@ export default class GitLab {
         this.token = token;
         /** @private */
         this.branch = branch;
+        /** @private */
+        this.urlStart = urlStart;
     }
 
     /**
@@ -45,7 +45,7 @@ export default class GitLab {
         try {
             return await (
                 await gFetch(
-                    `${URL_START}/repository/files/${
+                    `${this.urlStart}/repository/files/${
                     encodeURIComponent(filePath)
                     }/raw?ref=${this.branch}`,
                     { headers: new Headers(this.authHeader) }
@@ -68,7 +68,7 @@ export default class GitLab {
      */
     async writeFile(filePath, commitMessage, fileText) {
         await gFetch(
-            `${URL_START}/repository/commits`,
+            `${this.urlStart}/repository/commits`,
             {
                 headers: new Headers({
                     ...this.authHeader,
@@ -95,7 +95,7 @@ export default class GitLab {
     async createFile(filePath) {
         try {
             await gFetch(
-                `${URL_START}/repository/commits`,
+                `${this.urlStart}/repository/commits`,
                 {
                     headers: new Headers({
                         ...this.authHeader,
@@ -145,7 +145,7 @@ export default class GitLab {
     async listFiles(path, recursive = true, returnStructure = true) {
         const perPage = 100;
         const page = await gFetch(
-            `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${
+            `${this.urlStart}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=1&path=${
             path}&recursive=${recursive}`,
             {
                 headers: new Headers(this.authHeader)
@@ -196,7 +196,7 @@ export default class GitLab {
 
         for (let i = 2; i <= lastPage; i++) {
             const page = await gFetch(
-                `${URL_START}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=${i}&path=${
+                `${this.urlStart}/repository/tree?ref=${this.branch}&per_page=${perPage}&page=${i}&path=${
                 path}&recursive=${recursive}`,
                 {
                     headers: new Headers(this.authHeader)
@@ -243,7 +243,7 @@ export default class GitLab {
 
 
         await gFetch(
-            `${URL_START}/repository/commits`,
+            `${this.urlStart}/repository/commits`,
             {
                 headers: new Headers({
                     ...this.authHeader,
@@ -264,7 +264,7 @@ export default class GitLab {
      */
     async deleteFile(filePath) {
         await gFetch(
-            `${URL_START}/repository/commits`,
+            `${this.urlStart}/repository/commits`,
             {
                 headers: new Headers({
                     ...this.authHeader,
@@ -299,7 +299,7 @@ export default class GitLab {
             concat([newName]).join("/");
 
         await gFetch(
-            `${URL_START}/repository/commits`,
+            `${this.urlStart}/repository/commits`,
             {
                 headers: new Headers({
                     ...this.authHeader,
