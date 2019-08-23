@@ -1,12 +1,11 @@
 import OverallEditor from "./OverallEditor.js";
-import GitLab from "../GitLab.js";
+import {NoPathExistsError} from "../GitLab.js";
+import { DEFAULT_BEAM_PARAMS } from "../HelperFunctions.js";
 
-const TEST_FILE = "201806_VdM/IP8/lhcb_1st_part_MAIN_Jun2018.txt";
+const TEST_FILE = "TestCampaign/IP1/my_test_file.txt";
 const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
 
-/**
- * @param {GitLab} [gitlab]
- */
+
 async function getNewOverallEditor(gitlab) {
     let oe = new OverallEditor(gitlab);
     oe.style.display = "none";
@@ -20,17 +19,6 @@ describe("OverallEditor", () => {
     /** @type {OverallEditor} */
     let oe;
     let fakeLocalStorage;
-    /** @type {GitLab} */
-    let gitlab;
-
-    beforeAll(async () => {
-        const token = (await (await fetch("../secrets.json")).json()).token;
-        gitlab = new GitLab(
-            token,
-            // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test"
-        );
-    });
 
     beforeEach(() => {
         fakeLocalStorage = {};
@@ -52,8 +40,29 @@ describe("OverallEditor", () => {
         });
     });
 
+    let fileContents = TEST_FILE_CONTENT;
     beforeEach(async () => {
-        oe = await getNewOverallEditor(gitlab);
+        oe = await getNewOverallEditor({
+            writeFile: (filePath, commitMessage, fileText) => {
+                if(filePath === TEST_FILE) fileContents = fileText;
+                else throw new NoPathExistsError()
+            },
+            readFile: (filePath) => {
+                if(filePath === TEST_FILE) return fileContents;
+                else if(filePath.endsWith("beam.json")) return JSON.stringify(DEFAULT_BEAM_PARAMS)
+                else throw new NoPathExistsError()
+            },
+            listFiles: (path, rec, returnStructure=true) => {
+                if(path === "TestCampaign/IP1"){
+                    if(returnStructure) return { files: ["TestCampaign/IP1/my_test_file.txt"], folders: new Map() }
+                    else return ["TestCampaign/IP1/my_test_file.txt"]
+                } 
+                else throw Error(`stub listFiles not implemented for ${path}`)
+            },
+            listCampaigns: () => {
+                return ["TestCampaign"];
+            }
+        });
     });
 
     afterEach(() => {
@@ -86,14 +95,12 @@ describe("OverallEditor", () => {
         it("loads the same file from local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE);
 
-            oe = await getNewOverallEditor(gitlab);
             expect(oe.filePath).toBe(TEST_FILE);
         });
 
         it("loads the same content from local storage", async () => {
             await oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
 
-            oe = await getNewOverallEditor(gitlab);
             expect(oe.value).toBe(TEST_FILE_CONTENT);
         });
 
@@ -103,7 +110,6 @@ describe("OverallEditor", () => {
             const editorToSwitchTo = 0;
             oe.onSwitchEditorButtonPress(editorToSwitchTo);
 
-            oe = await getNewOverallEditor(gitlab);
             expect(oe.currentEditorIndex).toBe(editorToSwitchTo);
         });
     });
@@ -119,13 +125,13 @@ describe("OverallEditor", () => {
         });
 
         it("reverts the current file", async () => {
-            await oe.setCurrentEditorContent(TEST_FILE, TEST_FILE_CONTENT);
+            await oe.setCurrentEditorContent(TEST_FILE, "test");
             oe.onSwitchEditorButtonPress(1/** The code editor */);
             oe.editor.rawValue += " ";
             spyOn(window, "confirm").and.callFake(_ => true);
             await oe.tryToRevert();
 
-            expect(oe.value).toBe(await gitlab.readFile(TEST_FILE));
+            expect(oe.value).toBe(TEST_FILE_CONTENT);
             expect(oe.isCommitted).toBe(true);
         });
     });
