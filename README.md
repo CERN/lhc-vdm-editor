@@ -4,6 +4,8 @@ An code and file editor for VdM scans.
 
 ![lhc-vdm-editor-pic](https://user-images.githubusercontent.com/6304200/63268652-f1409280-c294-11e9-92fa-ef0ecc4c37c8.png)
 
+![GitHub test status](https://github.com/CERN/lhc-vdm-editor/workflows/Tests/badge.svg)
+
 ## Features
 
 * A VdM code editor, including: 

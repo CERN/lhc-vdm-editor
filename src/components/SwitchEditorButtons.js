@@ -34,7 +34,6 @@ export default class SwitchEditorButtons extends HTMLElement {
         /** @access private */
         this.activeButtonIndex = 0;
         this.DOMbuttons = Array.from(this.root.querySelectorAll("button"));
-        this.selectButton(0);
 
         this.DOMbuttons.map((x, i) => {
             x.addEventListener("click", () => {
