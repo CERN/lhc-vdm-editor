@@ -212,7 +212,7 @@ export class GenerateSequenceWindow extends HTMLElement {
         if (beam == "Beam 2") {
             handleArr[1 + planeIndex] = `linear(${startSep},${endSep})`;
         }
-        if (beam == "Both") {
+        if (beam == "Both beams") {
             handleArr[0 + planeIndex] = `linear(${startSep / 2},${endSep / 2})`;
             handleArr[1 + planeIndex] = `linear(${-startSep / 2},${-endSep / 2})`;
         }

@@ -32,11 +32,11 @@ describe("GenerateUI", () => {
 
         gsw.addEventListener("generated", event => {
             expect(event.detail).toBe(
-                "RELATIVE_TRIM IP1 BEAM1 SEPARATION -4.00 SIGMA\n" +
+                "RELATIVE_TRIM IP1 BEAM1 SEPARATION -2.00 SIGMA IP1 BEAM2 SEPARATION 2.00 SIGMA\n" +
                 "SECONDS_WAIT 2\n" +
-                "RELATIVE_TRIM IP1 BEAM1 SEPARATION 8.00 SIGMA\n" +
+                "RELATIVE_TRIM IP1 BEAM1 SEPARATION 4.00 SIGMA IP1 BEAM2 SEPARATION -4.00 SIGMA\n" +
                 "SECONDS_WAIT 2\n" +
-                "RELATIVE_TRIM IP1 BEAM1 SEPARATION -4.00 SIGMA"
+                "RELATIVE_TRIM IP1 BEAM1 SEPARATION -2.00 SIGMA IP1 BEAM2 SEPARATION 2.00 SIGMA"
             );
             done();
         });
