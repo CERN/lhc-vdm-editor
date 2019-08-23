@@ -51,4 +51,22 @@ describe("GitLab", () => {
             fileName
         )).toBeUndefined()
     })
+
+    it("can copy a folder then delete it", async () => {
+        await gitlab.copyFilesFromFolder(
+            "201610_CrossingAngleScan/IP1/backup",
+            "201610_CrossingAngleScan/IP2"
+        );
+
+        await gitlab.readFile("201610_CrossingAngleScan/IP2/ATLAS_SEP_4.9sigma_15steps.txt");
+
+        await gitlab.deleteFolder("201610_CrossingAngleScan/IP2");
+
+        let thrown = false;
+        try{
+            await gitlab.readFile("201610_CrossingAngleScan/IP2/backup/ATLAS_SEP_4.9sigma_15steps.txt");
+        } catch {thrown = true}
+
+        expect(thrown).toBeTruthy();
+    })
 })
