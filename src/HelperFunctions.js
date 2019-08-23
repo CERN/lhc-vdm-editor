@@ -314,9 +314,10 @@ export function getHTMLElementWithText(element, text){
         // @ts-ignore
         if(element.shadowRoot != undefined){
             // @ts-ignore
-            return getHTMLElementWithText(element.shadowRoot, text);
+            const foundElement = getHTMLElementWithText(element.shadowRoot, text);
+            if(foundElement !== null) return foundElement;
         }
-        else if(element.childNodes.length !== 0){
+        if(element.childNodes.length !== 0){
             // @ts-ignore
             for(let child of element.childNodes){
                 const foundElement = getHTMLElementWithText(child, text);

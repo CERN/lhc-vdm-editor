@@ -1,14 +1,10 @@
 import CreateFileWindow from "./CreateFileWindow.js";
-import GitLab from "../GitLab.js";
-import { NO_FILES_TEXT } from "../HelperFunctions.js";
+import { NO_FILES_TEXT, getHTMLElementWithText, wait } from "../HelperFunctions.js";
 
-/**
- * @param {GitLab} [gitlab]
- */
 async function getNewCreateFileWindow(gitlab) {
     let cfw = new CreateFileWindow();
     cfw.gitlab = gitlab;
-    cfw.campaigns = (await gitlab.listCampaigns()).reverse()
+    cfw.campaigns = Promise.resolve(["CampaignA", "CampaignB"])
     cfw.style.display = "none";
     document.body.appendChild(cfw);
 
@@ -18,29 +14,33 @@ async function getNewCreateFileWindow(gitlab) {
 describe("CreateFileWindow", () => {
     /** @type {CreateFileWindow} */
     let cfw;
-    /** @type {GitLab} */
-    let gitlab;
-
-    beforeAll(async () => {
-        const token = (await (await fetch("../secrets.json")).json()).token;
-        gitlab = new GitLab(
-            token,
-            // NOTE: we need to commit to the test branch so we don't mess up master
-            "vdm-editor-test"
-        );
-    })
 
     beforeEach(async () => {
-        cfw = await getNewCreateFileWindow(gitlab);
+        cfw = await getNewCreateFileWindow({
+            listFiles: () => Promise.resolve(["my_new_fileA", "my_new_fileB"])
+        });
     })
 
     afterEach(() => {
         document.body.removeChild(cfw);
     })
 
-    it("can click on the dropdown", async () => {
+    it("can click on the dropdown, select a file and copy", async (done) => {
         await cfw.onDropdownClick();
-        expect().nothing();
+        await wait(1);
+        getHTMLElementWithText(cfw, "my_new_fileA").click();
+
+        cfw.addEventListener("submit", event => {
+            expect(event.detail).toEqual({
+                ip: "IP1",
+                campaign: "CampaignA",
+                filePaths: ["my_new_fileA"]
+            })
+
+            done();
+        })
+
+        getHTMLElementWithText(cfw, "Copy files").click();
     })
 
     it("can setFileUI of no files", () => {
