@@ -17,11 +17,14 @@ function calculateCoverageForFile(ranges){
     return acc;
 }
 
-function calculateAllCoverages(data){
+function calculateAllCoverages(data, ignoredFiles){
     let total = 0;
     let all_covered = 0;
     for(let item of data){
-        if(item.url.startsWith("http://127.0.0.1:8080/src/") && !item.url.endsWith(".test.js")){
+        if(item.url.startsWith("http://127.0.0.1:8080/src/") &&
+          !item.url.endsWith(".test.js") &&
+          ignoredFiles.every(ignoredFile => !item.url.includes(ignoredFile))){
+
             const covered = calculateCoverageForFile(item.ranges);
             all_covered += covered;
             total += item.text.length;
@@ -35,23 +38,22 @@ const puppeteer = require("puppeteer");
 const process = require("process");
 
 async function tryFindCoverage(useNetworkTests) {
+    const networkFiles = ["FileBrowser", "OverallEditor", "GitLab"]
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.coverage.startJSCoverage();
     await page.exposeFunction("printExternalMessage", message => {
         process.stdout.write(message);
     });
-    await page.goto(`http://127.0.0.1:8080/SpecRunner.html${useNetworkTests?"?spec="}`, {waitUntil: 'networkidle2'});
+    await page.setCacheEnabled(false);
+    await page.goto(`http://127.0.0.1:8080/SpecRunner.html${useNetworkTests?"":`?ignoreSpecs=${networkFiles.join(",")}`}`, {
+        waitUntil: 'networkidle2'
+    });
     await page.waitForFunction(`jsApiReporter.status() == "done"`)
     const coverage = await page.coverage.stopJSCoverage();
     console.log("\nCoverage:");
-    calculateAllCoverages(coverage);
+    calculateAllCoverages(coverage, useNetworkTests?[]:networkFiles);
     process.exit(await page.evaluate(`jsApiReporter.runDetails.overallStatus`) == "passed"? 0 : 1);
-}
-
-let useNetworkTests = true;
-if(){
-    useNetworkTests = false;
 }
 
 tryFindCoverage(process.argv[2] != "--no-network");

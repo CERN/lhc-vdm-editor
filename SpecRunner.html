@@ -35,7 +35,19 @@
   <script>var module= {}; var exports = {};</script>
   <script src="node_modules/jasmine/lib/reporters/console_reporter.js"></script>
   <script>
-    if(window.location.)
+    var queryString = new jasmine.QueryString({
+      getWindowLocation: function() { return window.location; }
+    });
+    if(!!queryString.getParam("ignoreSpecs")){
+      const specsToIgnore = queryString.getParam("ignoreSpecs").split(",");
+      jasmine.getEnv().configure({
+        specFilter: spec => {
+          return !specsToIgnore.some(ignore => spec.getFullName().includes(ignore))
+          
+        }
+      })
+    }
+
     if(typeof printExternalMessage !== "undefined"){
       let str = "";
       const cr = new ConsoleReporter();
