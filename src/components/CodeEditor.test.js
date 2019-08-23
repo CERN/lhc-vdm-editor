@@ -1,5 +1,5 @@
 import CodeEditor from "./CodeEditor.js"
-import { range, wait, asyncMap, DEFAULT_BEAM_PARAMS } from "../HelperFunctions.js"
+import { range, wait, asyncMap, DEFAULT_BEAM_PARAMS, getHTMLElementWithText, HTMLHasText } from "../HelperFunctions.js"
 import VdM from "../parser.js";
 
 const simpleFile = '0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1,BEAM2) PLANE(SEPARATION) UNITS(SIGMA)\n1 SECONDS_WAIT 1.0\n2 END_SEQUENCE\n';
@@ -67,5 +67,21 @@ describe("CodeEditor", () => {
 
             expect(ce.value).toBe(simpleFileWithComments)
         })
+    })
+
+    it("can show a tooltip on hover", async() => {
+        ce.value = simpleFile;
+        await wait(1);
+        const element = getHTMLElementWithText(ce, "SECONDS_WAIT");
+        const rect = element.getClientRects();
+        element.dispatchEvent(new MouseEvent("mousemove", {
+            bubbles: true,
+            cancelable: true,
+            clientX: rect[0].left + 2,
+            clientY: rect[0].top + 2,
+        }));
+        // the token tooltip appears after 100 milliseconds, so wait for 110
+        await wait(110);
+        expect(HTMLHasText(ce, "<NUMBER>")).toBeTruthy();
     })
 })
