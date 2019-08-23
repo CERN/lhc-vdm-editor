@@ -218,7 +218,7 @@ describe("Parser", () => {
 
         it("Can generate lumi graph", () => {
             expect(lumiGraph.every(x =>
-                x[0].realTime && x[0].sequenceTime && isFinite(Number(x[1]))
+                isFinite(x[0].realTime) && isFinite(x[0].sequenceTime) && isFinite(Number(x[1]))
             )).toBeTruthy();
         });
     });
