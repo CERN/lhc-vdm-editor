@@ -25,6 +25,7 @@ describe("CreateFileWindow", () => {
                 return ["my_new_fileA", "my_new_fileB"];
             }
         });
+        await cfw.campaigns;
     });
 
     afterEach(() => {

@@ -189,6 +189,7 @@ export default class CodeEditor extends HTMLElement {
         );
         this.setupEditor();
         window.editor = this.editor;
+        this.maxScore = 100;
     }
 
     /**
@@ -327,7 +328,7 @@ export default class CodeEditor extends HTMLElement {
         const fitTypes = ["GAUSSIAN", "GAUSSIAN_PLUS_CONSTANT"];
 
         // Syntax of a suggestion
-        function syntaxify(arr, score, meta, addSpaceAfter = true) {
+        const syntaxify = (arr, meta, addSpaceAfter = true) => {
             return arr.map(x => {
                 if (prefix == " ") {
                     x = " " + x;
@@ -335,7 +336,7 @@ export default class CodeEditor extends HTMLElement {
                 if (addSpaceAfter) {
                     x += " ";
                 }
-                return { value: x, score: score, meta: meta };
+                return { value: x, score: this.maxScore--, meta: meta };
             });
         }
 
@@ -349,8 +350,8 @@ export default class CodeEditor extends HTMLElement {
             .split(/ /);
         if (words.length < 2 && words[0][0] != "#") {
             callback(null,
-                syntaxify(trim.concat(others), 10, "command")
-                    .concat(syntaxify(noArgCommand, 10, "command", false))
+                syntaxify(trim.concat(others), "command")
+                    .concat(syntaxify(noArgCommand, "command", false))
             );
             return;
         }
@@ -364,25 +365,25 @@ export default class CodeEditor extends HTMLElement {
         // Check _TRIM command context
         if (trim.includes(firstWord)) {
             if (trim.includes(prevWord) || arg5.includes(prevWord)) {
-                suggestions = syntaxify(arg1, 10, "IP", insertSpace);
+                suggestions = syntaxify(arg1, "IP", insertSpace);
             } else if (arg1.includes(prevWord)) {
-                suggestions = syntaxify(arg2, 10, "beam", insertSpace);
+                suggestions = syntaxify(arg2, "beam", insertSpace);
             } else if (arg2.includes(prevWord)) {
-                suggestions = syntaxify(arg3, 10, "plane", insertSpace);
+                suggestions = syntaxify(arg3, "plane", insertSpace);
             } else if (arg3.includes(prevWord) && thisWord == "") {
-                suggestions = syntaxify(arg4, 10, "number", insertSpace);
+                suggestions = syntaxify(arg4, "number", insertSpace);
             } else if (isFinite(Number(prevWord))) {
-                suggestions = syntaxify(arg5, 10, "unit", false);
+                suggestions = syntaxify(arg5, "unit", false);
             }
             // Check START_FIT command context
         } else if (firstWord == "START_FIT") {
             if (prevWord == "START_FIT") {
-                suggestions = syntaxify(arg3, 10, "plane", insertSpace);
+                suggestions = syntaxify(arg3, "plane", insertSpace);
             } else if (arg3.includes(prevWord)) {
-                suggestions = syntaxify(fitTypes, 10, "fit type", false);
+                suggestions = syntaxify(fitTypes, "fit type", false);
             }
         } else if (firstWord == "SECONDS_WAIT" && prevWord == "SECONDS_WAIT" && thisWord == "") {
-            suggestions = syntaxify(arg4, 10, "number", false);
+            suggestions = syntaxify(arg4, "number", false);
         }
 
         // State autocompletion suggestions

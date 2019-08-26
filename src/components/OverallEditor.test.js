@@ -21,20 +21,21 @@ describe("OverallEditor", () => {
 
     beforeEach(() => {
         fakeLocalStorage = {};
+        
 
-        spyOn(localStorage, "getItem").and.callFake(key => {
+        spyOn(Storage.prototype, "getItem").and.callFake(key => {
             return fakeLocalStorage[key] || null;
         });
 
-        spyOn(localStorage, "removeItem").and.callFake(key => {
+        spyOn(Storage.prototype, "removeItem").and.callFake(key => {
             delete fakeLocalStorage[key];
         });
 
-        spyOn(localStorage, "setItem").and.callFake((key, value) => {
+        spyOn(Storage.prototype, "setItem").and.callFake((key, value) => {
             return fakeLocalStorage[key] = value;
         });
 
-        spyOn(localStorage, "clear").and.callFake(() => {
+        spyOn(Storage.prototype, "clear").and.callFake(() => {
             fakeLocalStorage = {};
         });
     });
