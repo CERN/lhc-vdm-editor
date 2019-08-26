@@ -5,7 +5,6 @@ import { DEFAULT_BEAM_PARAMS, waitRnd } from "../HelperFunctions.js";
 const TEST_FILE = "TestCampaign/IP1/my_test_file.txt";
 const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
 
-
 async function getNewOverallEditor(gitlab) {
     let oe = new OverallEditor(gitlab);
     oe.style.display = "none";
@@ -46,21 +45,21 @@ describe("OverallEditor", () => {
             writeFile: async (filePath, commitMessage, fileText) => {
                 await waitRnd();
                 if(filePath === TEST_FILE) fileContents = fileText;
-                else throw new NoPathExistsError()
+                else throw new NoPathExistsError();
             },
             readFile: async (filePath) => {
                 await waitRnd();
                 if(filePath === TEST_FILE) return fileContents;
-                else if(filePath.endsWith("beam.json")) return JSON.stringify(DEFAULT_BEAM_PARAMS)
-                else throw new NoPathExistsError()
+                else if(filePath.endsWith("beam.json")) return JSON.stringify(DEFAULT_BEAM_PARAMS);
+                else throw new NoPathExistsError();
             },
             listFiles: async (path, rec, returnStructure=true) => {
                 await waitRnd();
                 if(path === "TestCampaign/IP1"){
-                    if(returnStructure) return { files: ["TestCampaign/IP1/my_test_file.txt"], folders: new Map() }
-                    else return ["TestCampaign/IP1/my_test_file.txt"]
-                } 
-                else throw Error(`stub listFiles not implemented for ${path}`)
+                    if(returnStructure) return { files: ["TestCampaign/IP1/my_test_file.txt"], folders: new Map() };
+                    else return ["TestCampaign/IP1/my_test_file.txt"];
+                }
+                else throw Error(`stub listFiles not implemented for ${path}`);
             },
             listCampaigns: async () => {
                 await waitRnd();

@@ -6,7 +6,7 @@ async function getNewCreateFileWindow(gitlab) {
     cfw.gitlab = gitlab;
     cfw.campaigns = (async () => {
         await waitRnd();
-        return ["CampaignA", "CampaignB"]
+        return ["CampaignA", "CampaignB"];
     })();
     cfw.style.display = "none";
     document.body.appendChild(cfw);

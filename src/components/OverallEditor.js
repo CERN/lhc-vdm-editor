@@ -312,7 +312,7 @@ export default class OverallEditor extends HTMLElement {
         this.fileBrowser.addEventListener("open-file", event => this.setCurrentEditorContent(event.detail));
         this.editorContainer.addEventListener("change-row-selected", event => this.chartsComponent.showTooltips(event.detail));
         this.root.querySelector("generate-button").addEventListener("generated", ev => {
-            if(this.filePath != null) this.editor.insertGeneratedContent(ev.detail)
+            if(this.filePath != null) this.editor.insertGeneratedContent(ev.detail);
         });
     }
 
