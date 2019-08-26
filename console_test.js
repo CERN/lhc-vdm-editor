@@ -38,7 +38,7 @@ const puppeteer = require("puppeteer");
 const process = require("process");
 
 async function tryFindCoverage(useNetworkTests) {
-    const networkFiles = ["FileBrowser", "OverallEditor", "GitLab"]
+    const networkFiles = ["FileBrowser", "GitLab"];
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.coverage.startJSCoverage();

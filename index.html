@@ -11,6 +11,40 @@
         }
     </style>
     <title>LHC VdM web-editor</title>
+    <noscript>
+        You need JavaScript enabled to run this.
+    </noscript>
+    <script>
+        // from https://stackoverflow.com/a/16938481/1836406
+        function get_browser() {
+            var ua=navigator.userAgent,tem,M=ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || []; 
+            if(/trident/i.test(M[1])){
+                tem=/\brv[ :]+(\d+)/g.exec(ua) || []; 
+                return {name:'IE',version:(tem[1]||'')};
+                }   
+            if(M[1]==='Chrome'){
+                tem=ua.match(/\bOPR|Edge\/(\d+)/)
+                if(tem!=null)   {return {name:'Opera', version:tem[1]};}
+                }   
+            M=M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+            if((tem=ua.match(/version\/(\d+)/i))!=null) {M.splice(1,1,tem[1]);}
+            return {
+                name: M[0],
+                version: M[1]
+            };
+        }
+        var browser_version = get_browser();
+        if(!((browser_version.name == "Chrome" && parseInt(browser_version.version) >= 54)
+        ||   (browser_version.name == "Firefox" && parseInt(browser_version.version) >= 63))){
+            if(!((browser_version.name == "Safari" && parseInt(browser_version.version) >= 11)
+            ||   (browser_version.name == "Opera" && parseInt(browser_version.version) >= 41))){
+                alert("Your browser doesn't seem to use support web components - the application may error.")
+            }
+            else{
+                alert("Your browser isn't officially supported (only chrome>=54 and firefox>=63 are) - the application may break.")
+            }
+        }
+    </script>
     <script>
         window.addEventListener("error", function (error) {
             try{
