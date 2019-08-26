@@ -56,6 +56,7 @@ input.error{
     vertical-align: middle;
     text-align: center;
     cursor: pointer;
+    border-radius: 0 0 10px 0px;
 }
 
 .tabs button:hover{
@@ -65,7 +66,6 @@ input.error{
 .tabs button.open{
     background-color: #616161;
     color: white;
-    border-radius: 0 0 10px 0px;
 }
 
 .tabs{
