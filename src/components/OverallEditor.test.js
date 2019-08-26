@@ -1,6 +1,6 @@
 import OverallEditor from "./OverallEditor.js";
 import {NoPathExistsError} from "../GitLab.js";
-import { DEFAULT_BEAM_PARAMS } from "../HelperFunctions.js";
+import { DEFAULT_BEAM_PARAMS, waitRnd } from "../HelperFunctions.js";
 
 const TEST_FILE = "TestCampaign/IP1/my_test_file.txt";
 const TEST_FILE_CONTENT = "0 INITIALIZE_TRIM IP(IP1) BEAM(BEAM1) PLANE(SEPARATION) UNITS(SIGMA)\n1 RELATIVE_TRIM IP1 BEAM1 SEPARATION 0.0 SIGMA\n2 END_SEQUENCE\n";
@@ -43,23 +43,27 @@ describe("OverallEditor", () => {
     let fileContents = TEST_FILE_CONTENT;
     beforeEach(async () => {
         oe = await getNewOverallEditor({
-            writeFile: (filePath, commitMessage, fileText) => {
+            writeFile: async (filePath, commitMessage, fileText) => {
+                await waitRnd();
                 if(filePath === TEST_FILE) fileContents = fileText;
                 else throw new NoPathExistsError()
             },
-            readFile: (filePath) => {
+            readFile: async (filePath) => {
+                await waitRnd();
                 if(filePath === TEST_FILE) return fileContents;
                 else if(filePath.endsWith("beam.json")) return JSON.stringify(DEFAULT_BEAM_PARAMS)
                 else throw new NoPathExistsError()
             },
-            listFiles: (path, rec, returnStructure=true) => {
+            listFiles: async (path, rec, returnStructure=true) => {
+                await waitRnd();
                 if(path === "TestCampaign/IP1"){
                     if(returnStructure) return { files: ["TestCampaign/IP1/my_test_file.txt"], folders: new Map() }
                     else return ["TestCampaign/IP1/my_test_file.txt"]
                 } 
                 else throw Error(`stub listFiles not implemented for ${path}`)
             },
-            listCampaigns: () => {
+            listCampaigns: async () => {
+                await waitRnd();
                 return ["TestCampaign"];
             }
         });

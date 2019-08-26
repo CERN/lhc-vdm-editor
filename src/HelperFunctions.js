@@ -385,3 +385,11 @@ export function assertRequiredParameters(thisValue, obj){
         }
     }
 }
+
+/**
+ * A random wait function - for detecting race conditions in async tests
+ */
+export async function waitRnd(){
+    const waitTime = Math.floor(Math.random() * 100);
+    await wait(waitTime);
+}

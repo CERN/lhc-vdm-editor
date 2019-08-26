@@ -1,10 +1,13 @@
 import CreateFileWindow from "./CreateFileWindow.js";
-import { NO_FILES_TEXT, getHTMLElementWithText, wait } from "../HelperFunctions.js";
+import { NO_FILES_TEXT, getHTMLElementWithText, waitRnd, wait } from "../HelperFunctions.js";
 
 async function getNewCreateFileWindow(gitlab) {
     let cfw = new CreateFileWindow();
     cfw.gitlab = gitlab;
-    cfw.campaigns = Promise.resolve(["CampaignA", "CampaignB"]);
+    cfw.campaigns = (async () => {
+        await waitRnd();
+        return ["CampaignA", "CampaignB"]
+    })();
     cfw.style.display = "none";
     document.body.appendChild(cfw);
 
@@ -17,7 +20,10 @@ describe("CreateFileWindow", () => {
 
     beforeEach(async () => {
         cfw = await getNewCreateFileWindow({
-            listFiles: () => Promise.resolve(["my_new_fileA", "my_new_fileB"])
+            listFiles: async () => {
+                await waitRnd();
+                return ["my_new_fileA", "my_new_fileB"];
+            }
         });
     });
 
