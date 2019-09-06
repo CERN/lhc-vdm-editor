@@ -93,7 +93,7 @@ export default class ModelWindow extends HTMLElement {
     }
 
     disconnectedCallback() {
-        document.removeEventListener("keyup", this.onKeyUp);
+        document.body.removeEventListener("keyup", this.onKeyUp);
     }
 
     cancel() {
