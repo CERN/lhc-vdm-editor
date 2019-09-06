@@ -241,6 +241,12 @@ export class GenerateSequenceWindow extends HTMLElement {
             alert('Both "Time between trims" and "Number of steps" are required fields');
             return;
         }
+        const stepNumStr = this.allInputs.functions[1].value;
+        if (!Number.isInteger(Number(stepNumStr)) || Number(stepNumStr) < 2) {
+            this.allInputs.functions[1].classList.add("error");
+            alert('Number of steps must be an integer strictly greater than 1');
+            return;
+        }
 
         try {
             let newLines = this.genFromFunctionInput();
@@ -287,6 +293,12 @@ export class GenerateSequenceWindow extends HTMLElement {
             alert('Both "Time between trims" and "Number of steps" are required fields');
             return;
         }
+        const stepNumStr = this.allInputs.VdM[1].value;
+        if (!Number.isInteger(Number(stepNumStr)) || Number(stepNumStr) < 2) {
+            this.allInputs.VdM[1].classList.add("error");
+            alert('Number of steps must be an integer strictly greater than 1');
+            return;
+        }
 
         try {
             let newLines = this.genFromVdMInput();
@@ -294,7 +306,7 @@ export class GenerateSequenceWindow extends HTMLElement {
         }
         catch (error) {
             if (error instanceof ArgError) {
-                this.allInputs.functions[error.where + 2].classList.add("error");
+                this.allInputs.VdM[error.where + 2].classList.add("error");
                 alert("Invalid input function: " + error.message);
             }
             else throw error;
@@ -362,15 +374,17 @@ export class GenerateSequenceWindow extends HTMLElement {
                     ${VdMInfoText}
                 </info-box>
                 <hr>
-                <select id='beam-select'>
-                    <option>Both beams</option>
-                    <option>Beam 1</option>
-                    <option>Beam 2</option>
-                </select>
-                <select id='plane-select'>
-                    <option>Separation</option>
-                    <option>Crossing</option>
-                </select>
+                <div>
+                    <select id='beam-select'>
+                        <option>Both beams</option>
+                        <option>Beam 1</option>
+                        <option>Beam 2</option>
+                    </select>
+                    <select id='plane-select'>
+                        <option>Separation</option>
+                        <option>Crossing</option>
+                    </select>
+                </div>
                 <div>
                     <input id="wait-time" type="number" placeholder="Time between steps (s)" title="Time between steps (s)">
                     <input id="step-number" type="number" placeholder="Number of steps" title="Number of steps">

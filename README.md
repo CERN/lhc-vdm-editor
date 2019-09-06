@@ -1,10 +1,12 @@
 # lhc-vdm-editor
 
-An code and file editor for VdM scans.
-
-![lhc-vdm-editor-pic](https://user-images.githubusercontent.com/6304200/63268652-f1409280-c294-11e9-92fa-ef0ecc4c37c8.png)
+A code and file editor for VdM scans.
 
 ![GitHub test status](https://github.com/CERN/lhc-vdm-editor/workflows/Tests/badge.svg)
+
+![lhc-vdm-editor screenshot](https://user-images.githubusercontent.com/6304200/63919839-d1049680-ca3f-11e9-862a-dac7d8d756c7.png)
+
+
 
 ## Features
 
@@ -25,8 +27,14 @@ An code and file editor for VdM scans.
 * Run a http server: `npm run-script test-server`.
 
 ### For testing:
+#### In the browser
 * Open 127.0.0.1:8080/SpecRunner.html
 * To test specific files, you can use the spec parameter e.g. `127.0.0.1:8080/SpecRunner.html?spec=CodeEditor`
+#### In a headless chrome instance, with coverage reports
+* Run `node console_test.js`
 
 ### For viewing the editor locally:
 * Open 127.0.0.1:8080/index.html
+
+### Linting
+This package is linted using tslint: `npm run-script lint`

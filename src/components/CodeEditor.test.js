@@ -26,6 +26,7 @@ describe("CodeEditor", () => {
     });
 
     it("autocompletes correctly", async () => {
+        ce.editor.insert("R");
         ce.editor.execCommand("startAutocomplete");
 
         await asyncMap(range(6), async () => {

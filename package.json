@@ -1,10 +1,10 @@
 {
   "name": "lhc-vdm-editor",
   "version": "0.0.1",
-  "description": "",
+  "description": "A code and file editor for VdM scans.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Test by running test-server and browsing to 127.0.0.1:8080/SpecRunner.html\" && exit 1",
+    "test": "node console_test.js",
     "test-server": "http-server -a 127.0.0.1 -c-1",
     "lint": "tslint -c ./tslint.json ./src/**/*.js --fix"
   },
