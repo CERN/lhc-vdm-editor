@@ -1,4 +1,4 @@
-import { css, NO_FILES_TEXT } from "../HelperFunctions.js";
+import { css, NO_FILES_TEXT, getRelativePath } from "../HelperFunctions.js";
 import "./IPCampaignSelectors.js";
 import { NoPathExistsError } from "../GitLab.js";
 import "./FolderTriangle.js";
@@ -163,9 +163,10 @@ export default class CreateFileWindow extends HTMLElement {
     }
 
     get chosenFiles() {
+        const path = this.selectionBoxes.path;
         let arr = [];
         this.root.querySelector("#file-list-content").querySelectorAll("input").forEach(x => {
-            if (x.checked) arr.push(x.value);
+            if (x.checked) arr.push(path + '/' + x.value);
         });
         return arr;
     }
@@ -176,7 +177,8 @@ export default class CreateFileWindow extends HTMLElement {
     async setFilesFromPath(path) {
         let files = [NO_FILES_TEXT];
         try {
-            files = await this.gitlab.listFiles(path, true, false);
+            files = (await this.gitlab.listFiles(path, true, false))
+                .map(x => getRelativePath(x, path));
         }
         catch (error) {
             if (!(error instanceof NoPathExistsError)) {
