@@ -44,7 +44,7 @@ export default class Generator {
                 return this.functions.linear(...argArr, waitTime * stepNum);
             },
             periodic: (argArr, waitTime, stepNum) => {
-                if (argArr.length != 2) throw new ArgError("Periodic function takes one argument: periodic(period)");
+                if (argArr.length != 2) throw new ArgError("Periodic function takes two arguments: periodic(period, amplitude)");
                 return this.functions.periodic(...argArr);
             }
         };
@@ -102,7 +102,7 @@ export default class Generator {
 
         let handle = tmp[1];
         if (this.functionHandler[handle]) return this.functionHandler[handle](args, waitTime, stepNum);
-        else throw new ArgError("Unknown function " + handle);
+        else throw new ArgError("Unsupported function or syntax" + handle);
     }
     /**
      * @param {function[]} inpFuncArr
