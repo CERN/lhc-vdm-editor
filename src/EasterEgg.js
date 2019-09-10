@@ -12,7 +12,21 @@ export default function EasterEgg() {
 }
 
 const template = `
+    <style>
+        div {
+            margin: 50px 30px;
+            text-align: center;
+        }
+    </style>
     <div>
-        Hello from Frederik and Thomas
+        <p>
+            Kind regards from the creators
+        </p>
+        <p>
+            { Frederik K. M., Thomas K. H. } &#8838; { CERN lunches } &#8838; { CERN Summer Students 2019 }
+        </p>
+        <p>
+            We hope you enjoy using our application
+        </p>
     </div>
 `;
