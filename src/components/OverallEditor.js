@@ -11,6 +11,7 @@ import VdM from "../parser.js";
 import "./RevertButton.js";
 import "./ChartsComponent.js";
 import "./GenerateUI.js";
+import EasterEgg from "../EasterEgg.js";
 
 const styling = css`
 #editor-container {
@@ -183,6 +184,8 @@ export default class OverallEditor extends HTMLElement {
 
         this.addListeners();
         this.loadedPromise = this.asyncConstrutor();
+
+        this.root.querySelector("#file-name").addEventListener("click", EasterEgg)
     }
 
     async asyncConstrutor() {
