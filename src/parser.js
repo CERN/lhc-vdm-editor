@@ -1,5 +1,19 @@
 // NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
 
+export function toProperUnits(beamParameters, IP) {
+    return {
+        "energy": beamParameters.energy, // GeV
+        "particle_mass": beamParameters.particle_mass, // GeV
+        "emittance": beamParameters.emittance, // m
+        "beta_star": beamParameters.beta_star[IP], // m
+        "crossing_angle": beamParameters.crossing_angle[IP], // rad
+        "scan_limits": beamParameters.scan_limits[IP], // sigma
+        "trim_rate": beamParameters.trim_rate * 1e-3, // m/s
+        "intensity": beamParameters.intensity, // particles per bunch
+        "bunch_pair_collisions": beamParameters.bunch_pair_collisions[IP],
+        "bunch_length": beamParameters.bunch_length // m
+    };
+}
 export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb) {
     // sep      - separation in separation plane[meters]
     // cross    - separation in crossing plane  [meters]
@@ -13,7 +27,7 @@ export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb)
     const S = Math.sqrt((Math.tan(alpha / 2) * sigmaZ / sigma) ** 2 + 1); // geometric factor because of crossing angle
     const Wsep = Math.exp(-1 * (sep / (2 * sigma)) ** 2); // separation factor in separation plane
     const Wcross = Math.exp(-1 * (cross / (2 * sigma)) ** 2); // separation factor in crossing plane
-    // correction from having both a separation in the crossing plane and a crossing angle
+    // correction from having both a separation in the crossing plane and a crossing angle (could be neglegted)
     const C = alpha == 0 ? 1 : Math.exp((cross / (2 * sigma)) ** 2 / (1 + (sigma / sigmaZ / Math.tan(alpha / 2)) ** 2));
 
     const L = L0 * S * Wsep * Wcross * C; // luminosity in Hz/m^2
@@ -51,20 +65,6 @@ export function linspace(start, end, num, includeEnd = true) {
     if (includeEnd) result[num - 1] = end;
 
     return result;
-}
-export function toProperUnits(beamParameters, IP) {
-    return {
-        "energy": beamParameters.energy, // GeV
-        "particle_mass": beamParameters.particle_mass, // GeV
-        "emittance": beamParameters.emittance, // m
-        "beta_star": beamParameters.beta_star[IP], // m
-        "crossing_angle": beamParameters.crossing_angle[IP], // rad
-        "scan_limits": beamParameters.scan_limits[IP], // sigma
-        "trim_rate": beamParameters.trim_rate * 1e-3, // m/s
-        "intensity": beamParameters.intensity, // particles per bunch
-        "bunch_pair_collisions": beamParameters.bunch_pair_collisions[IP],
-        "bunch_length": beamParameters.bunch_length // m
-    };
 }
 export class VdMSyntaxError extends Error {
     /**
