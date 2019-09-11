@@ -1,28 +1,24 @@
 // NOTE: this needs to not have any imports, as we cannot use the ES6 import syntax here
 
 export function calcLuminosity(sep, cross, sigma, sigmaZ, alpha, intensity, nbb) {
-    // s - separation in separation plane - m
-    // c - separation in crossing plane - m
-    // sigma - m
-    // alpha - crossing_angle - rad
-    // sigmaZ - this.param.bunch_length - m
-    // nbb - bunch_pair_collisions
-    // intensity - nuclei per bunch
+    // sep      - separation in separation plane[meters]
+    // cross    - separation in crossing plane  [meters]
+    // sigma    - transverse beam size          [meters]
+    // sigmaZ   - bunch length                  [meters]
+    // alpha    - crossing angle                [radians]
+    // intensity- nuclei per bunch
+    // nbb      - number of bunch pair collisions
 
-    const s2 = sigma ** 2;
-    const sz2 = sigmaZ ** 2;
-    const cos2 = Math.cos(alpha / 2) ** 2;
-    const sin2 = Math.sin(alpha / 2) ** 2;
+    const L0 = lhc_constants.f_rev * nbb * intensity ** 2 / (4 * Math.PI * sigma ** 2); // head on luminosity
+    const S = Math.sqrt((Math.tan(alpha / 2) * sigmaZ / sigma) ** 2 + 1); // geometric factor because of crossing angle
+    const Wsep = Math.exp(-1 * (sep / (2 * sigma)) ** 2); // separation factor in separation plane
+    const Wcross = Math.exp(-1 * (cross / (2 * sigma)) ** 2); // separation factor in crossing plane
+    // correction from having both a separation in the crossing plane and a crossing angle
+    const C = alpha == 0 ? 1 : Math.exp((cross / (2 * sigma)) ** 2 / (1 + (sigma / sigmaZ / Math.tan(alpha / 2)) ** 2));
 
-    const SigmaCross = Math.sqrt(2 * (s2 * cos2 + sz2 * sin2)); // effective size in crossing plane - m
-    const SigmaSep = Math.sqrt(2 * s2); // effective size in separation plane - m
+    const L = L0 * S * Wsep * Wcross * C; // luminosity in Hz/m^2
 
-    const Ssep = Math.exp((-1 / 2) * (sep / SigmaSep) ** 2); // separation factor in separation plane
-    const Scross = Math.exp((-1 / 2) * (cross / SigmaCross) ** 2); // separation factor in crossing plane
-    const Lbb = lhc_constants.f_rev * cos2 * intensity ** 2 / (2 * Math.PI * SigmaCross * SigmaSep) * Ssep * Scross; // luminosity per bunch pair in Hz/m^2
-
-    const L = nbb * Lbb; // luminosity in Hz/m^2
-    return L * 1e-4; // luminosity in Hz/cm^2
+    return L * 1e-4 // luminosity in Hz/cm^2
 }
 export function isSubsetOf(arr1, arr2) {
     // returns true iff arr1 is a subset of arr2
@@ -342,7 +338,7 @@ export class VdMcommandObject {
         for (let [beam, x] of Object.entries(this.position)) {
             for (let [plane, pos] of Object.entries(x)) {
                 const dist = (pos / sigma).toFixed(2); // dist to 0 in sigma
-                if ( Math.abs(Number(dist)) > limit) {
+                if (Math.abs(Number(dist)) > limit) {
                     errArr.push(`* ${beam} ${plane} with position ${dist} sigma`);
                 }
             }
