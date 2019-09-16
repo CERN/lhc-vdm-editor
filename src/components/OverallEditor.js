@@ -60,6 +60,7 @@ revert-button {
     margin-bottom: 10px;
     box-sizing: border-box;
     border-radius: 2px;
+    cursor: default;
 }
 
 #editor {
@@ -184,8 +185,6 @@ export default class OverallEditor extends HTMLElement {
 
         this.addListeners();
         this.loadedPromise = this.asyncConstrutor();
-
-        this.root.querySelector("#file-name").addEventListener("click", EasterEgg)
     }
 
     async asyncConstrutor() {
@@ -317,6 +316,7 @@ export default class OverallEditor extends HTMLElement {
         this.root.querySelector("generate-button").addEventListener("generated", ev => {
             if(this.filePath != null) this.editor.insertGeneratedContent(ev.detail);
         });
+        this.root.querySelector("#file-name").addEventListener("dblclick", EasterEgg);
     }
 
     onSwitchEditorButtonPress(editorIndex) {
@@ -518,7 +518,6 @@ export default class OverallEditor extends HTMLElement {
                     <div class="vr">&nbsp;</div>
                     <revert-button></revert-button>
                 </div>
-
             </div>
             <div class="body">
                 <resizeable-panel>
