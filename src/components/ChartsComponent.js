@@ -13,7 +13,7 @@ input[type="radio"]{
 }
 
 .option{
-    padding: 3px;
+    padding: 0 5px;
     display: table-cell;
 }
 
@@ -27,6 +27,10 @@ input[type="radio"]{
 
 .switchingRow{
     display: table-row;
+}
+
+hr{
+    border: 1px solid lightgray;
 }
 `;
 

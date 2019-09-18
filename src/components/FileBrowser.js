@@ -476,7 +476,7 @@ export default class FileBrowser extends MyHyperHTMLElement {
         </style>
         <ip-campaign-selectors name="selection" ip=${this.ip} campaign=${this.campaign} allCampaigns=${this.campaigns} onchange=${this}>
         </ip-campaign-selectors>
-        <hr />
+        
         <div id="file-browser">
             ${(async () =>
                 this.getFileUI(await this.fileStructure, this.ip, this.campaign)

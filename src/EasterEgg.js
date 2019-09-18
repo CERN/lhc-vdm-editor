@@ -23,7 +23,7 @@ const template = `
             Kind regards from the creators
         </p>
         <p>
-            { Frederik K. M., Thomas K. H. } &#8838; { CERN lunches } &#8838; { CERN Summer Students 2019 }
+            { Frederik, Thomas } &#8838; { CERN lunches } &#8838; { CERN Summer Students 2019 }
         </p>
         <p>
             We hope you find the application useful

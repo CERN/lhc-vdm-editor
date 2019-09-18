@@ -18,7 +18,6 @@ const styling = css`
     position: relative;
     height: calc(100% - 55px);
     flex-grow: 1;
-    padding-bottom: 20px;
     min-width: 0px;
 }
 
@@ -29,7 +28,8 @@ const styling = css`
 }
 
 .header {
-    margin: 20px 0 20px 0;
+    margin: 10px 0;
+    padding: 10px;
 }
 
 commit-element {
@@ -62,6 +62,16 @@ revert-button {
     border-radius: 2px;
     cursor: default;
 }
+#github{
+    box-sizing: border-box;
+    width: 100%;
+    margin: 20px 0;
+    padding: 10px;
+    text-align: center;
+    word-wrap: break-word;
+    font-size: small;
+    border: 1px solid lightgray;
+}
 
 #editor {
     height: 100%;
@@ -70,7 +80,6 @@ revert-button {
 raw-editor{
     height: 100%
 }
-
 
 resizeable-panel{
     flex-shrink: 0;
@@ -114,6 +123,8 @@ resizeable-panel{
 
 .body{
     display: flex;
+    border: 1px solid lightgray;
+    padding: 10px;
 }
 
 .vr {
@@ -535,7 +546,13 @@ export default class OverallEditor extends HTMLElement {
                 <resizeable-panel default-width="300px" side="right">
                     <charts-component></charts-component>
                 </resizeable-panel>
-            <div>
+            </div>
+        
+            <div id="github">
+                Maintained by <a href="mailto:michi.hostettler@cern.ch">Michi Hostettler</a>
+                <br>
+                GitHub source: <a href="url">https://github.com/CERN/lhc-vdm-editor</a>
+            </div>
         </div>`;
     }
 

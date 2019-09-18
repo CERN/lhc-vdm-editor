@@ -7,8 +7,11 @@ const styling = css`
     }
 
     .selection-box select {
-        padding: 2px;
+        padding: 7px;
+        border-radius: 3px;
+        border: solid 1px grey;
         width: 100%;
+        box-sizing: border-box;
     }
 
     .selection-name {
