@@ -80,7 +80,7 @@ describe("Parser", () => {
 
         // Tests on Luminocity
         it("Luminocity test calculation", () => {
-            expect(inst.luminosity(0, 0).toPrecision(2)).toEqual("4.4e+30");
+            expect(inst.luminosity(0, 0).toPrecision(2)).toEqual("4.5e+30");
         });
 
         // Tests on getInnerBracket
