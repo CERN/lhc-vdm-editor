@@ -30,6 +30,7 @@ const styling = css`
 .header {
     margin: 10px 0;
     padding: 10px;
+    border: 1px solid lightgray;
 }
 
 commit-element {
