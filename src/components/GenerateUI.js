@@ -230,21 +230,15 @@ export class GenerateSequenceWindow extends HTMLElement {
     }
 
     onFunctionGenerateClick() {
-        let missingNumber = false;
-        Array.from(this.allInputs.functions).slice(0, 2).forEach(x => {
-            if (!x.value) {
-                missingNumber = true;
-                x.classList.add("error");
-            }
-        });
-        if (missingNumber) {
-            alert('Both "Time between trims" and "Number of steps" are required fields');
+        if (!this.allInputs.functions[0].value) {
+            this.allInputs.functions[0].classList.add("error");
+            alert('"Time between trims" is a required field');
             return;
         }
-        const stepNumStr = this.allInputs.functions[1].value;
-        if (!Number.isInteger(Number(stepNumStr)) || Number(stepNumStr) < 2) {
+        const stepNum = Number(this.allInputs.functions[1].value);
+        if (!stepNum || !Number.isInteger(stepNum) || stepNum > 100 || stepNum < 2) {
             this.allInputs.functions[1].classList.add("error");
-            alert('Number of steps must be an integer strictly greater than 1');
+            alert('"Number of steps" must be an integer strictly greater than 1 and less than 100');
             return;
         }
 
@@ -282,21 +276,15 @@ export class GenerateSequenceWindow extends HTMLElement {
     }
 
     onVdMGenerateClick() {
-        let missingNumber = false;
-        Array.from(this.allInputs.VdM).slice(0, 2).forEach(x => {
-            if (!x.value) {
-                missingNumber = true;
-                x.classList.add("error");
-            }
-        });
-        if (missingNumber) {
-            alert('Both "Time between trims" and "Number of steps" are required fields');
+        if (!this.allInputs.VdM[0].value) {
+            this.allInputs.VdM[0].classList.add("error");
+            alert('"Time between trims" is a required field');
             return;
         }
-        const stepNumStr = this.allInputs.VdM[1].value;
-        if (!Number.isInteger(Number(stepNumStr)) || Number(stepNumStr) < 2) {
+        const stepNum = Number(this.allInputs.VdM[1].value);
+        if (!stepNum || !Number.isInteger(stepNum) || stepNum > 100 || stepNum < 2) {
             this.allInputs.VdM[1].classList.add("error");
-            alert('Number of steps must be an integer strictly greater than 1');
+            alert('"Number of steps" must be an integer strictly greater than 1 and less than 100');
             return;
         }
 
