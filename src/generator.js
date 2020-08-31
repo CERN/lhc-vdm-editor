@@ -94,7 +94,7 @@ export default class Generator {
         tmp = string.replace("-", "");
         if(string[0] == "-") return this.prodFunc(-1, this.getFunctionFromString(tmp, waitTime, stepNum));
 
-        tmp = Array.from(string.matchAll(/(\w+)\(([^)]+)\)/))[0];
+        tmp = Array.from(string.matchAll(/(\w+)\(([^)]+)\)/g))[0];
         if (!tmp || tmp.length != 3) throw new ArgError("Unknown syntax error");
 
         let args = tmp[2].split(",").map(x => Number(x));
