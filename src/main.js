@@ -24,7 +24,7 @@ $(async () => {
         token = (await getJSON("./secrets.json")).token;
     }
 
-    const gl = new GitLab(token, "vdm-editor-test", usesOAuth);
+    const gl = new GitLab(token, "master", usesOAuth);
 
     const overallEditor = new OverallEditor(gl);
     window.oe = overallEditor;
