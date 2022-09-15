@@ -10,12 +10,12 @@ $(async () => {
     let usesOAuth = false;
     if (window.location.origin == "https://lhcvdm.web.cern.ch") {
         const oa = new OAuth();
-        if (window.location.hash.includes("access_token")) {
-            token = oa.getAccessToken();
-            window.location.hash = "#";
+        if (window.location.href.includes("code=")) {
+            token = await oa.getAccessToken();
+            history.pushState({}, null, window.location.href.replace(/\?.*/,''));
         }
         else {
-            oa.getCredentials();
+            await oa.getCredentials();
             return;
         }
         usesOAuth = true;
