@@ -20,7 +20,7 @@
   "homepage": "https://github.com/CERN/lhc-vdm-editor#readme",
   "dependencies": {},
   "devDependencies": {
-    "http-server": "^0.11.2",
+    "http-server": "^14.1.1",
     "jasmine": "^3.4.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
