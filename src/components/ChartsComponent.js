@@ -1,5 +1,6 @@
 import { css, sigmaChar } from "../HelperFunctions.js";
 import "./BeamPositionChart.js";
+import "./BeamPosition2dChart.js";
 import "./LuminosityChart.js";
 import { MyHyperHTMLElement } from "./MyHyperHTMLElement.js";
 
@@ -53,7 +54,7 @@ export default class ChartsComponent extends MyHyperHTMLElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.allCharts = Array.from(this.root.querySelectorAll("beam-position-chart, luminosity-chart"));
+        this.allCharts = Array.from(this.root.querySelectorAll("beam-position-chart, beam-position-2d-chart, luminosity-chart"));
     }
 
     reflow() {
@@ -122,6 +123,7 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             <hr>
             <beam-position-chart properties=${chartProperties} data=${this.data.beamSeparation} id="separation-chart" title="Separation"></beam-position-chart>
             <beam-position-chart properties=${chartProperties} data=${this.data.beamCrossing} id="crossing-chart" title="Crossing"></beam-position-chart>
+            <beam-position-2d-chart properties=${chartProperties} data=${{"beamCrossing": this.data.beamCrossing, "beamSeparation": this.data.beamSeparation}} id="sep-2d-chart" title="2D Beam Position"></beam-position-2d-chart>
             <hr>
             <div id="logLinearRadio">
                 <span class="radio-description">Scale:</span>
