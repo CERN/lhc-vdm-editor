@@ -123,7 +123,19 @@ export default class ChartsComponent extends MyHyperHTMLElement {
             <hr>
             <beam-position-chart properties=${chartProperties} data=${this.data.beamSeparation} id="separation-chart" title="Separation"></beam-position-chart>
             <beam-position-chart properties=${chartProperties} data=${this.data.beamCrossing} id="crossing-chart" title="Crossing"></beam-position-chart>
-            <beam-position-2d-chart properties=${chartProperties} data=${{"beamCrossing": this.data.beamCrossing, "beamSeparation": this.data.beamSeparation}} id="sep-2d-chart" title="2D Beam Position"></beam-position-2d-chart>
+            <hr>
+            <div id="sepPosRadio">
+                <span class="radio-description">Display:</span>
+                <div class="option">
+                    <input type="radio" name="mode" id="beamPosition" value="pos" />
+                    <label for="beamPosition">Position</label>
+                </div>
+                <div class="option">
+                    <input checked type="radio" name="mode" id="beamSeparation" value="sep" />
+                    <label for="beamSeparation">Separation</label>
+                </div>
+            </div>
+            <beam-position-2d-chart properties=${chartProperties} mode=${this.mode} data=${{"beamCrossing": this.data.beamCrossing, "beamSeparation": this.data.beamSeparation}} id="sep-2d-chart" title="2D Beam Position"></beam-position-2d-chart>
             <hr>
             <div id="logLinearRadio">
                 <span class="radio-description">Scale:</span>

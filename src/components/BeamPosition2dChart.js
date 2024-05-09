@@ -16,6 +16,7 @@ export default class BeamPosition2dChart extends GenericChart {
         this.render();
 
         this._unit = "sigma";
+        this._mode = "sep";
 
         this._data = null;
         this.sigmaInMM = 1; // NOTE: this needs to be changed later
@@ -28,21 +29,24 @@ export default class BeamPosition2dChart extends GenericChart {
      */
     set unit(newUnits) {
         this._unit = newUnits;
-
-        this.chart.xAxis[0].setTitle({
-            text: `Sep Beam position [${newUnits.replace("sigma", sigmaChar)}]`
-        });
-
-        this.chart.yAxis[0].setTitle({
-            text: `Xing Beam position [${newUnits.replace("sigma", sigmaChar)}]`
-        });
-
         this.refresh();
     }
     get unit() {
         return this._unit;
     }
 
+    /**
+     * @param {string} newMode
+     */
+    set mode(newMode) {
+        this._mode = newMode;
+        this.refresh();
+    }
+    get mode() {
+        return this._mode;
+    }
+
+    
     set data(data) {
         this._data = data;
         this.refresh();
@@ -53,7 +57,15 @@ export default class BeamPosition2dChart extends GenericChart {
     }
 
     refresh() {
-        if (this.data == null) return;
+        if (this.data == null || this.chart == null) return;
+
+        this.chart.xAxis[0].setTitle({
+            text: `Sep Beam ${this.mode} [${this.unit.replace("sigma", sigmaChar)}]`
+        });
+
+        this.chart.yAxis[0].setTitle({
+            text: `Xing Beam ${this.mode} [${this.unit.replace("sigma", sigmaChar)}]`
+        });
 
         this.updateData(this.data);
     }
@@ -72,17 +84,44 @@ export default class BeamPosition2dChart extends GenericChart {
 
     /**
      * @private
-     * @param {any} newData
+     * @param {any} data
      */
-    updateData(newData) {
-        const crossing = newData.beamCrossing;
-        const separation = newData.beamSeparation;
-        if (crossing != null && separation != null) {
-            this.chart.series[0].setData(this.toXYPoints(separation[0], crossing[0]).slice(0, -1));
-            this.chart.series[1].setData(this.toXYPoints(separation[1], crossing[1]).slice(0, -1));
+    updateData(data) {
+        while (this.chart.series.length) {
+            this.chart.series[0].remove();
+        }
+
+        let positionBeam1 = [];
+        let positionBeam2 = [];
+        if (data.beamCrossing != null && data.beamSeparation != null) {
+            positionBeam1 = this.toXYPoints(data.beamSeparation[0], data.beamCrossing[0]).slice(0, -1);
+            positionBeam2 = this.toXYPoints(data.beamSeparation[1], data.beamCrossing[1]).slice(0, -1);
+        }
+
+        if (this.mode == 'pos') {
+            this.chart.addSeries({
+                type: "scatter",
+                name: "Beam 1",
+                data: positionBeam1,
+                color: "hsl(240, 70%, 70%)"
+            });
+            this.chart.addSeries({
+                type: "scatter",
+                name: "Beam 2",
+                data: positionBeam2,
+                color: "hsl(0, 70%, 70%)"
+            });
         } else {
-            this.chart.series[0].setData([]);
-            this.chart.series[1].setData([]);
+            const separation = positionBeam1.map((_, i) => [
+                positionBeam1[i][0] - positionBeam2[i][0],
+                positionBeam1[i][1] - positionBeam2[i][1],
+            ]);    
+            this.chart.addSeries({
+                type: "scatter",
+                name: "Nominal Separation",
+                data: separation,
+                color: "hsl(0, 0, 0)"
+            });
         }
     }
 
@@ -110,7 +149,7 @@ export default class BeamPosition2dChart extends GenericChart {
 
             tooltip: {
                 headerFormat: '<b>{series.name}</b><br/>',
-                pointFormat: 'Separation: {point.x:.2f}<br/>Crossing: {point.y:.2f}',
+                pointFormat: 'Separation Plane: {point.x:.2f}<br/>Crossing Plane: {point.y:.2f}',
                 shared: true,
                 // NOTE: disable this while https://github.com/highcharts/highcharts/issues/11688 is still a bug
                 //outside: true // this is needed to make the tooltip not go under the axis title
@@ -130,18 +169,8 @@ export default class BeamPosition2dChart extends GenericChart {
                 }
             },
 
-            series: [{
-                type: "scatter",
-                name: "Beam 1",
-                data: [],
-                color: "hsl(240, 70%, 70%)"
-            }, {
-                type: "scatter",
-                name: "Beam 2",
-                data: [],
-                color: "hsl(0, 70%, 70%)"
-            }
-        ]}));
+            series: []
+        }));
 
         window.chart = this.chart;
     }
