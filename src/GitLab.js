@@ -283,9 +283,9 @@ export default class GitLab {
 
     async deleteFolder(path) {
         const filePaths = await this.listFiles(path, true, false);
-        for (let file of filePaths) {
-            await this.deleteFile(file);
-        }
+        await Promise.all(filePaths.map((file) => {
+            return this.deleteFile(file);
+        }));
     }
 
     /**
