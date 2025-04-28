@@ -100,6 +100,19 @@ const VdMInfoText = wire()`
         </p>
     </div>
 `;
+const VdMTiltInfoText = wire()`
+    <div style='width: 300px'>
+        <p>
+            The generated sequence will be inserted at the current position of the cursor in the editor.
+        </p>
+        <p>
+            To generate a TILTED Van der Meer type scan, choose which beam(s) that will be moving, and fill numbers.
+        </p>
+        <p>
+            The tilt angle is defined as the <strong>angle between the scan direction and the separation plane</strong>, in degrees.
+        </p>
+    </div>
+`;
 const arrayInfoText = wire()`
     <div style='width: 300px'>
         <p>
@@ -229,6 +242,52 @@ export class GenerateSequenceWindow extends HTMLElement {
         return this.generator.generateFromFunction(funcArr, waitTime, stepNum);
     }
 
+    genFromVdMTiltedInput() {
+        const tiltDeg = Number(this.allInputs.VdMtilt[0].value) || 0;
+        const waitTime = Number(this.allInputs.VdMtilt[1].value);
+        const stepNum = Number(this.allInputs.VdMtilt[2].value);
+        const startSep = Number(this.allInputs.VdMtilt[3].value) || 0;
+        const endSep = Number(this.allInputs.VdMtilt[4].value) || 0;
+
+        const beam = this.root.querySelector("#VdMtilt").querySelector("#beam-select").value;
+
+        // Convert tilt angle to radians
+        const tiltRad = (tiltDeg * Math.PI) / 180;
+
+        // Calculate the components for separation and crossing planes
+        const startSepX = startSep * Math.cos(tiltRad);
+        const startSepY = startSep * Math.sin(tiltRad);
+        const endSepX = endSep * Math.cos(tiltRad);
+        const endSepY = endSep * Math.sin(tiltRad);
+
+        let handleArr = Array(4);
+        if (beam == "Beam 1") {
+            handleArr[0] = `linear(${startSepX},${endSepX})`; // Separation plane
+            handleArr[2] = `linear(${startSepY},${endSepY})`; // Crossing plane
+        }
+        if (beam == "Beam 2") {
+            handleArr[1] = `linear(${startSepX},${endSepX})`; // Separation plane
+            handleArr[3] = `linear(${startSepY},${endSepY})`; // Crossing plane
+        }
+        if (beam == "Both beams") {
+            handleArr[0] = `linear(${startSepX / 2},${endSepX / 2})`;
+            handleArr[1] = `linear(${-startSepX / 2},${-endSepX / 2})`;
+            handleArr[2] = `linear(${startSepY / 2},${endSepY / 2})`;
+            handleArr[3] = `linear(${-startSepY / 2},${-endSepY / 2})`;
+        }
+
+        const funcArr = handleArr.map((handle, index) => {
+            try {
+                return this.generator.getFunctionFromString(handle, waitTime, stepNum);
+            } catch (error) {
+                if (error instanceof ArgError) throw new ArgError(error.message, index);
+                else throw error;
+            }
+        });
+
+        return this.generator.generateFromFunction(funcArr, waitTime, stepNum);
+    }
+
     onFunctionGenerateClick() {
         if (!this.allInputs.functions[0].value) {
             this.allInputs.functions[0].classList.add("error");
@@ -300,6 +359,36 @@ export class GenerateSequenceWindow extends HTMLElement {
             else throw error;
         }
     }
+    
+    onVdMTiltGenerateClick() {
+        if (!this.allInputs.VdMtilt[0].value) {
+            this.allInputs.VdMtilt[0].classList.add("error");
+            alert('"Tilt" is a required field');
+            return;
+        }
+        if (!this.allInputs.VdMtilt[1].value) {
+            this.allInputs.VdMtilt[1].classList.add("error");
+            alert('"Time between trims" is a required field');
+            return;
+        }
+        const stepNum = Number(this.allInputs.VdMtilt[2].value);
+        if (!stepNum || !Number.isInteger(stepNum) || stepNum > 100 || stepNum < 2) {
+            this.allInputs.VdMtilt[2].classList.add("error");
+            alert('"Number of steps" must be an integer strictly greater than 1 and less than 100');
+            return;
+        }
+        try {
+            let newLines = this.genFromVdMTiltedInput();
+            this.onSuccess(newLines);
+        }
+        catch (error) {
+            if (error instanceof ArgError) {
+                this.allInputs.VdMtilt[error.where + 3].classList.add("error");
+                alert("Invalid input function: " + error.message);
+            }
+            else throw error;
+        }
+    }
 
     set ip(ip) {
         this._ip = ip;
@@ -316,6 +405,7 @@ export class GenerateSequenceWindow extends HTMLElement {
             arrays: this.root.querySelector("#arrays").querySelectorAll("input"),
             functions: this.root.querySelector("#functions").querySelectorAll("input"),
             VdM: this.root.querySelector("#VdM").querySelectorAll("input"),
+            VdMtilt: this.root.querySelector("#VdMtilt").querySelectorAll("input"),
         };
         this.tabButtons = this.root.querySelector(".tabs").querySelectorAll("button");
         this.allTabs = this.root.querySelectorAll(".tab");
@@ -336,6 +426,7 @@ export class GenerateSequenceWindow extends HTMLElement {
         });
 
         this.root.querySelector("#VdM-generate").addEventListener("click", () => this.onVdMGenerateClick());
+        this.root.querySelector("#VdM-tilt-generate").addEventListener("click", () => this.onVdMTiltGenerateClick());
         this.root.querySelector("#function-generate").addEventListener("click", () => this.onFunctionGenerateClick());
         this.root.querySelector("#array-generate").addEventListener("click", () => this.onArrayGenerateClick());
 
@@ -351,7 +442,8 @@ export class GenerateSequenceWindow extends HTMLElement {
         </style>
         <model-window>
             <div class='tabs'>
-                <button id='VdM-tab'>Van Der Meer</button>
+                <button id='VdM-tab'>Van der Meer</button>
+                <button id='VdMtilt-tab'>Van der Meer (Tilted)</button>
                 <button id='arrays-tab'>From array</button>
                 <button id='functions-tab'>From function</button>
             </div>
@@ -382,6 +474,31 @@ export class GenerateSequenceWindow extends HTMLElement {
                     <input type="number" placeholder="Final Separation (&sigma;)" title="Final Separation (&sigma;)">
                 </div>
                 <button id='VdM-generate'>Generate at cursor</button>
+            </div>
+
+            <div class='tab' id='VdMtilt'>
+                Generate Van der Meer scan
+                <info-box>
+                    ${VdMTiltInfoText}
+                </info-box>
+                <hr>
+                <div>
+                    <select id='beam-select'>
+                        <option>Both beams</option>
+                        <option>Beam 1</option>
+                        <option>Beam 2</option>
+                    </select>
+                    <input id="tilt-angle" type="number" placeholder="Tilt (°)" title="Tilt angle (°) - 0 = SEPARATION">
+                </div>
+                <div>
+                    <input id="wait-time" type="number" placeholder="Time between steps (s)" title="Time between steps (s)">
+                    <input id="step-number" type="number" placeholder="Number of steps" title="Number of steps">
+                </div>
+                <div>
+                    <input type="number" placeholder="Initial Separation (&sigma;)" title="Initial Separation (&sigma;)">
+                    <input type="number" placeholder="Final Separation (&sigma;)" title="Final Separation (&sigma;)">
+                </div>
+                <button id='VdM-tilt-generate'>Generate at cursor</button>
             </div>
 
             <div class='tab' id='arrays'>
